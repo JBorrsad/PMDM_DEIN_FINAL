@@ -1,0 +1,69 @@
+{
+  "project_info": {
+    "project_number": "797967655777",
+    "firebase_url": "https://pmdm-dein-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "pmdm-dein",
+    "storage_bucket": "pmdm-dein.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:797967655777:android:9e86cde7ed241348b35b20",
+        "android_client_info": {
+          "package_name": "com.example.perros"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "797967655777-gl7f3bfm4a6jhmg4p4ohhv3kgvf74la9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkm1FhDSSeLfuelGbCc-mDcRzkLrMm7S0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "797967655777-gl7f3bfm4a6jhmg4p4ohhv3kgvf74la9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:797967655777:android:b6612b0f3a8ab9c9b35b20",
+        "android_client_info": {
+          "package_name": "com.instamobile.ui.fragment.onBoarding.walkthroughactivity"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "797967655777-gl7f3bfm4a6jhmg4p4ohhv3kgvf74la9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkm1FhDSSeLfuelGbCc-mDcRzkLrMm7S0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "797967655777-gl7f3bfm4a6jhmg4p4ohhv3kgvf74la9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
