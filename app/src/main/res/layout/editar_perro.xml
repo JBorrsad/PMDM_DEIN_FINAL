@@ -8,7 +8,6 @@
     android:background="#F5F5F5"
     tools:context=".EditarPerro">
 
-
     <Button
         android:id="@+id/btnAtras"
         android:layout_width="wrap_content"
@@ -70,66 +69,6 @@
                 android:backgroundTint="#2196F3"
                 android:textColor="#333333" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Collar"
-                android:textSize="16sp"
-                android:paddingTop="16dp"
-                android:paddingBottom="8dp"
-                android:textColor="#333333" />
-
-            <Button
-                android:id="@+id/RegistrarCollar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Escanear"
-                android:backgroundTint="#FF5722"
-                android:textColor="#FFFFFF" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Edad"
-                android:textSize="16sp"
-                android:paddingTop="16dp"
-                android:paddingBottom="8dp"
-                android:textColor="#333333" />
-
-            <EditText
-                android:id="@+id/etEdad"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Ingrese la edad"
-                android:inputType="number"
-                android:backgroundTint="#2196F3"
-                android:textColor="#333333" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Imagen del perro"
-                android:textSize="16sp"
-                android:paddingTop="16dp"
-                android:paddingBottom="8dp"
-                android:textColor="#333333" />
-
-            <Button
-                android:id="@+id/btnAdjuntarImagen"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Adjuntar imagen"
-                android:backgroundTint="#FF5722"
-                android:textColor="#FFFFFF" />
-
-            <ImageView
-                android:id="@+id/ivImagen"
-                android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:layout_marginTop="16dp"
-                android:background="#CCCCCC"
-                android:contentDescription="Vista previa de la imagen"
-                android:scaleType="centerCrop" />
         </LinearLayout>
     </ScrollView>
 
@@ -137,7 +76,7 @@
         android:id="@+id/btnSubmit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Submit"
+        android:text="Guardar"
         android:layout_margin="16dp"
         android:backgroundTint="#4CAF50"
         android:textColor="#FFFFFF"
