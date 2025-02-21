@@ -1,16 +1,23 @@
 package com.example.perros
 
 import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.location.Location
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.*
@@ -19,6 +26,14 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
+
+    private val handler = android.os.Handler()
+    private val comprobacionZonaSeguraRunnable = object : Runnable {
+        override fun run() {
+            comprobarYNotificarZonaSegura()
+            handler.postDelayed(this, 5000) // Repetir cada 5 segundos
+        }
+    }
 
     private lateinit var mMap: GoogleMap
     private lateinit var database: DatabaseReference
@@ -56,31 +71,62 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         setContentView(R.layout.activity_maps)
 
         auth = FirebaseAuth.getInstance()
-        // Especifica la URL de tu base de datos (si es necesario)
         database = FirebaseDatabase.getInstance("https://pmdm-dein-default-rtdb.europe-west1.firebasedatabase.app").reference
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        // Configuración de elementos de la interfaz
+        initializeViews()
+        setupLocationRequest()
+        setupLocationCallback()
+        setupMapFragment()
+        setupButtonListeners()
+        cargarPerrosUsuario()
+    }
+
+    private fun initializeViews() {
         spinnerPerros = findViewById(R.id.nombreperro)
         btnEditarZonaSegura = findViewById(R.id.btn_home)
         btnEditarPerfilPerro = findViewById(R.id.btnEditarPerro)
         btnPerfilUsuario = findViewById(R.id.ivPerfilUsuario)
 
-        // Cargar la lista de perros asociados al usuario
-        cargarPerrosUsuario()
+        setupSpinnerListener()
+    }
 
-        // Evento al seleccionar un perro
+    private fun setupSpinnerListener() {
         spinnerPerros.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                perroSeleccionadoId = listaPerros[position].second // Se guarda el ID del perro seleccionado
+                perroSeleccionadoId = listaPerros[position].second
                 Log.d("MapsActivity", "Perro seleccionado: ${listaPerros[position].first} (ID: $perroSeleccionadoId)")
                 mostrarZonaSegura()
-                mostrarUbicacionPerro() // Se adjunta el listener para la ubicación del perro
+                mostrarUbicacionPerro()
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
+    }
 
-        // Evento para editar la zona segura
+    private fun setupLocationRequest() {
+        locationRequest = LocationRequest.create().apply {
+            interval = 5000
+            fastestInterval = 2000
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        }
+    }
+
+    private fun setupLocationCallback() {
+        locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
+                for (location in locationResult.locations) {
+                    updateOwnerLocationInFirebase(location)
+                }
+            }
+        }
+    }
+
+    private fun setupMapFragment() {
+        val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+        mapFragment.getMapAsync(this)
+    }
+
+    private fun setupButtonListeners() {
         btnEditarZonaSegura.setOnClickListener {
             if (perroSeleccionadoId.isNullOrEmpty()) {
                 Toast.makeText(this, "Selecciona un perro primero", Toast.LENGTH_SHORT).show()
@@ -93,7 +139,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
 
-        // Evento para editar el perfil del perro
         btnEditarPerfilPerro.setOnClickListener {
             if (perroSeleccionadoId.isNullOrEmpty()) {
                 Toast.makeText(this, "Selecciona un perro primero", Toast.LENGTH_SHORT).show()
@@ -104,42 +149,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
 
-        // Evento para abrir el perfil del usuario
         btnPerfilUsuario.setOnClickListener {
-            val intent = Intent(this, PerfilUsuario::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, PerfilUsuario::class.java))
         }
-
-        // Inicializar el mapa
-        val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment.getMapAsync(this)
-
-        // Configurar solicitud de ubicación para el usuario (owner)
-        locationRequest = LocationRequest.create().apply {
-            interval = 5000             // Actualización cada 5 segundos
-            fastestInterval = 2000        // Intervalo mínimo de 2 segundos
-            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        }
-
-        locationCallback = object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult) {
-                // Recorrer cada ubicación recibida y actualizar Firebase
-                for (location in locationResult.locations) {
-                    updateOwnerLocationInFirebase(location)
-                }
-            }
-        }
-
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
         enableMyLocation()
 
-        // Escucha y muestra la ubicación actual del usuario (owner)
         listenForOwnerLocation()
 
-        // Permitir seleccionar nueva zona segura en modo edición
         mMap.setOnMapClickListener { latLng ->
             if (modoEdicionZonaSegura && !perroSeleccionadoId.isNullOrEmpty()) {
                 definirZonaSegura(latLng)
@@ -189,7 +209,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    // Actualiza la ubicación del usuario (owner) en Firebase (se escribe en "locations/ownerId")
     private fun updateOwnerLocationInFirebase(location: Location) {
         val user = auth.currentUser ?: run {
             Log.e("Firebase", "Usuario no autenticado")
@@ -206,7 +225,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             .addOnFailureListener { e -> Log.e("Firebase", "Error al actualizar ubicación del owner: ${e.message}") }
     }
 
-    // Escucha la ubicación del usuario (owner) en Firebase y actualiza su marcador
     private fun listenForOwnerLocation() {
         val user = auth.currentUser ?: return
         val ownerRef = database.child("locations").child(user.uid)
@@ -236,7 +254,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         ownerRef.addValueEventListener(ownerLocationListener as ValueEventListener)
     }
 
-    // Cargar la lista de perros asociados (donde "dueñoId" es el UID del usuario logueado)
     private fun cargarPerrosUsuario() {
         val usuarioId = auth.currentUser?.uid ?: return
         database.child("users").orderByChild("dueñoId").equalTo(usuarioId)
@@ -256,7 +273,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         )
                         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                         spinnerPerros.adapter = adapter
-                        // Selecciona el primer perro por defecto
                         perroSeleccionadoId = listaPerros.first().second
                         mostrarZonaSegura()
                         mostrarUbicacionPerro()
@@ -270,7 +286,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             })
     }
 
-    // Muestra la zona segura del perro (según datos en "users/perroId/zonaSegura")
     private fun mostrarZonaSegura() {
         if (perroSeleccionadoId.isNullOrEmpty()) return
         database.child("users").child(perroSeleccionadoId!!).child("zonaSegura")
@@ -295,7 +310,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             })
     }
 
-    // Escucha la ubicación en tiempo real del perro seleccionado (desde "locations/perroId")
     private fun mostrarUbicacionPerro() {
         if (perroSeleccionadoId.isNullOrEmpty()) return
         eliminarDogLocationListener()
@@ -318,6 +332,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     } else {
                         dogMarker!!.position = pos
                     }
+                    actualizarColorZonaSegura()
                 }
             }
             override fun onCancelled(error: DatabaseError) {
@@ -327,7 +342,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         dogRef.addValueEventListener(dogLocationListener as ValueEventListener)
     }
 
-    // Elimina el listener de ubicación del perro si existe
     private fun eliminarDogLocationListener() {
         if (perroSeleccionadoId != null && dogLocationListener != null) {
             database.child("locations").child(perroSeleccionadoId!!).removeEventListener(dogLocationListener as ValueEventListener)
@@ -335,7 +349,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    // Guarda la zona segura del perro en Firebase (en "users/perroId/zonaSegura")
     private fun guardarZonaSegura() {
         if (perroSeleccionadoId.isNullOrEmpty() || zonaSeguraCircle == null) {
             Toast.makeText(this, "Define la zona segura antes de guardar", Toast.LENGTH_SHORT).show()
@@ -358,7 +371,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
     }
 
-    // Activa el modo de edición para definir una nueva zona segura
     private fun activarModoEdicionZonaSegura() {
         if (perroSeleccionadoId.isNullOrEmpty()) {
             Toast.makeText(this, "Selecciona un perro primero", Toast.LENGTH_SHORT).show()
@@ -369,9 +381,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         Toast.makeText(this, "Toca en el mapa para definir la nueva zona segura", Toast.LENGTH_LONG).show()
     }
 
-    // Permite definir la zona segura al tocar el mapa
     private fun definirZonaSegura(latLng: LatLng) {
-        val radio = 100.0 // Radio por defecto
+        val radio = 100.0 // Radio por defecto en metros
         zonaSeguraCircle?.remove()
         zonaSeguraCircle = mMap.addCircle(
             CircleOptions()
@@ -381,6 +392,81 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 .fillColor(Color.argb(50, 0, 255, 0))
         )
     }
+
+    private fun actualizarColorZonaSegura() {
+        if (perroSeleccionadoId.isNullOrEmpty() || zonaSeguraCircle == null || dogMarker == null) return
+
+        val zonaCentro = zonaSeguraCircle!!.center
+        val zonaRadio = zonaSeguraCircle!!.radius
+        val posicionPerro = dogMarker!!.position
+        val distancia = FloatArray(1)
+
+        Location.distanceBetween(
+            zonaCentro.latitude, zonaCentro.longitude,
+            posicionPerro.latitude, posicionPerro.longitude,
+            distancia
+        )
+
+        val dentroZonaSegura = distancia[0] <= zonaRadio
+        val color = if (dentroZonaSegura) Color.argb(50, 0, 255, 0) else Color.argb(50, 255, 0, 0)
+        zonaSeguraCircle!!.fillColor = color
+
+        Log.d("MapsActivity", "Zona segura actualizada: ${if (dentroZonaSegura) "DENTRO" else "FUERA"}")
+        handler.post(comprobacionZonaSeguraRunnable)
+    }
+
+    private fun comprobarYNotificarZonaSegura() {
+        if (zonaSeguraCircle == null) return
+
+        val perroFuera = zonaSeguraCircle!!.fillColor == Color.argb(50, 255, 0, 0)
+
+        if (perroFuera) {
+            enviarNotificacionZonaInsegura() // Enviar notificación cada 5 segundos mientras el perro esté fuera
+        }
+    }
+
+
+    private fun enviarNotificacionZonaInsegura() {
+        val channelId = "geofence_alert"
+        val notificationId = 1001
+
+        val intent = Intent(this, MapsActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(
+            this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val builder = NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle("⚠ Alerta de Zona Segura")
+            .setContentText("¡Tu perro ha salido de la zona segura!")
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                channelId, "Alertas de Geocerca",
+                NotificationManager.IMPORTANCE_HIGH
+            )
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        with(NotificationManagerCompat.from(this)) {
+            if (ContextCompat.checkSelfPermission(
+                    applicationContext, Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                notify(notificationId, builder.build())
+                Log.d("Notificación", "Notificación enviada: ¡El perro está fuera de la zona segura!")
+            } else {
+                Log.e("Notificación", "Permiso de notificación denegado")
+            }
+        }
+    }
+
+
 
     override fun onPause() {
         super.onPause()
@@ -396,5 +482,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 database.child("locations").child(user.uid).removeEventListener(ownerLocationListener as ValueEventListener)
             }
         }
+        handler.removeCallbacks(comprobacionZonaSeguraRunnable)
     }
 }

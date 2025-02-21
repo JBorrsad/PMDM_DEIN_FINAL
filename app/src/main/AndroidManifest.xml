@@ -38,9 +38,10 @@
 
         <receiver
             android:name=".GeofenceBroadcastReceiver"
+            android:enabled="true"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.example.perros.ACTION_GEOFENCE_EVENT" />
+                <action android:name="com.google.android.gms.location.GeofenceTransitionsIntentService"/>
             </intent-filter>
         </receiver>
         <activity

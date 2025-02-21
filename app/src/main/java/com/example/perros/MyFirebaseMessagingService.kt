@@ -27,13 +27,16 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val channelId = "geofence_alert"
         val notificationId = 1001
 
-        val intent = Intent(this, MainActivity::class.java)
+        val intent = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+
         val pendingIntent = PendingIntent.getActivity(
             this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         val builder = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(R.drawable.ic_notification) // Asegúrate de tener un ícono en res/drawable
+            .setSmallIcon(android.R.drawable.ic_dialog_alert) // Se usa un icono predeterminado para evitar errores
             .setContentTitle(titulo)
             .setContentText(mensaje)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -50,14 +53,14 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             notificationManager.createNotificationChannel(channel)
         }
 
-        with(NotificationManagerCompat.from(this)) {
+        with(NotificationManagerCompat.from(this@MyFirebaseMessagingService)) {
             if (ContextCompat.checkSelfPermission(
                     applicationContext, android.Manifest.permission.POST_NOTIFICATIONS
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
                 notify(notificationId, builder.build())
             } else {
-                Log.e("FCM", "Permiso de notificación denegado")
+                Log.e("FCM", "Permiso de notificación denegado. Solicita el permiso en MainActivity.")
             }
         }
     }
