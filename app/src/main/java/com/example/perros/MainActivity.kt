@@ -16,8 +16,20 @@ import com.google.firebase.messaging.FirebaseMessaging
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var auth: FirebaseAuth
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        auth = FirebaseAuth.getInstance()
+
+        // ✅ Si el usuario ya está autenticado, ir directo a MapsActivity
+        if (auth.currentUser != null) {
+            startActivity(Intent(this, MapsActivity::class.java))
+            finish()
+            return
+        }
+
         setContentView(R.layout.activity_main)
 
         val etUsername = findViewById<EditText>(R.id.etUsername)
@@ -25,7 +37,7 @@ class MainActivity : AppCompatActivity() {
         val btnLogin = findViewById<Button>(R.id.btnLogin)
         val btnGoToRegister = findViewById<Button>(R.id.btnGoToRegister)
 
-        solicitarPermisosNotificacion() // Solicitar permisos en Android 13+
+        solicitarPermisosNotificacion() // ✅ Solicitar permisos en Android 13+
 
         btnGoToRegister.setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
@@ -40,17 +52,26 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
+            auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this) { task ->
                     if (task.isSuccessful) {
                         Toast.makeText(this, "Inicio de sesión exitoso", Toast.LENGTH_SHORT).show()
-                        suscribirNotificaciones() // Suscribir al usuario a notificaciones
+                        suscribirNotificaciones() // ✅ Suscribir a notificaciones solo después de loguearse
                         startActivity(Intent(this, MapsActivity::class.java))
                         finish()
                     } else {
                         Toast.makeText(this, "Usuario o contraseña incorrectos", Toast.LENGTH_SHORT).show()
                     }
                 }
+        }
+    }
+
+    // ✅ Mantener sesión iniciada al minimizar
+    override fun onResume() {
+        super.onResume()
+        if (auth.currentUser != null) {
+            startActivity(Intent(this, MapsActivity::class.java))
+            finish()
         }
     }
 
