@@ -35,6 +35,10 @@ class EditarUsuario : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.editar_usuario)
 
+        if (ivImagen.drawable == null) {
+            ivImagen.setImageResource(R.drawable.img) // Reemplázalo con tu imagen
+        }
+
         ivImagen = findViewById(R.id.ivImagen)
         btnGuardar = findViewById(R.id.btnGuardarUsuario)
         btnBack = findViewById(R.id.btnBack)

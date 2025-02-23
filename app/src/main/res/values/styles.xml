@@ -1,0 +1,14 @@
+<resources>
+
+    <!-- Estilo para hacer un ImageView redondo -->
+    <style name="CircularImageView" parent="Widget.MaterialComponents.ShapeableImageView">
+        <item name="shapeAppearance">@style/ShapeAppearance.CircularImageView</item>
+    </style>
+
+    <!-- Definición de la forma completamente circular -->
+    <style name="ShapeAppearance.CircularImageView" parent="ShapeAppearance.Material3.SmallComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item> <!-- Esto lo hace completamente circular -->
+    </style>
+
+</resources>

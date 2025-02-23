@@ -4,4 +4,6 @@
     <color name="white">#FFFFFFFF</color>
     <color name="colorPrimary">#edfdfd</color>
     <color name="boton">#45add9</color>
+    <color name="grey_200">#EEEEEE</color>
+
 </resources>
