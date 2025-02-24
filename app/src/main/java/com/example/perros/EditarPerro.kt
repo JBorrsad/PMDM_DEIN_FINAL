@@ -2,17 +2,22 @@ package com.example.perros
 
 import android.app.Dialog
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.util.Base64
 import android.view.View
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.imageview.ShapeableImageView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import com.yalantis.ucrop.UCrop
+import java.io.ByteArrayOutputStream
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -115,11 +120,7 @@ class EditarPerro : AppCompatActivity() {
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(
-                        this@EditarPerro,
-                        "Error al cargar la lista de dueños",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(this@EditarPerro, "Error al cargar la lista de dueños", Toast.LENGTH_SHORT).show()
                 }
             })
     }
@@ -170,7 +171,6 @@ class EditarPerro : AppCompatActivity() {
         yearPicker.setOnValueChangedListener { _, _, newVal ->
             updateDayPicker(dayPicker, newVal, monthPicker.value)
         }
-
         monthPicker.setOnValueChangedListener { _, _, newVal ->
             updateDayPicker(dayPicker, yearPicker.value, newVal)
         }
@@ -188,11 +188,9 @@ class EditarPerro : AppCompatActivity() {
             }
             dialog.dismiss()
         }
-
         dialog.findViewById<Button>(R.id.btnCancelar).setOnClickListener {
             dialog.dismiss()
         }
-
         dialog.show()
     }
 
@@ -214,7 +212,6 @@ class EditarPerro : AppCompatActivity() {
             Toast.makeText(this, "Error al cargar el perro", Toast.LENGTH_SHORT).show()
             return
         }
-
         database.child("users").child(perroId!!)
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
@@ -233,7 +230,6 @@ class EditarPerro : AppCompatActivity() {
                     }
                     cargarListaDuenos()
                 }
-
                 override fun onCancelled(error: DatabaseError) {
                     Toast.makeText(this@EditarPerro, "Error al cargar datos", Toast.LENGTH_SHORT).show()
                 }
@@ -260,7 +256,6 @@ class EditarPerro : AppCompatActivity() {
         val hoy = Calendar.getInstance()
         val nacimiento = Calendar.getInstance()
         nacimiento.timeInMillis = fechaNacimiento
-
         var edad = hoy.get(Calendar.YEAR) - nacimiento.get(Calendar.YEAR)
         if (hoy.get(Calendar.DAY_OF_YEAR) < nacimiento.get(Calendar.DAY_OF_YEAR)) {
             edad--
@@ -285,12 +280,14 @@ class EditarPerro : AppCompatActivity() {
         btnBack.setOnClickListener {
             finish()
         }
-
         val btnAdjuntarImagen = findViewById<FloatingActionButton>(R.id.btnAdjuntarImagen)
         btnAdjuntarImagen.setOnClickListener {
-            // Implementar la lógica para adjuntar imagen
+            val pickIntent = Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+            val takePictureIntent = Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE)
+            val chooser = Intent.createChooser(pickIntent, "Selecciona una imagen")
+            chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(takePictureIntent))
+            imagePickerLauncher.launch(chooser)
         }
-
         btnGuardar.setOnClickListener {
             guardarCambios()
         }
@@ -299,18 +296,15 @@ class EditarPerro : AppCompatActivity() {
     private fun guardarCambios() {
         perroId?.let { id ->
             val updates = mutableMapOf<String, Any>()
-
             // Obtener los valores de los EditText
             val nombre = tvNombreMascota.text.toString().trim()
             val raza = tvTipoRaza.text.toString().trim()
             val pesoText = tvPeso.text.toString().trim()
-
             // Validar que los campos no estén vacíos
             if (nombre.isEmpty() || raza.isEmpty() || pesoText.isEmpty()) {
                 Toast.makeText(this, "Por favor completa todos los campos", Toast.LENGTH_SHORT).show()
                 return@let
             }
-
             // Convertir el peso a Double
             val peso = try {
                 pesoText.toDouble()
@@ -318,31 +312,25 @@ class EditarPerro : AppCompatActivity() {
                 Toast.makeText(this, "El peso debe ser un número válido", Toast.LENGTH_SHORT).show()
                 return@let
             }
-
             // Actualizar el mapa con los nuevos valores
             updates["nombre"] = nombre
             updates["raza"] = raza
             updates["peso"] = peso
-
             // Actualizar fechas si están seleccionadas
             selectedBirthDate?.let {
                 updates["fechaNacimiento"] = it.time
             }
-
             selectedAdoptionDate?.let {
                 updates["fechaAdopcion"] = it.time
             }
-
             // Actualizar dueño si está seleccionado
             duenoSeleccionadoId?.let {
                 updates["dueñoId"] = it
             }
-
             // Actualizar en Firebase
             database.child("users").child(id).updateChildren(updates)
                 .addOnSuccessListener {
                     Toast.makeText(this, "Datos actualizados correctamente", Toast.LENGTH_SHORT).show()
-                    // Redirigir al perfil del perro
                     val intent = Intent(this, PerfilPerro::class.java)
                     intent.putExtra("perroId", perroId)
                     startActivity(intent)
@@ -350,6 +338,78 @@ class EditarPerro : AppCompatActivity() {
                 }
                 .addOnFailureListener { error ->
                     Toast.makeText(this, "Error al actualizar: ${error.message}", Toast.LENGTH_SHORT).show()
+                }
+        } ?: run {
+            Toast.makeText(this, "Error: ID del perro no encontrado", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // -------------------- Funcionalidad de manejo de imagen --------------------
+
+    // Launcher para seleccionar la imagen
+    private val imagePickerLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK && result.data != null) {
+                val selectedImageUri: Uri? = result.data!!.data
+                if (selectedImageUri != null) {
+                    iniciarUCrop(selectedImageUri)
+                } else {
+                    Toast.makeText(this, "Error al seleccionar imagen", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+    // Inicia UCrop para recortar la imagen seleccionada
+    private fun iniciarUCrop(sourceUri: Uri) {
+        val destinationUri = Uri.fromFile(File(cacheDir, "cropped_image_dog.jpg"))
+        UCrop.of(sourceUri, destinationUri)
+            .withAspectRatio(1f, 1f)
+            .withMaxResultSize(800, 800)
+            .start(this)
+    }
+
+    // Manejo del resultado de UCrop
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == UCrop.REQUEST_CROP && resultCode == RESULT_OK) {
+            val resultUri = UCrop.getOutput(data!!)
+            if (resultUri != null) {
+                val bitmap = uriToBitmap(resultUri)
+                bitmap?.let {
+                    ivImagen.setImageBitmap(it)
+                    guardarImagenRecortadaEnFirebase(it)
+                }
+            }
+        } else if (requestCode == UCrop.REQUEST_CROP && resultCode == UCrop.RESULT_ERROR) {
+            val cropError = UCrop.getError(data!!)
+            Toast.makeText(this, "Error al recortar la imagen: ${cropError?.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Convierte un Uri a Bitmap
+    private fun uriToBitmap(uri: Uri): Bitmap? {
+        return try {
+            val inputStream = contentResolver.openInputStream(uri)
+            BitmapFactory.decodeStream(inputStream)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    // Guarda la imagen recortada en Firebase bajo el nodo del perro
+    private fun guardarImagenRecortadaEnFirebase(bitmap: Bitmap) {
+        perroId?.let { id ->
+            val baos = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
+            val imageBytes = baos.toByteArray()
+            val imageBase64 = Base64.encodeToString(imageBytes, Base64.DEFAULT)
+            database.child("users").child(id).child("imagenBase64").setValue(imageBase64)
+                .addOnSuccessListener {
+                    Toast.makeText(this, "Imagen guardada correctamente", Toast.LENGTH_SHORT).show()
+                }
+                .addOnFailureListener {
+                    Toast.makeText(this, "Error al guardar la imagen", Toast.LENGTH_SHORT).show()
                 }
         } ?: run {
             Toast.makeText(this, "Error: ID del perro no encontrado", Toast.LENGTH_SHORT).show()
