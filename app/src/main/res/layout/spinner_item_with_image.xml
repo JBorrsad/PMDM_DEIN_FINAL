@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="12dp"
+    android:minHeight="56dp"
+    android:gravity="center_vertical"
+    android:background="@android:color/white">
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/ivPerroSpinner"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:scaleType="centerCrop"
+        app:shapeAppearanceOverlay="@style/CircularImageView"
+        android:layout_marginEnd="12dp"/>
+
+    <TextView
+        android:id="@+id/tvNombrePerro"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:textColor="@android:color/black"
+        android:ellipsize="end"
+        android:maxLines="1"/>
+</LinearLayout>

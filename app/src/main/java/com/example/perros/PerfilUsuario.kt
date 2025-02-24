@@ -9,30 +9,39 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import java.text.SimpleDateFormat
+import java.util.*
 
 class PerfilUsuario : AppCompatActivity() {
 
     private lateinit var ivFoto: ImageView
-    private lateinit var tvNombreUsuario: TextView
+    private lateinit var tvNombreUsuarioGrande: TextView
+    private lateinit var tvEmail: TextView
     private lateinit var tvNombre: TextView
     private lateinit var tvApellidos: TextView
+    private lateinit var tvFechaNacimiento: TextView
+    private lateinit var tvEdad: TextView
     private lateinit var tvEsPerro: TextView
     private lateinit var btnEditar: Button
-    private lateinit var btnBack: Button
-    private lateinit var btnCerrarSesion: Button
+    private lateinit var btnBack: ImageButton
+    private lateinit var btnCerrarSesion: ImageButton
 
     private lateinit var database: DatabaseReference
     private lateinit var auth: FirebaseAuth
     private var usuarioId: String? = null
+    private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.perfil_usuario)
 
         ivFoto = findViewById(R.id.ivFoto)
-        tvNombreUsuario = findViewById(R.id.tvNombreUsuarioValor)
+        tvNombreUsuarioGrande = findViewById(R.id.tvNombreUsuarioGrande)
+        tvEmail = findViewById(R.id.tvEmail)
         tvNombre = findViewById(R.id.tvNombreValor)
         tvApellidos = findViewById(R.id.tvApellidosValor)
+        tvFechaNacimiento = findViewById(R.id.tvFechaNacimiento)
+        tvEdad = findViewById(R.id.tvEdad)
         tvEsPerro = findViewById(R.id.tvEsPerroValor)
         btnEditar = findViewById(R.id.btnEditar)
         btnBack = findViewById(R.id.btnBack)
@@ -49,6 +58,10 @@ class PerfilUsuario : AppCompatActivity() {
             Toast.makeText(this, "Error: Usuario no autenticado", Toast.LENGTH_SHORT).show()
         }
 
+        configurarBotones()
+    }
+
+    private fun configurarBotones() {
         btnBack.setOnClickListener {
             val intent = Intent(this, MapsActivity::class.java)
             startActivity(intent)
@@ -73,13 +86,36 @@ class PerfilUsuario : AppCompatActivity() {
             Log.d("PerfilUsuario", "Cargando datos para usuario ID: $id")
 
             val email = auth.currentUser?.email
-            tvNombreUsuario.text = email ?: "Desconocido"
+            tvEmail.text = email ?: "Desconocido"
 
             database.child("users").child(id).addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     if (snapshot.exists()) {
-                        tvNombre.text = snapshot.child("nombre").getValue(String::class.java) ?: "Desconocido"
-                        tvApellidos.text = snapshot.child("apellidos").getValue(String::class.java) ?: "Desconocido"
+                        val nombre = snapshot.child("nombre").getValue(String::class.java) ?: "Desconocido"
+                        val apellidos = snapshot.child("apellidos").getValue(String::class.java) ?: "Desconocido"
+
+                        tvNombre.text = nombre
+                        tvApellidos.text = apellidos
+                        tvNombreUsuarioGrande.text = "$nombre $apellidos"
+
+                        val fechaNacimiento = snapshot.child("fechaNacimiento").getValue(String::class.java)
+                        if (!fechaNacimiento.isNullOrEmpty()) {
+                            tvFechaNacimiento.text = fechaNacimiento
+                            try {
+                                val fecha = dateFormat.parse(fechaNacimiento)
+                                if (fecha != null) {
+                                    val edad = calcularEdad(fecha)
+                                    tvEdad.text = "$edad años"
+                                }
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                tvEdad.text = "N/A"
+                            }
+                        } else {
+                            tvFechaNacimiento.text = "No especificada"
+                            tvEdad.text = "N/A"
+                        }
+
                         val esPerro = snapshot.child("isPerro").getValue(Boolean::class.java) ?: false
                         tvEsPerro.text = if (esPerro) "Sí" else "No"
                     } else {
@@ -96,31 +132,44 @@ class PerfilUsuario : AppCompatActivity() {
         }
     }
 
+    private fun calcularEdad(fechaNacimiento: Date): Int {
+        val hoy = Calendar.getInstance()
+        val nacimiento = Calendar.getInstance()
+        nacimiento.time = fechaNacimiento
+
+        var edad = hoy.get(Calendar.YEAR) - nacimiento.get(Calendar.YEAR)
+
+        if (hoy.get(Calendar.DAY_OF_YEAR) < nacimiento.get(Calendar.DAY_OF_YEAR)) {
+            edad--
+        }
+
+        return edad
+    }
+
     private fun cargarImagenDesdeFirebase() {
         usuarioId?.let { id ->
-            val databaseRef = database.child("users").child(id).child("imagenBase64")
-
-            databaseRef.get().addOnSuccessListener { snapshot ->
-                if (snapshot.exists()) {
-                    val imageBase64 = snapshot.getValue(String::class.java)
-                    if (!imageBase64.isNullOrEmpty()) {
-                        val imageBytes = Base64.decode(imageBase64, Base64.DEFAULT)
-                        val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-                        ivFoto.setImageBitmap(bitmap) // ✅ Mostrar la imagen en el perfil
+            database.child("users").child(id).child("imagenBase64")
+                .get().addOnSuccessListener { snapshot ->
+                    if (snapshot.exists()) {
+                        val imageBase64 = snapshot.getValue(String::class.java)
+                        if (!imageBase64.isNullOrEmpty()) {
+                            val imageBytes = Base64.decode(imageBase64, Base64.DEFAULT)
+                            val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+                            ivFoto.setImageBitmap(bitmap)
+                        } else {
+                            mostrarImagenPorDefecto()
+                        }
                     } else {
                         mostrarImagenPorDefecto()
                     }
-                } else {
+                }.addOnFailureListener {
+                    Toast.makeText(this, "Error al cargar imagen", Toast.LENGTH_SHORT).show()
                     mostrarImagenPorDefecto()
                 }
-            }.addOnFailureListener {
-                Toast.makeText(this, "Error al cargar imagen", Toast.LENGTH_SHORT).show()
-                mostrarImagenPorDefecto()
-            }
         }
     }
 
     private fun mostrarImagenPorDefecto() {
-        ivFoto.setImageResource(R.drawable.img) // ✅ Asegúrate de tener `img.png` en `res/drawable`
+        ivFoto.setImageResource(R.drawable.img)
     }
 }

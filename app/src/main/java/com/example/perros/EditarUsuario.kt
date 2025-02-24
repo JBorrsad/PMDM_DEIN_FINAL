@@ -1,5 +1,6 @@
 package com.example.perros
 
+import android.app.Dialog
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -7,57 +8,287 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Base64
+import android.view.View
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.SwitchCompat
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.switchmaterial.SwitchMaterial
+import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.yalantis.ucrop.UCrop
 import java.io.ByteArrayOutputStream
 import java.io.File
-import androidx.core.net.toUri
+import java.text.SimpleDateFormat
+import java.util.*
 
 class EditarUsuario : AppCompatActivity() {
 
     private lateinit var btnGuardar: Button
     private lateinit var btnBack: ImageButton
     private lateinit var ivImagen: ImageView
-    private lateinit var etNombreUsuario: EditText
+    private lateinit var tvNombreUsuarioGrande: TextView
+    private lateinit var etEmail: EditText
     private lateinit var etNombre: EditText
     private lateinit var etApellidos: EditText
-    private lateinit var switchEsPerro: SwitchCompat
+    private lateinit var etFechaNacimiento: EditText
+    private lateinit var etEdad: EditText
+    private lateinit var switchEsPerro: SwitchMaterial
+    private lateinit var tvDueño: TextView
+    private lateinit var tilDueño: TextInputLayout
+    private lateinit var spinnerDueño: AutoCompleteTextView
     private lateinit var database: DatabaseReference
     private lateinit var auth: FirebaseAuth
     private var usuarioId: String? = null
+    private var dueñoSeleccionadoId: String? = null
+    private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    private var selectedDate: Date? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.editar_usuario)
 
-        if (ivImagen.drawable == null) {
-            ivImagen.setImageResource(R.drawable.img) // Reemplázalo con tu imagen
-        }
+        inicializarVistas()
+        inicializarFirebase()
+        configurarSwitch()
+        configurarFechaNacimiento()
+        cargarDatosUsuario()
+        cargarImagenDesdeFirebase()
+        configurarBotones()
+    }
 
+    private fun inicializarVistas() {
         ivImagen = findViewById(R.id.ivImagen)
-        btnGuardar = findViewById(R.id.btnGuardarUsuario)
-        btnBack = findViewById(R.id.btnBack)
-
-        etNombreUsuario = findViewById(R.id.etNombreUsuario)
+        tvNombreUsuarioGrande = findViewById(R.id.tvNombreUsuarioGrande)
+        etEmail = findViewById(R.id.etEmail)
         etNombre = findViewById(R.id.etNombre)
         etApellidos = findViewById(R.id.etApellidos)
+        etFechaNacimiento = findViewById(R.id.etFechaNacimiento)
+        etEdad = findViewById(R.id.etEdad)
+        btnGuardar = findViewById(R.id.btnGuardarUsuario)
+        btnBack = findViewById(R.id.btnBack)
         switchEsPerro = findViewById(R.id.switchEsPerro)
+        tvDueño = findViewById(R.id.tvDueño)
+        tilDueño = findViewById(R.id.tilDueño)
+        spinnerDueño = findViewById(R.id.spinnerDueño)
 
+        if (ivImagen.drawable == null) {
+            ivImagen.setImageResource(R.drawable.img)
+        }
+
+        etEdad.isEnabled = false
+    }
+
+    private fun inicializarFirebase() {
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance().reference
         usuarioId = auth.currentUser?.uid
 
-        etNombreUsuario.isEnabled = false // ✅ Bloquea la edición del nombre de usuario
+        etEmail.setText(auth.currentUser?.email)
+    }
 
-        cargarDatosUsuario()
-        cargarImagenDesdeFirebase()
+    private fun configurarFechaNacimiento() {
+        etFechaNacimiento.setOnClickListener {
+            mostrarDateSpinnerDialog()
+        }
+    }
 
-        val btnAdjuntarImagen = findViewById<ImageButton>(R.id.btnAdjuntarImagen)
+    private fun mostrarDateSpinnerDialog() {
+        val calendar = Calendar.getInstance()
+        selectedDate?.let { date ->
+            calendar.time = date
+        }
+
+        val dialog = Dialog(this)
+        dialog.setContentView(R.layout.date_spinner_dialog)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        val yearPicker = dialog.findViewById<NumberPicker>(R.id.yearPicker)
+        val monthPicker = dialog.findViewById<NumberPicker>(R.id.monthPicker)
+        val dayPicker = dialog.findViewById<NumberPicker>(R.id.dayPicker)
+
+        // Configurar Year Picker
+        val currentYear = calendar.get(Calendar.YEAR)
+        yearPicker.minValue = 1900
+        yearPicker.maxValue = currentYear
+        yearPicker.value = calendar.get(Calendar.YEAR)
+
+        // Configurar Month Picker
+        val months = arrayOf("Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic")
+        monthPicker.minValue = 0
+        monthPicker.maxValue = 11
+        monthPicker.displayedValues = months
+        monthPicker.value = calendar.get(Calendar.MONTH)
+
+        // Configurar Day Picker
+        updateDayPicker(dayPicker, yearPicker.value, monthPicker.value)
+        dayPicker.value = calendar.get(Calendar.DAY_OF_MONTH)
+
+        // Listeners para actualizar días cuando cambia mes o año
+        yearPicker.setOnValueChangedListener { _, _, newVal ->
+            updateDayPicker(dayPicker, newVal, monthPicker.value)
+        }
+
+        monthPicker.setOnValueChangedListener { _, _, newVal ->
+            updateDayPicker(dayPicker, yearPicker.value, newVal)
+        }
+
+        // Botones
+        dialog.findViewById<Button>(R.id.btnAceptar).setOnClickListener {
+            calendar.set(yearPicker.value, monthPicker.value, dayPicker.value)
+            selectedDate = calendar.time
+            etFechaNacimiento.setText(dateFormat.format(selectedDate!!))
+            actualizarEdad(selectedDate!!)
+            dialog.dismiss()
+        }
+
+        dialog.findViewById<Button>(R.id.btnCancelar).setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+    private fun actualizarEdad(fechaNacimiento: Date) {
+        val edad = calcularEdad(fechaNacimiento)
+        etEdad.setText("$edad años")
+    }
+
+    private fun calcularEdad(fechaNacimiento: Date): Int {
+        val hoy = Calendar.getInstance()
+        val nacimiento = Calendar.getInstance()
+        nacimiento.time = fechaNacimiento
+
+        var edad = hoy.get(Calendar.YEAR) - nacimiento.get(Calendar.YEAR)
+
+        if (hoy.get(Calendar.DAY_OF_YEAR) < nacimiento.get(Calendar.DAY_OF_YEAR)) {
+            edad--
+        }
+
+        return edad
+    }
+
+    private fun updateDayPicker(dayPicker: NumberPicker, year: Int, month: Int) {
+        val calendar = Calendar.getInstance()
+        calendar.set(year, month, 1)
+        val daysInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
+        dayPicker.minValue = 1
+        dayPicker.maxValue = daysInMonth
+    }
+
+    private fun configurarSwitch() {
+        switchEsPerro.setOnCheckedChangeListener { _, isChecked ->
+            tvDueño.visibility = if (isChecked) View.VISIBLE else View.GONE
+            tilDueño.visibility = if (isChecked) View.VISIBLE else View.GONE
+
+            if (isChecked) {
+                cargarListaDueños()
+            }
+        }
+    }
+
+    private fun cargarListaDueños() {
+        database.child("users")
+            .orderByChild("isPerro")
+            .equalTo(false)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val dueños = mutableListOf<Pair<String, String>>()
+
+                    for (userSnapshot in snapshot.children) {
+                        val nombre = userSnapshot.child("nombre").getValue(String::class.java) ?: ""
+                        val apellidos = userSnapshot.child("apellidos").getValue(String::class.java) ?: ""
+                        val nombreCompleto = "$nombre $apellidos"
+                        dueños.add(Pair(userSnapshot.key!!, nombreCompleto))
+                    }
+
+                    val adapter = ArrayAdapter(
+                        this@EditarUsuario,
+                        android.R.layout.simple_dropdown_item_1line,
+                        dueños.map { it.second }
+                    )
+
+                    spinnerDueño.setAdapter(adapter)
+                    spinnerDueño.setOnItemClickListener { _, _, position, _ ->
+                        dueñoSeleccionadoId = dueños[position].first
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(
+                        this@EditarUsuario,
+                        "Error al cargar la lista de dueños",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            })
+    }
+
+    private fun cargarDatosUsuario() {
+        usuarioId?.let { id ->
+            database.child("users").child(id)
+                .addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        val nombre = snapshot.child("nombre").getValue(String::class.java) ?: ""
+                        val apellidos = snapshot.child("apellidos").getValue(String::class.java) ?: ""
+
+                        etNombre.setText(nombre)
+                        etApellidos.setText(apellidos)
+                        tvNombreUsuarioGrande.text = "$nombre $apellidos"
+
+                        val fechaNacimiento = snapshot.child("fechaNacimiento").getValue(String::class.java)
+                        if (!fechaNacimiento.isNullOrEmpty()) {
+                            etFechaNacimiento.setText(fechaNacimiento)
+                            try {
+                                selectedDate = dateFormat.parse(fechaNacimiento)
+                                selectedDate?.let { actualizarEdad(it) }
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
+                        }
+
+                        val isPerro = snapshot.child("isPerro").getValue(Boolean::class.java) == true
+                        switchEsPerro.isChecked = isPerro
+
+                        if (isPerro) {
+                            tvDueño.visibility = View.VISIBLE
+                            tilDueño.visibility = View.VISIBLE
+                            cargarListaDueños()
+
+                            val dueñoId = snapshot.child("dueñoId").getValue(String::class.java)
+                            if (dueñoId != null) {
+                                dueñoSeleccionadoId = dueñoId
+                                cargarDatosDueño(dueñoId)
+                            }
+                        }
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        Toast.makeText(this@EditarUsuario, "Error al cargar datos", Toast.LENGTH_SHORT).show()
+                    }
+                })
+        }
+    }
+
+    private fun cargarDatosDueño(dueñoId: String) {
+        database.child("users").child(dueñoId)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val nombre = snapshot.child("nombre").getValue(String::class.java) ?: ""
+                    val apellidos = snapshot.child("apellidos").getValue(String::class.java) ?: ""
+                    val nombreCompleto = "$nombre $apellidos"
+                    spinnerDueño.setText(nombreCompleto, false)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    // Manejar error
+                }
+            })
+    }
+
+    private fun configurarBotones() {
+        val btnAdjuntarImagen = findViewById<FloatingActionButton>(R.id.btnAdjuntarImagen)
         btnAdjuntarImagen.setOnClickListener {
             abrirGaleriaOCamara()
         }
@@ -69,32 +300,54 @@ class EditarUsuario : AppCompatActivity() {
         btnBack.setOnClickListener {
             redirigirAPerfil()
         }
+
+        etNombre.addTextChangedListener(object : android.text.TextWatcher {
+            override fun afterTextChanged(s: android.text.Editable?) {
+                actualizarNombreGrande()
+            }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        })
+
+        etApellidos.addTextChangedListener(object : android.text.TextWatcher {
+            override fun afterTextChanged(s: android.text.Editable?) {
+                actualizarNombreGrande()
+            }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        })
     }
 
-    private fun cargarDatosUsuario() {
-        usuarioId?.let { id ->
-            database.child("users").child(id)
-                .addListenerForSingleValueEvent(object : ValueEventListener {
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        etNombreUsuario.setText(auth.currentUser?.email ?: "Correo desconocido")
-                        etNombre.setText(
-                            snapshot.child("nombre").getValue(String::class.java) ?: ""
-                        )
-                        etApellidos.setText(
-                            snapshot.child("apellidos").getValue(String::class.java) ?: ""
-                        )
-                        switchEsPerro.isChecked =
-                            snapshot.child("isPerro").getValue(Boolean::class.java) == true
-                    }
+    private fun actualizarNombreGrande() {
+        val nombre = etNombre.text.toString()
+        val apellidos = etApellidos.text.toString()
+        tvNombreUsuarioGrande.text = "$nombre $apellidos"
+    }
 
-                    override fun onCancelled(error: DatabaseError) {
-                        Toast.makeText(
-                            this@EditarUsuario,
-                            "Error al cargar datos",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                })
+    private fun guardarCambios() {
+        usuarioId?.let { id ->
+            val updates = mutableMapOf<String, Any>()
+
+            updates["nombre"] = etNombre.text.toString()
+            updates["apellidos"] = etApellidos.text.toString()
+
+            selectedDate?.let {
+                updates["fechaNacimiento"] = dateFormat.format(it)
+            }
+
+            updates["isPerro"] = switchEsPerro.isChecked
+            if (switchEsPerro.isChecked && dueñoSeleccionadoId != null) {
+                updates["dueñoId"] = dueñoSeleccionadoId!!
+            }
+
+            database.child("users").child(id).updateChildren(updates)
+                .addOnSuccessListener {
+                    Toast.makeText(this, "Datos actualizados", Toast.LENGTH_SHORT).show()
+                    redirigirAPerfil()
+                }
+                .addOnFailureListener {
+                    Toast.makeText(this, "Error al actualizar", Toast.LENGTH_SHORT).show()
+                }
         }
     }
 
@@ -113,7 +366,7 @@ class EditarUsuario : AppCompatActivity() {
             if (result.resultCode == RESULT_OK && result.data != null) {
                 val selectedImageUri: Uri? = result.data!!.data
                 if (selectedImageUri != null) {
-                    iniciarUCrop(selectedImageUri) // ✅ Enviar imagen a UCrop para editar
+                    iniciarUCrop(selectedImageUri)
                 } else {
                     Toast.makeText(this, "Error al seleccionar imagen", Toast.LENGTH_SHORT).show()
                 }
@@ -124,8 +377,8 @@ class EditarUsuario : AppCompatActivity() {
         val destinationUri = Uri.fromFile(File(cacheDir, "cropped_image.jpg"))
 
         UCrop.of(sourceUri, destinationUri)
-            .withAspectRatio(1f, 1f) // 🔹 Recorte cuadrado
-            .withMaxResultSize(800, 800) // 🔹 Tamaño máximo de la imagen editada
+            .withAspectRatio(1f, 1f)
+            .withMaxResultSize(800, 800)
             .start(this)
     }
 
@@ -136,8 +389,8 @@ class EditarUsuario : AppCompatActivity() {
             if (resultUri != null) {
                 val bitmap = uriToBitmap(resultUri)
                 bitmap?.let {
-                    ivImagen.setImageBitmap(it) // ✅ Mostrar imagen editada en `ImageView`
-                    guardarImagenRecortadaEnFirebase(it) // ✅ Subir imagen editada a Firebase
+                    ivImagen.setImageBitmap(it)
+                    guardarImagenRecortadaEnFirebase(it)
                 }
             }
         } else if (requestCode == UCrop.REQUEST_CROP && resultCode == UCrop.RESULT_ERROR) {
@@ -150,7 +403,6 @@ class EditarUsuario : AppCompatActivity() {
         }
     }
 
-
     private fun uriToBitmap(uri: Uri): Bitmap? {
         return try {
             val inputStream = contentResolver.openInputStream(uri)
@@ -161,23 +413,14 @@ class EditarUsuario : AppCompatActivity() {
         }
     }
 
-    private fun getImageUriFromBitmap(bitmap: Bitmap): Uri {
-        val bytes = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, bytes)
-        val path = MediaStore.Images.Media.insertImage(contentResolver, bitmap, "temp", null)
-        return path.toUri()
-    }
-
     private fun guardarImagenRecortadaEnFirebase(bitmap: Bitmap) {
         usuarioId?.let { id ->
             val baos = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos) // ✅ PNG para mejor calidad
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
             val imageBytes = baos.toByteArray()
             val imageBase64 = Base64.encodeToString(imageBytes, Base64.DEFAULT)
 
-            val updates = mapOf("imagenBase64" to imageBase64)
-
-            database.child("users").child(id).updateChildren(updates)
+            database.child("users").child(id).child("imagenBase64").setValue(imageBase64)
                 .addOnSuccessListener {
                     Toast.makeText(this, "Imagen guardada correctamente", Toast.LENGTH_SHORT).show()
                 }
@@ -187,41 +430,20 @@ class EditarUsuario : AppCompatActivity() {
         }
     }
 
-
     private fun cargarImagenDesdeFirebase() {
         usuarioId?.let { id ->
-            val databaseRef = database.child("users").child(id).child("imagenBase64")
-
-            databaseRef.get().addOnSuccessListener { snapshot ->
-                if (snapshot.exists()) {
-                    val imageBase64 = snapshot.getValue(String::class.java)
-                    if (!imageBase64.isNullOrEmpty()) {
-                        val imageBytes = Base64.decode(imageBase64, Base64.DEFAULT)
-                        val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-                        ivImagen.setImageBitmap(bitmap)
+            database.child("users").child(id).child("imagenBase64")
+                .get().addOnSuccessListener { snapshot ->
+                    if (snapshot.exists()) {
+                        val imageBase64 = snapshot.getValue(String::class.java)
+                        if (!imageBase64.isNullOrEmpty()) {
+                            val imageBytes = Base64.decode(imageBase64, Base64.DEFAULT)
+                            val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+                            ivImagen.setImageBitmap(bitmap)
+                        }
                     }
-                }
-            }.addOnFailureListener {
-                Toast.makeText(this, "Error al cargar imagen", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
-    private fun guardarCambios() {
-        usuarioId?.let { id ->
-            val updates = mapOf(
-                "nombre" to etNombre.text.toString(),
-                "apellidos" to etApellidos.text.toString(),
-                "isPerro" to switchEsPerro.isChecked
-            )
-
-            database.child("users").child(id).updateChildren(updates)
-                .addOnSuccessListener {
-                    Toast.makeText(this, "Datos actualizados", Toast.LENGTH_SHORT).show()
-                    redirigirAPerfil()
-                }
-                .addOnFailureListener {
-                    Toast.makeText(this, "Error al actualizar", Toast.LENGTH_SHORT).show()
+                }.addOnFailureListener {
+                    Toast.makeText(this, "Error al cargar imagen", Toast.LENGTH_SHORT).show()
                 }
         }
     }

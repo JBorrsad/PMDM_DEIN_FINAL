@@ -13,21 +13,35 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.messaging.FirebaseMessaging
+import android.content.SharedPreferences
+import java.util.Date
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
+    private lateinit var sharedPreferences: SharedPreferences
+    private val SESSION_TIMEOUT = 5 * 60 * 1000 // 5 minutos en milisegundos
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         auth = FirebaseAuth.getInstance()
+        sharedPreferences = getSharedPreferences("login_prefs", MODE_PRIVATE)
 
-        // ✅ Si el usuario ya está autenticado, ir directo a MapsActivity
+        // Verificar si la sesión ha expirado
         if (auth.currentUser != null) {
-            startActivity(Intent(this, MapsActivity::class.java))
-            finish()
-            return
+            val lastLoginTime = sharedPreferences.getLong("last_login_time", 0)
+            val currentTime = Date().time
+
+            if (currentTime - lastLoginTime > SESSION_TIMEOUT) {
+                // La sesión ha expirado, cerrar sesión
+                auth.signOut()
+                sharedPreferences.edit().clear().apply()
+            } else {
+                startActivity(Intent(this, MapsActivity::class.java))
+                finish()
+                return
+            }
         }
 
         setContentView(R.layout.activity_main)
@@ -37,7 +51,7 @@ class MainActivity : AppCompatActivity() {
         val btnLogin = findViewById<Button>(R.id.btnLogin)
         val btnGoToRegister = findViewById<Button>(R.id.btnGoToRegister)
 
-        solicitarPermisosNotificacion() // ✅ Solicitar permisos en Android 13+
+        solicitarPermisosNotificacion()
 
         btnGoToRegister.setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
@@ -55,8 +69,13 @@ class MainActivity : AppCompatActivity() {
             auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this) { task ->
                     if (task.isSuccessful) {
+                        // Guardar el tiempo de inicio de sesión
+                        sharedPreferences.edit()
+                            .putLong("last_login_time", Date().time)
+                            .apply()
+
                         Toast.makeText(this, "Inicio de sesión exitoso", Toast.LENGTH_SHORT).show()
-                        suscribirNotificaciones() // ✅ Suscribir a notificaciones solo después de loguearse
+                        suscribirNotificaciones()
                         startActivity(Intent(this, MapsActivity::class.java))
                         finish()
                     } else {
@@ -66,16 +85,23 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // ✅ Mantener sesión iniciada al minimizar
     override fun onResume() {
         super.onResume()
         if (auth.currentUser != null) {
-            startActivity(Intent(this, MapsActivity::class.java))
-            finish()
+            val lastLoginTime = sharedPreferences.getLong("last_login_time", 0)
+            val currentTime = Date().time
+
+            if (currentTime - lastLoginTime > SESSION_TIMEOUT) {
+                // La sesión ha expirado, cerrar sesión
+                auth.signOut()
+                sharedPreferences.edit().clear().apply()
+            } else {
+                startActivity(Intent(this, MapsActivity::class.java))
+                finish()
+            }
         }
     }
 
-    // ✅ Solicitar permisos de notificación en Android 13+
     private fun solicitarPermisosNotificacion() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
@@ -84,7 +110,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // ✅ Registrar el lanzador de permisos
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (isGranted) {
@@ -94,7 +119,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-    // ✅ Suscribir al usuario al tema de notificaciones
     private fun suscribirNotificaciones() {
         FirebaseMessaging.getInstance().subscribeToTopic("geofence_alert")
             .addOnCompleteListener { task ->

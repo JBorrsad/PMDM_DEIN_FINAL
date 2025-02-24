@@ -26,7 +26,6 @@ import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
-
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Paint
@@ -36,6 +35,7 @@ import android.graphics.Rect
 import android.graphics.RectF
 import android.util.Base64
 import androidx.core.graphics.createBitmap
+import com.google.android.material.imageview.ShapeableImageView
 
 @Suppress("DEPRECATION")
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -53,24 +53,21 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var auth: FirebaseAuth
 
     private lateinit var spinnerPerros: Spinner
-    private lateinit var btnEditarZonaSegura: Button
-    private lateinit var btnEditarPerfilPerro: Button
-    private lateinit var btnPerfilUsuario: ImageView
+    private lateinit var btnEditarZonaSegura: LinearLayout
+    private lateinit var btnEditarPerfilPerro: LinearLayout
+    private lateinit var btnPerfilUsuario: ShapeableImageView
+    private lateinit var btnZonaText: TextView
 
-    // Lista de perros: Pair(nombre, id)
     private var listaPerros = mutableListOf<Pair<String, String>>()
     private var perroSeleccionadoId: String? = null
 
     private var modoEdicionZonaSegura = false
     private var zonaSeguraCircle: Circle? = null
-
     private var dogMarker: Marker? = null
 
-    // Listeners para las ubicaciones
     private var ownerLocationListener: ValueEventListener? = null
     private var dogLocationListener: ValueEventListener? = null
 
-    // Para actualizar la ubicación del usuario (owner)
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationRequest: LocationRequest
     private lateinit var locationCallback: LocationCallback
@@ -82,7 +79,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         setContentView(R.layout.activity_maps)
 
         auth = FirebaseAuth.getInstance()
-        database = FirebaseDatabase.getInstance("https://pmdm-dein-default-rtdb.europe-west1.firebasedatabase.app").reference
+        database = FirebaseDatabase.getInstance().reference
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         initializeViews()
@@ -98,6 +95,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         btnEditarZonaSegura = findViewById(R.id.btn_home)
         btnEditarPerfilPerro = findViewById(R.id.btnEditarPerro)
         btnPerfilUsuario = findViewById(R.id.ivPerfilUsuario)
+        btnZonaText = findViewById(R.id.btnZonaText)
 
         setupSpinnerListener()
     }
@@ -168,7 +166,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
         enableMyLocation()
-
         listenForOwnerLocation()
 
         mMap.setOnMapClickListener { latLng ->
@@ -186,7 +183,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 this, Manifest.permission.ACCESS_COARSE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            mMap.isMyLocationEnabled = true // ✅ Activa el puntito azul de Google Maps
+            mMap.isMyLocationEnabled = true
             startLocationUpdates()
         } else {
             ActivityCompat.requestPermissions(
@@ -196,7 +193,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             )
         }
     }
-
 
     private fun startLocationUpdates() {
         if (ContextCompat.checkSelfPermission(
@@ -210,17 +206,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_LOCATION_PERMISSION) {
-            if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
-                enableMyLocation()
-            } else {
-                Log.e("Permiso", "Permiso de ubicación denegado")
-            }
-        }
-    }
-
     private fun updateOwnerLocationInFirebase(location: Location) {
         val user = auth.currentUser ?: run {
             Log.e("Firebase", "Usuario no autenticado")
@@ -231,13 +216,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             "latitude" to location.latitude,
             "longitude" to location.longitude
         )
-        Log.d("Firebase", "Guardando ubicación del owner: Lat(${location.latitude}), Lng(${location.longitude})")
         ownerRef.setValue(locData)
             .addOnSuccessListener { Log.d("Firebase", "Ubicación del owner actualizada") }
             .addOnFailureListener { e -> Log.e("Firebase", "Error al actualizar ubicación del owner: ${e.message}") }
     }
 
-    private var firstLocationUpdate = true // ✅ Para asegurarnos de que solo se centre la primera vez
+    private var firstLocationUpdate = true
 
     private fun listenForOwnerLocation() {
         val user = auth.currentUser ?: return
@@ -248,8 +232,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 val lng = snapshot.child("longitude").getValue(Double::class.java)
                 if (lat != null && lng != null) {
                     val pos = LatLng(lat, lng)
-
-                    // ✅ Solo mover la cámara la primera vez
                     if (firstLocationUpdate) {
                         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pos, 15f))
                         firstLocationUpdate = false
@@ -263,38 +245,60 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         ownerRef.addValueEventListener(ownerLocationListener as ValueEventListener)
     }
 
-
     private fun cargarPerrosUsuario() {
         val usuarioId = auth.currentUser?.uid ?: return
         database.child("users").orderByChild("dueñoId").equalTo(usuarioId)
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     listaPerros.clear()
+                    val dogItems = mutableListOf<DogItem>()
+
                     for (perroSnapshot in snapshot.children) {
                         val nombre = perroSnapshot.child("nombre").getValue(String::class.java) ?: "Sin Nombre"
                         val id = perroSnapshot.key ?: continue
+                        val imageBase64 = perroSnapshot.child("imagenBase64").getValue(String::class.java)
+
                         listaPerros.add(Pair(nombre, id))
+                        dogItems.add(DogItem(id, nombre, imageBase64))
                     }
-                    if (listaPerros.isNotEmpty()) {
-                        val adapter = ArrayAdapter(
-                            this@MapsActivity,
-                            android.R.layout.simple_spinner_item,
-                            listaPerros.map { it.first }
-                        )
-                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+
+                    if (dogItems.isNotEmpty()) {
+                        val adapter = DogSpinnerAdapter(this@MapsActivity, dogItems)
                         spinnerPerros.adapter = adapter
-                        perroSeleccionadoId = listaPerros.first().second
+                        perroSeleccionadoId = dogItems.first().id
                         mostrarZonaSegura()
                         mostrarUbicacionPerro()
                     } else {
                         Toast.makeText(this@MapsActivity, "No hay perros asociados a este usuario", Toast.LENGTH_SHORT).show()
                     }
                 }
+
                 override fun onCancelled(error: DatabaseError) {
                     Log.e("Firebase", "Error al cargar perros: ${error.message}")
                 }
             })
+
+        // Cargar imagen del usuario
+        database.child("users").child(usuarioId).child("imagenBase64")
+            .get().addOnSuccessListener { snapshot ->
+                val imageBase64 = snapshot.getValue(String::class.java)
+                if (!imageBase64.isNullOrEmpty()) {
+                    try {
+                        val imageBytes = Base64.decode(imageBase64, Base64.DEFAULT)
+                        val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+                        btnPerfilUsuario.setImageBitmap(bitmap)
+                    } catch (e: Exception) {
+                        btnPerfilUsuario.setImageResource(R.drawable.img)
+                    }
+                } else {
+                    btnPerfilUsuario.setImageResource(R.drawable.img)
+                }
+            }.addOnFailureListener {
+                btnPerfilUsuario.setImageResource(R.drawable.img)
+            }
     }
+
+
 
     private fun mostrarZonaSegura() {
         if (perroSeleccionadoId.isNullOrEmpty()) return
@@ -319,6 +323,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 override fun onCancelled(error: DatabaseError) {}
             })
     }
+
     private fun mostrarUbicacionPerro() {
         if (perroSeleccionadoId.isNullOrEmpty()) return
         eliminarDogLocationListener()
@@ -330,17 +335,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 val lng = snapshot.child("longitude").getValue(Double::class.java)
                 if (lat != null && lng != null) {
                     val pos = LatLng(lat, lng)
-                    Log.d("MapsActivity", "Ubicación del perro actualizada: Lat($lat), Lng($lng)")
 
-                    // Obtener la imagen del perro desde Firebase
                     val dogImageRef = database.child("users").child(perroSeleccionadoId!!).child("imagenBase64")
                     dogImageRef.get().addOnSuccessListener { snapshot ->
                         val imageBase64 = snapshot.getValue(String::class.java)
                         if (!imageBase64.isNullOrEmpty()) {
                             val imageBytes = Base64.decode(imageBase64, Base64.DEFAULT)
                             val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-
-                            // Crear un marcador personalizado con la imagen del perro
                             val dogIcon = createCustomMarker(this@MapsActivity, bitmap)
 
                             if (dogMarker == null) {
@@ -355,8 +356,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                 dogMarker!!.position = pos
                             }
                         }
-                    }.addOnFailureListener {
-                        Log.e("Firebase", "Error al obtener imagen de perfil del perro")
                     }
                     actualizarColorZonaSegura()
                 }
@@ -391,13 +390,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             .setValue(zonaSegura)
             .addOnSuccessListener {
                 Toast.makeText(this, "Zona segura guardada", Toast.LENGTH_SHORT).show()
-                btnEditarZonaSegura.text = "Editar Zona Segura"
+                btnZonaText.text = "Editar Zona Segura"
                 modoEdicionZonaSegura = false
             }
             .addOnFailureListener {
                 Toast.makeText(this, "Error al guardar zona segura", Toast.LENGTH_SHORT).show()
             }
     }
+
     private fun activarModoEdicionZonaSegura() {
         if (perroSeleccionadoId.isNullOrEmpty()) {
             Toast.makeText(this, "Selecciona un perro primero", Toast.LENGTH_SHORT).show()
@@ -405,10 +405,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         modoEdicionZonaSegura = true
-        btnEditarZonaSegura.text = "Guardar"
+        btnZonaText.text = "Guardar"
         Toast.makeText(this, "Toca en el mapa para definir la nueva zona segura", Toast.LENGTH_LONG).show()
 
-        // ✅ Mover la cámara a la zona segura cuando se activa la edición
         database.child("users").child(perroSeleccionadoId!!).child("zonaSegura")
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
@@ -417,17 +416,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
                     if (lat != null && lng != null) {
                         val pos = LatLng(lat, lng)
-                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(pos, 17f)) // Zoom más cercano
+                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(pos, 17f))
                     }
                 }
-
                 override fun onCancelled(error: DatabaseError) {}
             })
     }
 
-
     private fun definirZonaSegura(latLng: LatLng) {
-        val radio = 100.0 // Radio por defecto en metros
+        val radio = 100.0
         zonaSeguraCircle?.remove()
         zonaSeguraCircle = mMap.addCircle(
             CircleOptions()
@@ -456,20 +453,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val color = if (dentroZonaSegura) Color.argb(50, 0, 255, 0) else Color.argb(50, 255, 0, 0)
         zonaSeguraCircle!!.fillColor = color
 
-        Log.d("MapsActivity", "Zona segura actualizada: ${if (dentroZonaSegura) "DENTRO" else "FUERA"}")
         handler.post(comprobacionZonaSeguraRunnable)
     }
 
     private fun comprobarYNotificarZonaSegura() {
         if (zonaSeguraCircle == null) return
-
         val perroFuera = zonaSeguraCircle!!.fillColor == Color.argb(50, 255, 0, 0)
-
         if (perroFuera) {
-            enviarNotificacionZonaInsegura() // Enviar notificación cada 5 segundos mientras el perro esté fuera
+            enviarNotificacionZonaInsegura()
         }
     }
-
 
     private fun enviarNotificacionZonaInsegura() {
         val channelId = "geofence_alert"
@@ -504,14 +497,18 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
                 notify(notificationId, builder.build())
-                Log.d("Notificación", "Notificación enviada: ¡El perro está fuera de la zona segura!")
-            } else {
-                Log.e("Notificación", "Permiso de notificación denegado")
             }
         }
     }
 
-
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_LOCATION_PERMISSION) {
+            if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
+                enableMyLocation()
+            }
+        }
+    }
 
     override fun onPause() {
         super.onPause()
@@ -529,64 +526,50 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
         handler.removeCallbacks(comprobacionZonaSeguraRunnable)
     }
-    private fun createCustomMarker(context: Context, bitmap: Bitmap): BitmapDescriptor {
-        val markerSize = 150 // Tamaño total del marcador
-        val shadowSize = 30  // Tamaño del difuminado alrededor
 
-        // Crear el bitmap final con espacio extra para la sombra
+    private fun createCustomMarker(context: Context, bitmap: Bitmap): BitmapDescriptor {
+        val markerSize = 150
+        val shadowSize = 30
+
         val bmp = Bitmap.createBitmap(markerSize + shadowSize * 2, markerSize + shadowSize * 2, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bmp)
 
-        // Dibujar la sombra tipo aura
         val shadowPaint = Paint().apply {
             isAntiAlias = true
             color = Color.BLACK
             maskFilter = android.graphics.BlurMaskFilter(20f, android.graphics.BlurMaskFilter.Blur.NORMAL)
-            alpha = 100  // Transparencia de la sombra
+            alpha = 100
         }
         val shadowRadius = (markerSize / 2) + shadowSize
         canvas.drawCircle(shadowRadius.toFloat(), shadowRadius.toFloat(), (markerSize / 2).toFloat(), shadowPaint)
 
-        // Dibujar el marcador base
         val markerDrawable = ContextCompat.getDrawable(context, R.drawable.custom_marker1)!!
         markerDrawable.setBounds(shadowSize, shadowSize, markerSize + shadowSize, markerSize + shadowSize)
         markerDrawable.draw(canvas)
 
-        // Redimensionar la imagen del perro manteniendo la alineación anterior
         val resizedBitmap = Bitmap.createScaledBitmap(bitmap, 100, 100, false)
-
-        // Dibujar la imagen del perro en círculo dentro del marcador
         val circularBitmap = getCircularBitmap(resizedBitmap, 100)
         val paint = Paint().apply { isAntiAlias = true }
 
-        // Ajuste de posición para que quede bien alineada dentro del círculo del marcador
         val imageOffsetX = shadowSize + ((markerSize - 100) / 2)
-        val imageOffsetY = shadowSize + ((markerSize - 100) / 2) - 10 // 🔹 Ajuste fino en la vertical
+        val imageOffsetY = shadowSize + ((markerSize - 100) / 2) - 10
 
         canvas.drawBitmap(circularBitmap, imageOffsetX.toFloat(), imageOffsetY.toFloat(), paint)
 
         return BitmapDescriptorFactory.fromBitmap(bmp)
     }
 
-
-
-
     private fun getCircularBitmap(bitmap: Bitmap, size: Int): Bitmap {
         val output = createBitmap(size, size)
         val canvas = Canvas(output)
-
         val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-
         val rect = Rect(0, 0, size, size)
         val rectF = RectF(rect)
 
-        canvas.drawOval(rectF, paint) // Dibujar círculo
+        canvas.drawOval(rectF, paint)
         paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
         canvas.drawBitmap(bitmap, null, rect, paint)
 
         return output
     }
-
-
-
 }
