@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import com.google.android.material.imageview.ShapeableImageView
-import android.util.Log
 
 class DogSpinnerAdapter(
     context: Context,
@@ -32,25 +31,18 @@ class DogSpinnerAdapter(
         val imageView = view.findViewById<ShapeableImageView>(R.id.ivPerroSpinner)
         val textView = view.findViewById<TextView>(R.id.tvNombrePerro)
 
-        if (dog != null) {
-            textView.text = dog.nombre
-            try {
-                if (!dog.imageBase64.isNullOrEmpty()) {
-                    val imageBytes = Base64.decode(dog.imageBase64, Base64.DEFAULT)
+        dog?.let {
+            textView.text = it.nombre
+            if (!it.imageBase64.isNullOrEmpty()) {
+                try {
+                    val imageBytes = Base64.decode(it.imageBase64, Base64.DEFAULT)
                     val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-                    if (bitmap != null) {
-                        imageView.setImageBitmap(bitmap)
-                    } else {
-                        imageView.setImageResource(R.drawable.img)
-                        Log.e("DogSpinnerAdapter", "Error decodificando bitmap para ${dog.nombre}")
-                    }
-                } else {
+                    imageView.setImageBitmap(bitmap)
+                } catch (e: Exception) {
                     imageView.setImageResource(R.drawable.img)
-                    Log.d("DogSpinnerAdapter", "No hay imagen para ${dog.nombre}")
                 }
-            } catch (e: Exception) {
+            } else {
                 imageView.setImageResource(R.drawable.img)
-                Log.e("DogSpinnerAdapter", "Error cargando imagen para ${dog.nombre}: ${e.message}")
             }
         }
 

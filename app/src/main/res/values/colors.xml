@@ -1,25 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-<color name="colorPrimary">#2196F3</color>
-<color name="colorPrimaryDark">#1976D2</color>
-<color name="colorAccent">#2196F3</color>
+    <!-- Colores primarios -->
+    <color name="colorPrimary">#246BFD</color>
+    <color name="colorPrimaryDark">#1D54CC</color>
+    <color name="colorAccent">#246BFD</color>
 
-<!-- Colores básicos -->
-<color name="white">#FFFFFF</color>
-<color name="black">#000000</color>
-<color name="gray">#757575</color>
-<color name="light_gray">#EEEEEE</color>
+    <!-- Colores de estado -->
+    <color name="success">#4ADE80</color>
+    <color name="warning">#FBA73F</color>
+    <color name="error">#F75555</color>
+    <color name="info">#246BFD</color>
 
-<!-- Colores de texto -->
-<color name="text_primary">#212121</color>
-<color name="text_secondary">#757575</color>
+    <!-- Escala de grises -->
+    <color name="grey_100">#F8F9FA</color>
+    <color name="grey_200">#E9ECEF</color>
+    <color name="grey_300">#FBFBFC</color>  <!-- Actualizado para el borde del spinner -->
+    <color name="grey_400">#CED4DA</color>
+    <color name="grey_500">#ADB5BD</color>
+    <color name="grey_600">#6C757D</color>
+    <color name="grey_700">#495057</color>
+    <color name="grey_800">#343A40</color>
+    <color name="grey_900">#212529</color>
 
-<!-- Colores de fondo -->
-<color name="background">#FFFFFF</color>
-<color name="surface">#FFFFFF</color>
+    <!-- Colores básicos -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
 
-<!-- Color para el botón principal -->
-<color name="button_primary">#2196F3</color>
-<color name="button_text">#FFFFFF</color>
-<color name="grey_200">#EEEEEE</color>
+    <!-- Colores de texto -->
+    <color name="text_primary">#212529</color>
+    <color name="text_secondary">#6C757D</color>
+    <color name="text_tertiary">#ADB5BD</color>
+
+    <!-- Colores de fondo -->
+    <color name="background">#FAFAFA</color>  <!-- Actualizado para el fondo de la app -->
+    <color name="surface">#FFFFFF</color>     <!-- Actualizado para superficies -->
+
+    <!-- Colores para botones -->
+    <color name="button_primary">@color/colorPrimary</color>
+    <color name="button_text">@color/white</color>
 </resources>

@@ -54,7 +54,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var spinnerPerros: Spinner
     private lateinit var btnEditarZonaSegura: LinearLayout
-    private lateinit var btnEditarPerfilPerro: LinearLayout
+    private lateinit var btnPerfilPerro: LinearLayout
     private lateinit var btnPerfilUsuario: ShapeableImageView
     private lateinit var btnZonaText: TextView
 
@@ -93,7 +93,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun initializeViews() {
         spinnerPerros = findViewById(R.id.nombreperro)
         btnEditarZonaSegura = findViewById(R.id.btn_home)
-        btnEditarPerfilPerro = findViewById(R.id.btnEditarPerro)
+        btnPerfilPerro = findViewById(R.id.btnPerfilPerro)
         btnPerfilUsuario = findViewById(R.id.ivPerfilUsuario)
         btnZonaText = findViewById(R.id.btnZonaText)
 
@@ -148,11 +148,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
 
-        btnEditarPerfilPerro.setOnClickListener {
+        btnPerfilPerro.setOnClickListener {
             if (perroSeleccionadoId.isNullOrEmpty()) {
                 Toast.makeText(this, "Selecciona un perro primero", Toast.LENGTH_SHORT).show()
             } else {
-                val intent = Intent(this, EditarPerro::class.java)
+                val intent = Intent(this, PerfilPerro::class.java)
                 intent.putExtra("perroId", perroSeleccionadoId)
                 startActivity(intent)
             }

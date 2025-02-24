@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background"
-    tools:context=".PerfilUsuario">
+    tools:context=".PerfilPerro">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
@@ -37,18 +37,6 @@
                 android:layout_gravity="center"
                 android:text="Perfil"
                 android:textAppearance="@style/TextAppearance.App.H3" />
-
-            <ImageButton
-                android:id="@+id/btnCerrarSesion"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_gravity="end"
-                android:layout_marginEnd="16dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Cerrar Sesión"
-                android:padding="12dp"
-                app:srcCompat="@drawable/logout"
-                app:tint="@color/text_tertiary"/>
 
         </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
@@ -82,13 +70,21 @@
             </FrameLayout>
 
             <TextView
-                android:id="@+id/tvNombreUsuarioGrande"
+                android:id="@+id/tvNombreMascota"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="16dp"
                 android:textSize="24sp"
                 android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/tvTipoRaza"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="4dp"
+                android:textColor="@android:color/darker_gray"/>
 
             <!-- Datos básicos -->
             <com.google.android.material.card.MaterialCardView
@@ -108,27 +104,13 @@
                     android:padding="16dp"
                     android:background="@color/white">
 
-                    <LinearLayout
+                    <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginBottom="16dp">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Login mail"/>
-
-                        <TextView
-                            android:id="@+id/tvEmail"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="maildeejemplo@gmail.com"
-                            android:textStyle="bold"
-                            android:minWidth="120dp"
-                            android:gravity="end"/>
-                    </LinearLayout>
+                        android:text="Appearance and distinctive signs"
+                        android:textStyle="bold"
+                        android:textSize="16sp"
+                        android:layout_marginBottom="16dp"/>
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -143,10 +125,9 @@
                             android:text="Nombre"/>
 
                         <TextView
-                            android:id="@+id/tvNombreValor"
+                            android:id="@+id/tvNombre"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Joaquin"
                             android:textStyle="bold"
                             android:minWidth="120dp"
                             android:gravity="end"/>
@@ -162,13 +143,33 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Apellidos"/>
+                            android:text="Raza"/>
 
                         <TextView
-                            android:id="@+id/tvApellidosValor"
+                            android:id="@+id/tvRaza"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Sada Borrás"
+                            android:textStyle="bold"
+                            android:minWidth="120dp"
+                            android:gravity="end"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="16dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Peso"/>
+
+                        <TextView
+                            android:id="@+id/tvPeso"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
                             android:textStyle="bold"
                             android:minWidth="120dp"
                             android:gravity="end"/>
@@ -189,7 +190,6 @@
                             android:id="@+id/tvEdad"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="N/A"
                             android:textStyle="bold"
                             android:minWidth="120dp"
                             android:gravity="end"/>
@@ -197,7 +197,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Fecha de nacimiento -->
+            <!-- Fechas -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -211,35 +211,76 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
+                    android:orientation="vertical"
                     android:padding="16dp"
                     android:background="@color/white">
 
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_calendar"
-                        android:layout_marginEnd="16dp"/>
-
-                    <TextView
-                        android:layout_width="0dp"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Fecha de nacimiento"/>
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="16dp">
 
-                    <TextView
-                        android:id="@+id/tvFechaNacimiento"
-                        android:layout_width="wrap_content"
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_calendar"
+                            android:layout_marginEnd="16dp"/>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Fecha de nacimiento"/>
+
+                            <TextView
+                                android:id="@+id/tvFechaNacimiento"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="@android:color/darker_gray"/>
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="fecha"
-                        android:textStyle="bold"
-                        android:minWidth="120dp"
-                        android:gravity="end"/>
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_home"
+                            android:layout_marginEnd="16dp"/>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Fecha de adopción"/>
+
+                            <TextView
+                                android:id="@+id/tvFechaAdopcion"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="@android:color/darker_gray"/>
+                        </LinearLayout>
+                    </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Simulación de perro -->
+            <!-- Información del dueño -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -260,34 +301,42 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Simulando perro"
-                        android:textColor="@color/text_primary"/>
-
-                    <TextView
-                        android:id="@+id/tvEsPerroValor"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="No"
-                        android:textStyle="bold"/>
-
-                    <TextView
-                        android:id="@+id/tvDueño"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:text="Dueño"
-                        android:textColor="@color/text_primary"
-                        android:visibility="gone"/>
-
-                    <TextView
-                        android:id="@+id/tvDueñoValor"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text=""
+                        android:text="Nombre del dueño"
                         android:textStyle="bold"
-                        android:visibility="gone"/>
+                        android:textSize="16sp"
+                        android:layout_marginBottom="16dp"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <com.google.android.material.imageview.ShapeableImageView
+                            android:id="@+id/ivImagenDueno"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:layout_marginEnd="16dp"
+                            app:shapeAppearanceOverlay="@style/CircularImageView"/>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/tvNombreDueno"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textStyle="bold"/>
+
+                            <TextView
+                                android:id="@+id/tvLoginDueno"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="@android:color/darker_gray"/>
+                        </LinearLayout>
+                    </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

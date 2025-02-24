@@ -3,66 +3,77 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/surface">
 
-    <!-- Barra superior dividida en dos partes -->
+    <!-- Toolbar -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
+        android:background="@color/surface"
         android:elevation="4dp">
 
-        <!-- Primera parte: Spinner del perro -->
-        <LinearLayout
+        <androidx.appcompat.widget.Toolbar
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp">
+            android:layout_height="?attr/actionBarSize">
 
-            <Spinner
-                android:id="@+id/nombreperro"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:background="@null"
-                android:spinnerMode="dropdown"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="8dp"
+                android:paddingEnd="16dp">
 
-            <!-- Separador vertical -->
-            <View
-                android:layout_width="1dp"
-                android:layout_height="32dp"
-                android:background="#E0E0E0"
-                android:layout_marginHorizontal="16dp"/>
+                <!-- Spinner con imagen del perro -->
+                <Spinner
+                    android:id="@+id/nombreperro"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:minWidth="150dp"
+                    style="@style/CustomSpinner"/>
 
-            <!-- Foto de perfil del usuario -->
-            <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/ivPerfilUsuario"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:scaleType="centerCrop"
-                app:shapeAppearanceOverlay="@style/CircularImageView"/>
-        </LinearLayout>
 
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"/>
+
+                <!-- Foto de perfil del usuario -->
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/ivPerfilUsuario"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:padding="1dp"
+                    android:scaleType="centerCrop"
+                    app:shapeAppearanceOverlay="@style/CircularImageView"
+                    app:strokeColor="@color/text_tertiary"
+                    app:strokeWidth="2dp" />
+
+            </LinearLayout>
+
+        </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
 
     <!-- Mapa -->
+
+    <!-- Barra de navegación inferior -->
     <fragment
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-    <!-- Barra de navegación inferior -->
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:layout_margin="16dp"
         app:cardCornerRadius="24dp"
-        app:cardElevation="8dp">
+        app:cardElevation="8dp"
+        app:cardBackgroundColor="@color/surface">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -86,19 +97,24 @@
                 <ImageView
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:src="@drawable/ic_home"/>
+                    android:src="@drawable/ic_home"
+                    app:tint="@color/text_tertiary"/>
 
                 <TextView
                     android:id="@+id/btnZonaText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Editar Zona Segura"
-                    android:textSize="12sp"/>
+                    android:textAppearance="@style/TextAppearance.App.Caption"
+                    android:textColor="@color/text_tertiary"
+                    android:gravity="center"
+                    android:lines="1"
+                    android:ellipsize="end"/>
             </LinearLayout>
 
             <!-- Botón Perfil Perro -->
             <LinearLayout
-                android:id="@+id/btnEditarPerro"
+                android:id="@+id/btnPerfilPerro"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -111,13 +127,15 @@
                 <ImageView
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:src="@drawable/ic_pet"/>
+                    android:src="@drawable/ic_pet"
+                    app:tint="@color/text_tertiary"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Perfil"
-                    android:textSize="12sp"/>
+                    android:textAppearance="@style/TextAppearance.App.Caption"
+                    android:textColor="@color/text_tertiary"/>
             </LinearLayout>
 
             <!-- Placeholder 1 -->
@@ -134,13 +152,15 @@
                 <ImageView
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:src="@drawable/ic_placeholder"/>
+                    android:src="@drawable/ic_placeholder"
+                    app:tint="@color/text_tertiary"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Próx."
-                    android:textSize="12sp"/>
+                    android:textAppearance="@style/TextAppearance.App.Caption"
+                    android:textColor="@color/text_tertiary"/>
             </LinearLayout>
 
             <!-- Placeholder 2 -->
@@ -157,13 +177,15 @@
                 <ImageView
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:src="@drawable/ic_placeholder"/>
+                    android:src="@drawable/ic_placeholder"
+                    app:tint="@color/text_tertiary"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Próx."
-                    android:textSize="12sp"/>
+                    android:textAppearance="@style/TextAppearance.App.Caption"
+                    android:textColor="@color/text_tertiary"/>
             </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>

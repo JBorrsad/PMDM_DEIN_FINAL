@@ -14,7 +14,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.switchmaterial.SwitchMaterial
-import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.yalantis.ucrop.UCrop
@@ -36,8 +35,7 @@ class EditarUsuario : AppCompatActivity() {
     private lateinit var etEdad: EditText
     private lateinit var switchEsPerro: SwitchMaterial
     private lateinit var tvDueño: TextView
-    private lateinit var tilDueño: TextInputLayout
-    private lateinit var spinnerDueño: AutoCompleteTextView
+    private lateinit var spinnerDueño: Spinner
     private lateinit var database: DatabaseReference
     private lateinit var auth: FirebaseAuth
     private var usuarioId: String? = null
@@ -70,7 +68,6 @@ class EditarUsuario : AppCompatActivity() {
         btnBack = findViewById(R.id.btnBack)
         switchEsPerro = findViewById(R.id.switchEsPerro)
         tvDueño = findViewById(R.id.tvDueño)
-        tilDueño = findViewById(R.id.tilDueño)
         spinnerDueño = findViewById(R.id.spinnerDueño)
 
         if (ivImagen.drawable == null) {
@@ -180,7 +177,7 @@ class EditarUsuario : AppCompatActivity() {
     private fun configurarSwitch() {
         switchEsPerro.setOnCheckedChangeListener { _, isChecked ->
             tvDueño.visibility = if (isChecked) View.VISIBLE else View.GONE
-            tilDueño.visibility = if (isChecked) View.VISIBLE else View.GONE
+            spinnerDueño.visibility = if (isChecked) View.VISIBLE else View.GONE
 
             if (isChecked) {
                 cargarListaDueños()
@@ -205,13 +202,28 @@ class EditarUsuario : AppCompatActivity() {
 
                     val adapter = ArrayAdapter(
                         this@EditarUsuario,
-                        android.R.layout.simple_dropdown_item_1line,
+                        android.R.layout.simple_spinner_item,
                         dueños.map { it.second }
                     )
+                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                    spinnerDueño.adapter = adapter
 
-                    spinnerDueño.setAdapter(adapter)
-                    spinnerDueño.setOnItemClickListener { _, _, position, _ ->
-                        dueñoSeleccionadoId = dueños[position].first
+                    spinnerDueño.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                        override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                            dueñoSeleccionadoId = dueños[position].first
+                        }
+
+                        override fun onNothingSelected(parent: AdapterView<*>?) {
+                            dueñoSeleccionadoId = null
+                        }
+                    }
+
+                    // Si hay un dueño seleccionado previamente, seleccionarlo
+                    if (dueñoSeleccionadoId != null) {
+                        val index = dueños.indexOfFirst { it.first == dueñoSeleccionadoId }
+                        if (index != -1) {
+                            spinnerDueño.setSelection(index)
+                        }
                     }
                 }
 
@@ -253,13 +265,12 @@ class EditarUsuario : AppCompatActivity() {
 
                         if (isPerro) {
                             tvDueño.visibility = View.VISIBLE
-                            tilDueño.visibility = View.VISIBLE
-                            cargarListaDueños()
+                            spinnerDueño.visibility = View.VISIBLE
 
                             val dueñoId = snapshot.child("dueñoId").getValue(String::class.java)
                             if (dueñoId != null) {
                                 dueñoSeleccionadoId = dueñoId
-                                cargarDatosDueño(dueñoId)
+                                cargarListaDueños()
                             }
                         }
                     }
@@ -269,22 +280,6 @@ class EditarUsuario : AppCompatActivity() {
                     }
                 })
         }
-    }
-
-    private fun cargarDatosDueño(dueñoId: String) {
-        database.child("users").child(dueñoId)
-            .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val nombre = snapshot.child("nombre").getValue(String::class.java) ?: ""
-                    val apellidos = snapshot.child("apellidos").getValue(String::class.java) ?: ""
-                    val nombreCompleto = "$nombre $apellidos"
-                    spinnerDueño.setText(nombreCompleto, false)
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    // Manejar error
-                }
-            })
     }
 
     private fun configurarBotones() {

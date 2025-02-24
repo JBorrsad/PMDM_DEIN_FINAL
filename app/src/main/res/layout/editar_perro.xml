@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="@color/background"
     tools:context=".EditarPerro">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/white"
+        android:background="@color/background"
         android:elevation="0dp">
 
         <androidx.appcompat.widget.Toolbar
@@ -27,16 +28,15 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Volver"
                 android:padding="12dp"
-                app:srcCompat="@drawable/back_16" />
+                app:srcCompat="@drawable/ic_back_arrow"
+                app:tint="@color/text_tertiary"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
+                android:layout_gravity="center"
                 android:text="Editar perfil"
-                android:textColor="@color/black"
-                android:textSize="20sp"
-                android:textStyle="bold" />
+                android:textAppearance="@style/TextAppearance.App.H3" />
 
         </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
@@ -51,7 +51,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="24dp">
 
             <FrameLayout
                 android:layout_width="wrap_content"
@@ -65,7 +65,7 @@
                     android:padding="1dp"
                     android:scaleType="centerCrop"
                     app:shapeAppearanceOverlay="@style/CircularImageView"
-                    app:strokeColor="@color/black"
+                    app:strokeColor="@color/text_tertiary"
                     app:strokeWidth="2dp" />
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -75,247 +75,259 @@
                     android:layout_gravity="end|bottom"
                     android:contentDescription="Editar foto"
                     app:fabSize="mini"
+                    app:tint="@color/white"
+                    app:strokeColor="@color/text_tertiary"
+                    app:backgroundTint="@color/button_primary"
                     app:srcCompat="@drawable/edit"/>
             </FrameLayout>
 
-            <TextView
-                android:id="@+id/tvNombreMascota"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="16dp"
-                android:text="Nombremascota "
-                android:textSize="24sp"
-                android:textStyle="bold"/>
-
-            <TextView
-                android:id="@+id/tvTipoRaza"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="4dp"
-                android:text="Raza"
-                android:textColor="@android:color/darker_gray"/>
-
-            <TextView
+            <!-- Grupo de datos básicos -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:text="Appearance and distinctive signs"
-                android:textStyle="bold"
-                android:textSize="16sp"/>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginTop="16dp">
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/grey_200"
+                app:cardBackgroundColor="@color/white">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="8dp">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Nombre"/>
-
-                    <TextView
-                        android:id="@+id/tvNombre"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="nombremascota"
-                        android:textStyle="bold"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="8dp">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Raza"/>
-
-                    <TextView
-                        android:id="@+id/tvRaza"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Razamascota"
-                        android:textStyle="bold"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="8dp">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Peso"/>
-
-                    <TextView
-                        android:id="@+id/tvPeso"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="6 kg"
-                        android:textStyle="bold"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="8dp">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Edad"/>
-
-                    <TextView
-                        android:id="@+id/tvEdad"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="6 años"
-                        android:textStyle="bold"/>
-                </LinearLayout>
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginTop="16dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="16dp">
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_calendar"
-                        android:layout_marginEnd="16dp"/>
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:background="@color/white">
 
                     <LinearLayout
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="16dp">
 
                         <TextView
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:text="Fecha de nacimiento"/>
+                            android:layout_weight="1"
+                            android:text="Nombre"/>
 
-                        <TextView
-                            android:id="@+id/tvFechaNacimiento"
+                        <EditText
+                            android:id="@+id/tvNombreMascota"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="fecha"
-                            android:textColor="@android:color/darker_gray"/>
+                            android:background="@null"
+                            android:textStyle="bold"
+                            android:textSize="14sp"
+                            android:minWidth="120dp"
+                            android:gravity="end"/>
                     </LinearLayout>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_home"
-                        android:layout_marginEnd="16dp"/>
 
                     <LinearLayout
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="16dp">
 
                         <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Raza"/>
+
+                        <EditText
+                            android:id="@+id/tvTipoRaza"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Fecha de adopción"/>
+                            android:background="@null"
+                            android:textStyle="bold"
+                            android:textSize="14sp"
+                            android:minWidth="120dp"
+                            android:gravity="end"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="16dp">
 
                         <TextView
-                            android:id="@+id/tvFechaAdopcion"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Peso"/>
+
+                        <EditText
+                            android:id="@+id/tvPeso"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="fecha"
-                            android:textColor="@android:color/darker_gray"/>
+                            android:background="@null"
+                            android:textStyle="bold"
+                            android:textSize="14sp"
+                            android:minWidth="120dp"
+                            android:gravity="end"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Edad"/>
+
+                        <TextView
+                            android:id="@+id/tvEdad"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textStyle="bold"
+                            android:textSize="14sp"
+                            android:minWidth="120dp"
+                            android:gravity="end"/>
                     </LinearLayout>
                 </LinearLayout>
-            </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-            <TextView
+            <!-- Grupo de fechas -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:text="Nombre del dueño"
-                android:textStyle="bold"
-                android:textSize="16sp"/>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginTop="16dp">
-
-                <com.google.android.material.imageview.ShapeableImageView
-                    android:id="@+id/ivImagenDueno"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_marginEnd="16dp"
-                    app:shapeAppearanceOverlay="@style/CircularImageView"/>
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/grey_200"
+                app:cardBackgroundColor="@color/white">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:background="@color/white">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="16dp">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_calendar"
+                            android:layout_marginEnd="16dp"
+                            app:tint="@color/text_primary"/>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Fecha de nacimiento"/>
+
+                            <EditText
+                                android:id="@+id/tvFechaNacimiento"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@null"
+                                android:focusable="false"
+                                android:clickable="true"
+                                android:textStyle="bold"
+                                android:minWidth="120dp"
+                                android:gravity="end"/>
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_home"
+                            android:layout_marginEnd="16dp"
+                            app:tint="@color/text_primary"/>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Fecha de adopción"/>
+
+                            <EditText
+                                android:id="@+id/tvFechaAdopcion"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@null"
+                                android:focusable="false"
+                                android:clickable="true"
+                                android:textStyle="bold"
+                                android:minWidth="120dp"
+                                android:gravity="end"/>
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Información del dueño -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/grey_200"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:background="@color/white">
 
                     <TextView
-                        android:id="@+id/tvNombreDueno"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Dueño"
-                        android:textStyle="bold"/>
+                        android:textStyle="bold"
+                        android:textSize="16sp"
+                        android:layout_marginBottom="16dp"/>
 
-                    <TextView
-                        android:id="@+id/tvLoginDueno"
-                        android:layout_width="wrap_content"
+                    <Spinner
+                        android:id="@+id/spinnerDueno"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="login del dueño"
-                        android:textColor="@android:color/darker_gray"/>
+                        android:layout_marginBottom="8dp"/>
+
                 </LinearLayout>
-            </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnGuardarUsuario"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
-                android:padding="12dp"
                 android:text="Guardar cambios"
-                android:textAllCaps="false"
-                app:cornerRadius="8dp"/>
+                style="@style/Widget.App.Button"/>
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
