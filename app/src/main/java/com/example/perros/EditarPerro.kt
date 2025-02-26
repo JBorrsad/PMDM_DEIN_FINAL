@@ -1,5 +1,6 @@
 package com.example.perros
 
+
 import android.app.Dialog
 import android.content.Intent
 import android.graphics.Bitmap
@@ -21,6 +22,35 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
+/**
+ * Actividad para editar los datos de un perro existente.
+ *
+ * Esta actividad permite:
+ * - Modificar información básica del perro (nombre, raza, peso)
+ * - Actualizar fechas (nacimiento y adopción)
+ * - Cambiar la imagen del perro
+ * - Asignar o cambiar el dueño
+ *
+ * Estructura de datos en Firebase:
+ * ```
+ * users/
+ *   └── {perroId}/
+ *         ├── nombre: String
+ *         ├── raza: String
+ *         ├── peso: Double
+ *         ├── fechaNacimiento: Long
+ *         ├── fechaAdopcion: Long
+ *         ├── dueñoId: String
+ *         └── imagenBase64: String?
+ * ```
+ *
+ * @property database Referencia a Firebase Realtime Database
+ * @property auth Instancia de Firebase Authentication
+ * @property perroId ID del perro a editar
+ *
+ * @see PerfilPerro actividad que muestra el perfil del perro
+ * @see UCrop biblioteca para recortar imágenes
+ */
 class EditarPerro : AppCompatActivity() {
 
     private lateinit var btnGuardar: Button
@@ -40,6 +70,18 @@ class EditarPerro : AppCompatActivity() {
     private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     private var selectedBirthDate: Date? = null
     private var selectedAdoptionDate: Date? = null
+
+    private val imagePickerLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK && result.data != null) {
+                val selectedImageUri: Uri? = result.data!!.data
+                if (selectedImageUri != null) {
+                    iniciarUCrop(selectedImageUri)
+                } else {
+                    Toast.makeText(this, "Error al seleccionar imagen", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,7 +106,7 @@ class EditarPerro : AppCompatActivity() {
         tvFechaAdopcion = findViewById(R.id.tvFechaAdopcion)
         spinnerDueno = findViewById(R.id.spinnerDueno)
 
-        // Configurar los EditText como no focusables pero clickeables
+        // Configurar los EditText de fechas como no focusables pero clickeables
         tvFechaNacimiento.isFocusable = false
         tvFechaNacimiento.isClickable = true
         tvFechaAdopcion.isFocusable = false
@@ -167,7 +209,7 @@ class EditarPerro : AppCompatActivity() {
         updateDayPicker(dayPicker, yearPicker.value, monthPicker.value)
         dayPicker.value = calendar.get(Calendar.DAY_OF_MONTH)
 
-        // Listeners para actualizar días cuando cambia mes o año
+        // Actualizar días al cambiar año o mes
         yearPicker.setOnValueChangedListener { _, _, newVal ->
             updateDayPicker(dayPicker, newVal, monthPicker.value)
         }
@@ -175,7 +217,7 @@ class EditarPerro : AppCompatActivity() {
             updateDayPicker(dayPicker, yearPicker.value, newVal)
         }
 
-        // Botones
+        // Configurar botones del diálogo
         dialog.findViewById<Button>(R.id.btnAceptar).setOnClickListener {
             calendar.set(yearPicker.value, monthPicker.value, dayPicker.value)
             if (isNacimiento) {
@@ -346,20 +388,6 @@ class EditarPerro : AppCompatActivity() {
 
     // -------------------- Funcionalidad de manejo de imagen --------------------
 
-    // Launcher para seleccionar la imagen
-    private val imagePickerLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == RESULT_OK && result.data != null) {
-                val selectedImageUri: Uri? = result.data!!.data
-                if (selectedImageUri != null) {
-                    iniciarUCrop(selectedImageUri)
-                } else {
-                    Toast.makeText(this, "Error al seleccionar imagen", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-
-    // Inicia UCrop para recortar la imagen seleccionada
     private fun iniciarUCrop(sourceUri: Uri) {
         val destinationUri = Uri.fromFile(File(cacheDir, "cropped_image_dog.jpg"))
         UCrop.of(sourceUri, destinationUri)
@@ -368,7 +396,6 @@ class EditarPerro : AppCompatActivity() {
             .start(this)
     }
 
-    // Manejo del resultado de UCrop
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == UCrop.REQUEST_CROP && resultCode == RESULT_OK) {
@@ -386,7 +413,6 @@ class EditarPerro : AppCompatActivity() {
         }
     }
 
-    // Convierte un Uri a Bitmap
     private fun uriToBitmap(uri: Uri): Bitmap? {
         return try {
             val inputStream = contentResolver.openInputStream(uri)
@@ -397,7 +423,6 @@ class EditarPerro : AppCompatActivity() {
         }
     }
 
-    // Guarda la imagen recortada en Firebase bajo el nodo del perro
     private fun guardarImagenRecortadaEnFirebase(bitmap: Bitmap) {
         perroId?.let { id ->
             val baos = ByteArrayOutputStream()

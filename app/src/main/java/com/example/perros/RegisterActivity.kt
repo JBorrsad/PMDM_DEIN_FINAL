@@ -9,6 +9,25 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
+/**
+ * Actividad para el registro de nuevos usuarios.
+ *
+ * Esta actividad permite crear una nueva cuenta de usuario utilizando:
+ * - Firebase Authentication para la autenticación
+ * - Firestore para almacenar datos adicionales del usuario
+ *
+ * Estructura de datos en Firestore:
+ * ```
+ * users/
+ *   └── {userId}/
+ *         ├── uid: String
+ *         ├── name: String
+ *         └── email: String
+ * ```
+ *
+ * @property auth Instancia de Firebase Authentication
+ * @property db Instancia de Firebase Firestore
+ */
 class RegisterActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
@@ -40,6 +59,18 @@ class RegisterActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Registra un nuevo usuario en Firebase.
+     *
+     * Este método:
+     * 1. Crea una cuenta en Firebase Auth
+     * 2. Almacena datos adicionales en Firestore
+     * 3. Redirige al login en caso de éxito
+     *
+     * @param name Nombre del usuario
+     * @param email Email para la cuenta
+     * @param password Contraseña para la cuenta
+     */
     private fun registerUser(name: String, email: String, password: String) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->

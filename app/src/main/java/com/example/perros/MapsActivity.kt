@@ -29,16 +29,64 @@ import com.google.android.gms.maps.model.*
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.google.android.material.imageview.ShapeableImageView
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 
+/**
+ * Actividad principal del mapa que gestiona el monitoreo y seguimiento de perros.
+ *
+ * Esta actividad proporciona una interfaz completa para:
+ * - Visualizar la ubicación en tiempo real de los perros
+ * - Gestionar zonas seguras (geofencing) para cada perro
+ * - Monitorear cuando un perro sale de su zona segura
+ * - Cambiar entre diferentes perros registrados
+ * - Acceder a perfiles de perros y usuarios
+ *
+ * Estructura de datos en Firebase:
+ * ```
+ * locations/
+ *   ├── {userId}/          # Ubicación del dueño
+ *   │     ├── latitude: Double
+ *   │     └── longitude: Double
+ *   └── {perroId}/         # Ubicación del perro
+ *         ├── latitude: Double
+ *         └── longitude: Double
+ *
+ * users/
+ *   └── {perroId}/
+ *         ├── nombre: String
+ *         ├── imagenBase64: String?
+ *         └── zonaSegura/
+ *               ├── latitud: Double
+ *               ├── longitud: Double
+ *               └── radio: Int
+ * ```
+ *
+ * @property mMap Instancia del mapa de Google
+ * @property database Referencia a Firebase Realtime Database
+ * @property auth Instancia de Firebase Authentication
+ * @property listaPerros Lista de perros asociados al usuario actual
+ * @property perroSeleccionadoId ID del perro actualmente seleccionado
+ * @property handler Manejador para verificaciones periódicas de zona segura
+ *
+ * @see DogItem clase que representa los datos de un perro
+ * @see ActivityMonitor para el registro de actividad física
+ */
 @Suppress("DEPRECATION")
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
-    // Handler y Runnable para verificar periódicamente si el perro está fuera
+    /**
+     * Handler y Runnable para verificar periódicamente si el perro está fuera de la zona segura.
+     * Se ejecuta cada 5 segundos y envía notificaciones si el perro está fuera de la zona.
+     */
     private val handler = Handler()
     private val comprobacionZonaSeguraRunnable = object : Runnable {
         override fun run() {
-            comprobarYNotificarZonaInsegura() // Notifica cada vez que se verifica
-            handler.postDelayed(this, 5000)   // Repetir cada 5 segundos
+            comprobarYNotificarZonaInsegura()
+            handler.postDelayed(this, 5000)
         }
     }
 
@@ -74,6 +122,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private var zonaCentroLng: Double? = null
     private var zonaRadio: Double = 0.0
 
+    /**
+     * Inicializa y configura todos los componentes necesarios de la actividad.
+     *
+     * Realiza las siguientes tareas:
+     * - Inicializa Firebase Auth y Database
+     * - Configura el cliente de ubicación
+     * - Inicializa las vistas y listeners
+     * - Carga la lista de perros del usuario
+     *
+     * @param savedInstanceState Estado guardado de la actividad
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
@@ -115,6 +174,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    /**
+     * Configura el cliente de ubicación.
+     *
+     * Establece los parámetros para la actualización de ubicación:
+     * - Intervalo de actualización: 5 segundos
+     * - Intervalo más rápido: 2 segundos
+     * - Prioridad: Alta precisión
+     */
     private fun setupLocationRequest() {
         locationRequest = LocationRequest.create().apply {
             interval = 5000
@@ -123,6 +190,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    /**
+     * Configura el callback para recibir actualizaciones de ubicación.
+     *
+     * Cuando se recibe una nueva ubicación:
+     * - Se actualiza la posición del dueño en Firebase
+     * - Se mantiene un registro de la última ubicación conocida
+     */
     private fun setupLocationCallback() {
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
@@ -166,6 +240,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    /**
+     * Configura el mapa cuando está listo para ser usado.
+     * Habilita la ubicación del usuario y configura los listeners necesarios.
+     *
+     * @param googleMap Instancia del mapa de Google
+     */
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
         enableMyLocation()
@@ -178,6 +258,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    /**
+     * Habilita la ubicación en tiempo real en el mapa.
+     *
+     * Este método:
+     * - Verifica los permisos de ubicación necesarios
+     * - Activa el botón "Mi Ubicación" en el mapa
+     * - Inicia las actualizaciones de ubicación si los permisos están concedidos
+     */
     private fun enableMyLocation() {
         if (ContextCompat.checkSelfPermission(
                 this, Manifest.permission.ACCESS_FINE_LOCATION
@@ -197,6 +285,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    /**
+     * Inicia las actualizaciones periódicas de ubicación.
+     *
+     * Solo se ejecuta si los permisos necesarios están concedidos:
+     * - ACCESS_FINE_LOCATION
+     * - ACCESS_COARSE_LOCATION
+     */
     private fun startLocationUpdates() {
         if (ContextCompat.checkSelfPermission(
                 this, Manifest.permission.ACCESS_FINE_LOCATION
@@ -249,8 +344,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     /**
-     * Carga la lista de perros pertenecientes al usuario actual (dueñoId = usuarioId)
-     * y rellena el spinner con su nombre e imagen.
+     * Carga y muestra la lista de perros asociados al usuario actual.
+     *
+     * Este método:
+     * - Consulta Firebase para obtener los perros del usuario
+     * - Filtra solo las entradas marcadas como perros (isPerro = true)
+     * - Actualiza el spinner con la lista de perros
+     * - Carga las imágenes de perfil de los perros
+     * - Configura el perro seleccionado por defecto
      */
     private fun cargarPerrosUsuario() {
         val usuarioId = auth.currentUser?.uid ?: return
@@ -312,7 +413,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
     }
 
-    // Lee la zona segura en "users/{perroId}/zonaSegura" y dibuja el círculo
+    /**
+     * Muestra y actualiza la zona segura del perro seleccionado.
+     *
+     * Dibuja un círculo en el mapa que representa:
+     * - Centro de la zona segura
+     * - Radio de la zona permitida
+     * - Color según si el perro está dentro (verde) o fuera (rojo)
+     *
+     * Los datos de la zona se obtienen de Firebase:
+     * users/{perroId}/zonaSegura/{latitud,longitud,radio}
+     */
     private fun mostrarZonaSegura() {
         if (perroSeleccionadoId.isNullOrEmpty()) return
         database.child("users").child(perroSeleccionadoId!!).child("zonaSegura")
@@ -341,7 +452,18 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             })
     }
 
-    // Lee la ubicación del perro en "locations/{perroId}" y actualiza el marcador
+    /**
+     * Actualiza la ubicación del perro en tiempo real y su representación en el mapa.
+     *
+     * Este método:
+     * - Escucha cambios en la ubicación del perro en Firebase
+     * - Actualiza el marcador en el mapa con la nueva posición
+     * - Carga y aplica la imagen del perro al marcador
+     * - Verifica si el perro está dentro de su zona segura
+     *
+     * @see createCustomMarker para la creación del marcador personalizado
+     * @see actualizarColorZonaSegura para la verificación de la zona
+     */
     private fun mostrarUbicacionPerro() {
         if (perroSeleccionadoId.isNullOrEmpty()) return
         eliminarDogLocationListener()
@@ -408,6 +530,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    /**
+     * Guarda la zona segura definida para el perro actual en Firebase.
+     * Actualiza la interfaz de usuario después de guardar.
+     */
     @SuppressLint("SetTextI18n")
     private fun guardarZonaSegura() {
         if (perroSeleccionadoId.isNullOrEmpty() || zonaSeguraCircle == null) {
@@ -431,6 +557,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
     }
 
+    /**
+     * Activa el modo de edición de zona segura para el perro seleccionado.
+     *
+     * Este método:
+     * - Verifica que haya un perro seleccionado
+     * - Cambia la interfaz al modo de edición
+     * - Centra el mapa en la zona segura actual si existe
+     * - Prepara el mapa para recibir clicks y definir la nueva zona
+     */
     private fun activarModoEdicionZonaSegura() {
         if (perroSeleccionadoId.isNullOrEmpty()) {
             Toast.makeText(this, "Selecciona un perro primero", Toast.LENGTH_SHORT).show()
@@ -455,6 +590,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             })
     }
 
+    /**
+     * Define una nueva zona segura en la ubicación especificada.
+     *
+     * Crea un círculo en el mapa con:
+     * - Centro en la posición tocada
+     * - Radio fijo de 100 metros
+     * - Color verde para indicar que es una zona nueva
+     *
+     * @param latLng Coordenadas del centro de la nueva zona segura
+     */
     private fun definirZonaSegura(latLng: LatLng) {
         val radio = 100.0
         zonaSeguraCircle?.remove()
@@ -500,8 +645,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     /**
-     * Verifica la distancia del perro cada 5s y, si está fuera, manda notificación
-     * (sin filtro para repetir notificaciones).
+     * Verifica si el perro está fuera de la zona segura y envía notificaciones.
+     * Se ejecuta periódicamente a través del handler.
      */
     private fun comprobarYNotificarZonaInsegura() {
         if (zonaSeguraCircle == null || dogMarker == null ||
@@ -564,6 +709,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    /**
+     * Maneja el resultado de la solicitud de permisos de ubicación.
+     *
+     * Si los permisos son concedidos, habilita la funcionalidad de ubicación.
+     * 
+     * @param requestCode Código de la solicitud de permisos
+     * @param permissions Array de permisos solicitados
+     * @param grantResults Resultados de la solicitud de permisos
+     */
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_LOCATION_PERMISSION) {
@@ -573,11 +727,25 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    /**
+     * Se llama cuando la actividad entra en estado de pausa.
+     *
+     * Detiene las actualizaciones de ubicación para conservar batería
+     * cuando la aplicación no está en primer plano.
+     */
     override fun onPause() {
         super.onPause()
         fusedLocationClient.removeLocationUpdates(locationCallback)
     }
 
+    /**
+     * Se llama cuando la actividad está siendo destruida.
+     *
+     * Realiza limpieza de recursos:
+     * - Elimina los listeners de ubicación
+     * - Detiene el handler de comprobación de zona segura
+     * - Limpia las referencias a Firebase
+     */
     override fun onDestroy() {
         super.onDestroy()
         eliminarDogLocationListener()
@@ -592,7 +760,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     /**
-     * Crea un icono circular personalizado para el marcador del perro.
+     * Crea un marcador personalizado para representar al perro en el mapa.
+     *
+     * Características del marcador:
+     * - Forma circular con la imagen del perro
+     * - Efecto de sombra para mejor visibilidad
+     * - Tamaño optimizado para la visualización en el mapa
+     *
+     * @param context Contexto de la aplicación
+     * @param bitmap Imagen del perro a usar en el marcador
+     * @return BitmapDescriptor con el icono personalizado
      */
     private fun createCustomMarker(context: Context, bitmap: Bitmap): BitmapDescriptor {
         val markerSize = 150

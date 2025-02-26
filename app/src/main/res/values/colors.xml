@@ -38,4 +38,6 @@
     <!-- Colores para botones -->
     <color name="button_primary">@color/colorPrimary</color>
     <color name="button_text">@color/white</color>
+    <color name="button_success">#4CAF50</color>
+
 </resources>

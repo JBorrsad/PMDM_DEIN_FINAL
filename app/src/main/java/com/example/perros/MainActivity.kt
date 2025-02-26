@@ -16,12 +16,52 @@ import com.google.firebase.messaging.FirebaseMessaging
 import android.content.SharedPreferences
 import java.util.Date
 
+/**
+ * Actividad principal que maneja la autenticación y el inicio de sesión de usuarios.
+ *
+ * Esta actividad es el punto de entrada de la aplicación y proporciona las siguientes funcionalidades:
+ * - Autenticación de usuarios mediante Firebase Auth
+ * - Control de sesión con tiempo límite
+ * - Gestión de permisos de notificaciones
+ * - Suscripción a notificaciones de geovallas
+ *
+ * La actividad implementa un sistema de timeout de sesión que cierra automáticamente
+ * la sesión después de un período de inactividad.
+ *
+ * Estructura de datos en Firebase:
+ * ```
+ * users/
+ *   ├── {userId}/
+ *   │     ├── nombre: String
+ *   │     ├── email: String
+ *   │     └── imagenBase64: String?
+ * ```
+ *
+ * @property auth Instancia de FirebaseAuth para manejar la autenticación
+ * @property sharedPreferences Almacenamiento local para datos de sesión y preferencias
+ * @property SESSION_TIMEOUT Tiempo máximo de sesión en milisegundos (5 minutos)
+ *
+ * @see MapsActivity actividad que se inicia tras un login exitoso
+ * @see RegisterActivity actividad para registrar nuevos usuarios
+ */
 class MainActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var sharedPreferences: SharedPreferences
     private val SESSION_TIMEOUT = 5 * 60 * 1000 // 5 minutos en milisegundos
 
+    /**
+     * Inicializa la actividad y configura la interfaz de usuario.
+     *
+     * Este método realiza las siguientes tareas:
+     * - Inicializa Firebase Auth
+     * - Configura las SharedPreferences
+     * - Verifica si existe una sesión activa
+     * - Configura los listeners de los botones
+     * - Solicita permisos de notificación si es necesario
+     *
+     * @param savedInstanceState Estado guardado de la actividad
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -85,6 +125,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Verifica el estado de la sesión cuando la actividad vuelve a primer plano.
+     *
+     * Comprueba si:
+     * - Hay un usuario autenticado
+     * - La sesión no ha expirado
+     * Si la sesión ha expirado, cierra la sesión y limpia las preferencias.
+     */
     override fun onResume() {
         super.onResume()
         if (auth.currentUser != null) {
@@ -102,6 +150,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Solicita permisos de notificación al usuario.
+     *
+     * Este método solo se ejecuta en Android 13 (API 33) o superior, ya que
+     * es cuando se introdujo el permiso POST_NOTIFICATIONS.
+     * En versiones anteriores, las notificaciones no requieren permiso explícito.
+     */
     private fun solicitarPermisosNotificacion() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
@@ -119,6 +174,14 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+    /**
+     * Suscribe al dispositivo al tema de notificaciones de geovallas.
+     *
+     * Utiliza Firebase Cloud Messaging para suscribirse al tema 'geofence_alert',
+     * que permite recibir notificaciones cuando un perro sale de su zona segura.
+     *
+     * @see MapsActivity.comprobarYNotificarZonaInsegura donde se generan las notificaciones
+     */
     private fun suscribirNotificaciones() {
         FirebaseMessaging.getInstance().subscribeToTopic("geofence_alert")
             .addOnCompleteListener { task ->

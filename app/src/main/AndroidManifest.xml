@@ -12,6 +12,8 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.NFC" />
+
 
     <application
         android:allowBackup="true"
@@ -25,7 +27,7 @@
         tools:targetApi="31">
 
         <receiver
-            android:name=".GeofenceBroadcastReceiver"
+            android:name=".GeofenceBroadcastReciver"
             android:enabled="true"
             android:exported="false">
             <intent-filter>
@@ -47,7 +49,9 @@
         <activity android:name=".MapsActivity" />
         <activity android:name=".PerfilUsuario" />
         <activity android:name=".EditarUsuario" />
-        <activity android:name=".EditarPerro" />
+        <activity android:name=".EditarPerro"
+            android:launchMode="singleTop"
+            android:exported="true"/>
         <activity android:name=".PerfilPerro" />
 
         <activity

@@ -12,6 +12,31 @@ import com.google.firebase.database.*
 import java.text.SimpleDateFormat
 import java.util.*
 
+/**
+ * Actividad que muestra y gestiona el perfil del usuario.
+ *
+ * Esta actividad permite:
+ * - Ver información personal del usuario
+ * - Editar el perfil
+ * - Cerrar sesión
+ * - Navegar de vuelta al mapa
+ *
+ * Estructura de datos en Firebase:
+ * ```
+ * users/
+ *   └── {userId}/
+ *         ├── nombre: String
+ *         ├── apellidos: String
+ *         ├── email: String
+ *         ├── fechaNacimiento: String
+ *         ├── isPerro: Boolean
+ *         └── imagenBase64: String?
+ * ```
+ *
+ * @property database Referencia a Firebase Realtime Database
+ * @property auth Instancia de Firebase Authentication
+ * @property usuarioId ID del usuario actual
+ */
 class PerfilUsuario : AppCompatActivity() {
 
     private lateinit var ivFoto: ImageView
@@ -31,6 +56,11 @@ class PerfilUsuario : AppCompatActivity() {
     private var usuarioId: String? = null
     private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
 
+    /**
+     * Inicializa la actividad y carga los datos del perfil del usuario.
+     *
+     * @param savedInstanceState Estado guardado de la actividad
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.perfil_usuario)
@@ -61,6 +91,14 @@ class PerfilUsuario : AppCompatActivity() {
         configurarBotones()
     }
 
+    /**
+     * Configura los listeners de los botones.
+     *
+     * Configura:
+     * - Botón de retroceso: vuelve al mapa
+     * - Botón de cerrar sesión: cierra la sesión y vuelve al login
+     * - Botón de edición: abre la actividad de edición del perfil
+     */
     private fun configurarBotones() {
         btnBack.setOnClickListener {
             val intent = Intent(this, MapsActivity::class.java)
@@ -81,6 +119,15 @@ class PerfilUsuario : AppCompatActivity() {
         }
     }
 
+    /**
+     * Carga el perfil del usuario desde Firebase.
+     *
+     * Obtiene y muestra:
+     * - Datos personales
+     * - Edad calculada
+     * - Estado (perro/humano)
+     * - Imagen de perfil
+     */
     private fun cargarPerfil() {
         usuarioId?.let { id ->
             Log.d("PerfilUsuario", "Cargando datos para usuario ID: $id")
@@ -132,6 +179,12 @@ class PerfilUsuario : AppCompatActivity() {
         }
     }
 
+    /**
+     * Calcula la edad del usuario en años.
+     *
+     * @param fechaNacimiento Fecha de nacimiento del usuario
+     * @return Edad en años
+     */
     private fun calcularEdad(fechaNacimiento: Date): Int {
         val hoy = Calendar.getInstance()
         val nacimiento = Calendar.getInstance()
@@ -146,6 +199,12 @@ class PerfilUsuario : AppCompatActivity() {
         return edad
     }
 
+    /**
+     * Carga la imagen de perfil del usuario desde Firebase.
+     *
+     * Obtiene la imagen en Base64, la decodifica y la muestra.
+     * Si no hay imagen o hay error, muestra una imagen por defecto.
+     */
     private fun cargarImagenDesdeFirebase() {
         usuarioId?.let { id ->
             database.child("users").child(id).child("imagenBase64")
@@ -169,6 +228,14 @@ class PerfilUsuario : AppCompatActivity() {
         }
     }
 
+    /**
+     * Muestra la imagen por defecto en el ImageView.
+     *
+     * Se utiliza cuando:
+     * - No hay imagen en Firebase
+     * - Hay error al cargar la imagen
+     * - La imagen está corrupta
+     */
     private fun mostrarImagenPorDefecto() {
         ivFoto.setImageResource(R.drawable.img)
     }

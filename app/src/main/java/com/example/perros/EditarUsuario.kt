@@ -22,6 +22,36 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
+/**
+ * Actividad para editar el perfil de usuario.
+ *
+ * Esta actividad permite:
+ * - Modificar datos personales (nombre, apellidos)
+ * - Actualizar fecha de nacimiento
+ * - Cambiar imagen de perfil
+ * - Configurar tipo de usuario (perro/humano)
+ * - Asignar dueño si es un perro
+ *
+ * Estructura de datos en Firebase:
+ * ```
+ * users/
+ *   └── {userId}/
+ *         ├── nombre: String
+ *         ├── apellidos: String
+ *         ├── email: String
+ *         ├── fechaNacimiento: String
+ *         ├── isPerro: Boolean
+ *         ├── dueñoId: String?
+ *         └── imagenBase64: String?
+ * ```
+ *
+ * @property database Referencia a Firebase Realtime Database
+ * @property auth Instancia de Firebase Authentication
+ * @property usuarioId ID del usuario actual
+ *
+ * @see PerfilUsuario actividad que muestra el perfil
+ * @see UCrop biblioteca para recortar imágenes
+ */
 class EditarUsuario : AppCompatActivity() {
 
     private lateinit var btnGuardar: Button

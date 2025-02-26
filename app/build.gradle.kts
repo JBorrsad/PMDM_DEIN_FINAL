@@ -1,24 +1,24 @@
+import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.dokka.DokkaConfiguration.Visibility
+import java.net.URL
+
 plugins {
-    alias(libs.plugins.androidApplication)
-    alias(libs.plugins.jetbrainsKotlinAndroid)
-    id("com.google.gms.google-services") // Firebase
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    id("com.google.gms.google-services")
+    id("org.jetbrains.dokka")
 }
 
 android {
     namespace = "com.example.perros"
-    compileSdk = 35 // ✅ Mantener actualizado con la última versión de Android
-
-    viewBinding {
-        enable = true
-    }
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.example.perros"
         minSdk = 26
-        targetSdk = 34 // ✅ Mejor mantenerlo igual que compileSdk
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -40,44 +40,62 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+
+    buildFeatures {
+        viewBinding = true
+    }
 }
 
 dependencies {
-
-
-    implementation("com.google.android.material:material:1.11.0") // Última versión de Material Design
-
-
-    // 🔥 UCrop (para recortar imágenes)
-    implementation("com.github.yalantis:ucrop:2.2.6")
-
-    // 🔥 Firebase (usando BOM para manejar versiones)
-    implementation(platform("com.google.firebase:firebase-bom:33.9.0")) // ❌ Eliminé la versión anterior
-    implementation("com.google.firebase:firebase-analytics-ktx")
-    implementation("com.google.firebase:firebase-database-ktx:21.0.0")
-    implementation("com.google.firebase:firebase-messaging-ktx:23.2.1")
-    implementation("com.google.firebase:firebase-auth-ktx")
-    implementation("com.google.firebase:firebase-firestore-ktx")
-
-    // 🔥 Google Maps y Localización
-    implementation("com.google.android.gms:play-services-maps:18.1.0")
-    implementation("com.google.android.gms:play-services-location:21.0.1")
-
-    // 🔥 AndroidX y Material Design
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
-    implementation(libs.androidx.activity)
-    implementation(libs.androidx.constraintlayout)
+    
+    // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:32.7.2"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-database-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("com.google.firebase:firebase-messaging-ktx")
+    
+    // Maps y Location
+    implementation(libs.play.services.maps)
+    implementation(libs.play.services.location)
 
-    // 🔥 Tests
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    // uCrop para recorte de imágenes
+    implementation("com.github.yalantis:ucrop:2.2.8")
+
+    // AndroidX
+    implementation("androidx.activity:activity-ktx:1.8.2")
+    implementation("androidx.fragment:fragment-ktx:1.6.2")
+
+    // Glide para cargar imágenes
+    implementation("com.github.bumptech.glide:glide:4.16.0")
 }
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17) // ✅ Mejor usar Java 17 en lugar de 11
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+// Configuración de Dokka para el módulo "app"
+tasks.withType<DokkaTask>().configureEach {
+    outputDirectory.set(layout.buildDirectory.dir("dokka/html").map { it.asFile })
+
+    dokkaSourceSets {
+        named("main") {
+            includes.from(rootProject.file("README.md"))
+            documentedVisibilities.set(setOf(
+                org.jetbrains.dokka.DokkaConfiguration.Visibility.PUBLIC,
+                org.jetbrains.dokka.DokkaConfiguration.Visibility.PROTECTED
+            ))
+            sourceLink {
+                localDirectory.set(file("src/main/java"))
+                remoteUrl.set(uri("https://github.com/tu-usuario/perros/blob/main/app/src/main/java").toURL())
+                remoteLineSuffix.set("#L")
+            }
+        }
     }
 }

@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">SoloBambas</string>
+    <string name="nfc_scanning">Escaneando…</string>
+    <string name="nfc_link">Vincular NFC</string>
+    <string name="nfc_linked">NFC vinculado</string>
+    <string name="nfc_not_supported">Este dispositivo no soporta NFC</string>
+    <string name="nfc_success">NFC vinculado correctamente</string>
+
 </resources>

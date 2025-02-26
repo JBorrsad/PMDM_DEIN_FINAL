@@ -8,8 +8,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
-    android:background="#F5F5F5"
-    tools:context=".CrearPerrosActivity">
+    android:background="#F5F5F5">
 
 
     <EditText
