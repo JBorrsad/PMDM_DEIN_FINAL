@@ -314,7 +314,7 @@ class EditarPerro : AppCompatActivity() {
 
     private fun configurarBotones() {
         btnBack.setOnClickListener {
-            finish()
+            volverAPerfilPerro()
         }
         val btnAdjuntarImagen = findViewById<FloatingActionButton>(R.id.btnAdjuntarImagen)
         btnAdjuntarImagen.setOnClickListener {
@@ -327,6 +327,18 @@ class EditarPerro : AppCompatActivity() {
         btnGuardar.setOnClickListener {
             guardarCambios()
         }
+    }
+
+    private fun volverAPerfilPerro() {
+        finish()
+        // Aplicar la animación de deslizamiento de izquierda a derecha
+        overridePendingTransition(R.anim.slide_right_to_left, R.anim.slide_left_to_right)
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        // Aplicar la animación de deslizamiento de izquierda a derecha
+        overridePendingTransition(R.anim.slide_right_to_left, R.anim.slide_left_to_right)
     }
 
     private fun guardarCambios() {
@@ -371,6 +383,8 @@ class EditarPerro : AppCompatActivity() {
                     intent.putExtra("perroId", perroId)
                     startActivity(intent)
                     finish()
+                    // Aplicar la animación de deslizamiento de izquierda a derecha
+                    overridePendingTransition(R.anim.slide_right_to_left, R.anim.slide_left_to_right)
                 }
                 .addOnFailureListener { error ->
                     Toast.makeText(this, "Error al actualizar: ${error.message}", Toast.LENGTH_SHORT).show()

@@ -116,6 +116,7 @@ class PerfilUsuario : AppCompatActivity() {
         btnEditar.setOnClickListener {
             val intent = Intent(this@PerfilUsuario, EditarUsuario::class.java)
             startActivity(intent)
+            overridePendingTransition(R.anim.slide_up, R.anim.slide_down)
         }
     }
 

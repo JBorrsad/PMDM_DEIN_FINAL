@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import kotlin.math.min
 import android.view.View
+import android.util.Log
 
 // Enumeración que define los niveles de calidad de imagen
 enum class ImageQuality(val quality: Int, val maxDimension: Int) {
@@ -45,11 +46,8 @@ object CoilImageCache {
     private var imageLoader: ImageLoader? = null
     private val diskCacheFolderName = "perros_images_cache"
     
-    // Tamaño máximo para la caché en disco (50MB)
-    private const val DISK_CACHE_SIZE = 50 * 1024 * 1024L
-    
-    // Tamaño para la caché en memoria (1/4 de la memoria disponible)
-    private val MEMORY_CACHE_SIZE = (Runtime.getRuntime().maxMemory() / 4).toInt()
+    // Tamaño máximo para la caché en disco (150MB)
+    private const val DISK_CACHE_SIZE = 150 * 1024 * 1024L
     
     // Registro de imágenes en caché (para evitar operaciones duplicadas)
     private val base64HashRegistry = ConcurrentHashMap<String, Boolean>()
@@ -64,7 +62,7 @@ object CoilImageCache {
             imageLoader = ImageLoader.Builder(context)
                 .memoryCache {
                     MemoryCache.Builder(context)
-                        .maxSizePercent(0.25) // Usar 25% de la memoria disponible
+                        .maxSizePercent(0.40) // Usar 40% de la memoria disponible
                         .build()
                 }
                 .diskCache {
@@ -76,7 +74,7 @@ object CoilImageCache {
                 // Configuración avanzada para mejor rendimiento
                 .respectCacheHeaders(false) // Ignorar cabeceras HTTP para la caché
                 .crossfade(true)
-                .crossfade(200) // Transición suave de 200ms
+                .crossfade(50) // Transición más rápida (50ms)
                 .build()
         }
         return imageLoader!!
@@ -150,134 +148,102 @@ fun ImageView.loadBase64Image(
     // Generar clave única para caché basada en el contenido
     val cacheKey = CoilImageCache.generateCacheKey(base64Image)
     
-    // Crear el spinner de carga
-    val spinner = LoadingSpinner(context)
-    val rootView = findRootViewGroup(this)
-    
-    // Función para ocultar el spinner cuando termine el proceso
-    val hideSpinner = {
-        mainHandler.post {
-            try {
-                (spinner.parent as? ViewGroup)?.removeView(spinner)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
-    
-    // Función para mostrar la imagen de error
-    val showErrorImage = {
-        val defaultDrawable = errorDrawable ?: ContextCompat.getDrawable(context, R.drawable.img)!!
-        this.loadSafely(defaultDrawable, applyCircleCrop)
-        hideSpinner()
-    }
-    
-    // Añadir el spinner a la vista raíz
-    mainHandler.post {
-        try {
-            rootView?.addView(spinner)
-        } catch (e: Exception) {
-            e.printStackTrace()
+    // Verificar primero la caché en memoria para una carga ultra rápida
+    synchronized(memoryCache) {
+        val cachedBitmap = memoryCache.get(cacheKey)
+        if (cachedBitmap != null) {
+            // Si la imagen está en la caché de memoria, usarla inmediatamente sin animación
+            this.setImageBitmap(cachedBitmap)
+            return
         }
     }
     
     // Usar corrutinas para el manejo asíncrono
     CoroutineScope(Dispatchers.IO).launch {
         try {
-            // Verificar si la imagen ya está en caché disk
-            if (CoilImageCache.isInCache(context, cacheKey)) {
-                // La imagen ya está en caché, cargarla directamente
-                withContext(Dispatchers.Main) {
-                    val imageLoader = CoilImageCache.getImageLoader(context)
-                    val request = ImageRequest.Builder(context)
-                        .data(cacheKey)
-                        .memoryCacheKey(cacheKey)
-                        .diskCacheKey(cacheKey)
-                        .target(
-                            onSuccess = { drawable ->
-                                this@loadBase64Image.setImageDrawable(drawable)
-                                hideSpinner()
-                            },
-                            onError = {
-                                showErrorImage()
-                            }
-                        )
-                        .apply {
-                            if (applyCircleCrop) {
-                                transformations(CircleCropTransformation())
-                            }
-                        }
-                        .build()
-                    
-                    imageLoader.execute(request)
-                }
-            } else {
-                // La imagen no está en caché, decodificar y guardar
-                try {
-                    // Decodificar la cadena Base64 a un array de bytes
-                    val imageBytes = Base64.decode(base64Image, Base64.DEFAULT)
-                    val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-                    
-                    if (bitmap != null) {
-                        // Guardar en ambas cachés
-                        withContext(Dispatchers.Main) {
-                            // Guardar en caché de memoria legada
-                            synchronized(memoryCache) {
-                                memoryCache.put(cacheKey, bitmap)
-                            }
-                            
+            // Verificar si la imagen ya está en caché o cargarla
+            withContext(Dispatchers.Main) {
+                val imageLoader = CoilImageCache.getImageLoader(context)
+                val request = ImageRequest.Builder(context)
+                    .data(if (CoilImageCache.isInCache(context, cacheKey)) cacheKey else base64Image)
+                    .memoryCacheKey(cacheKey)
+                    .diskCacheKey(cacheKey)
+                    .placeholder(this@loadBase64Image.drawable) // Usar la imagen actual como placeholder
+                    .memoryCachePolicy(CachePolicy.ENABLED) // Forzar uso de caché en memoria
+                    .diskCachePolicy(CachePolicy.ENABLED)   // Forzar uso de caché en disco
+                    // Eliminar crossfade si proviene de caché para una carga instantánea
+                    .crossfade(if (CoilImageCache.isInCache(context, cacheKey)) 0 else 50)
+                    .listener(
+                        onStart = { 
+                            // No mostrar indicadores de carga para evitar parpadeos
+                        },
+                        onSuccess = { _, result ->
                             // Registrar en el sistema de caché de Coil
                             CoilImageCache.registerInCache(cacheKey)
                             
-                            // Guardar en caché de Coil
-                            val imageLoader = CoilImageCache.getImageLoader(context)
-                            val request = ImageRequest.Builder(context)
-                                .data(bitmap)
-                                .memoryCacheKey(cacheKey)
-                                .diskCacheKey(cacheKey)
-                                .target(
-                                    onSuccess = { drawable ->
-                                        this@loadBase64Image.setImageDrawable(drawable)
-                                        hideSpinner()
-                                    },
-                                    onError = {
-                                        showErrorImage()
+                            // Guardar en caché de memoria legada también
+                            val drawable = result.drawable
+                            if (drawable != null) {
+                                try {
+                                    CoroutineScope(Dispatchers.IO).launch {
+                                        // Convertir drawable a bitmap de forma segura
+                                        val bitmap = if (drawable is android.graphics.drawable.BitmapDrawable) {
+                                            drawable.bitmap
+                                        } else {
+                                            // Para otros tipos de drawables
+                                            val width = drawable.intrinsicWidth.takeIf { it > 0 } ?: 1
+                                            val height = drawable.intrinsicHeight.takeIf { it > 0 } ?: 1
+                                            val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                                            val canvas = android.graphics.Canvas(bitmap)
+                                            drawable.setBounds(0, 0, canvas.width, canvas.height)
+                                            drawable.draw(canvas)
+                                            bitmap
+                                        }
+                                        
+                                        synchronized(memoryCache) {
+                                            memoryCache.put(cacheKey, bitmap)
+                                        }
                                     }
-                                )
-                                .apply {
-                                    if (applyCircleCrop) {
-                                        transformations(CircleCropTransformation())
-                                    }
+                                } catch (e: Exception) {
+                                    Log.e("ImageUtils", "Error al guardar en caché de memoria", e)
                                 }
-                                .build()
-                            
-                            val result = imageLoader.execute(request)
-                            if (result is SuccessResult) {
-                                // La imagen se guardó correctamente en la caché
-                                CoilImageCache.registerInCache(cacheKey)
-                            } else if (result is ErrorResult) {
-                                // Mostrar la imagen directamente si hay error en caché
-                                this@loadBase64Image.loadSafely(bitmap, applyCircleCrop)
                             }
                         }
-                    } else {
-                        // Si la decodificación falló, mostrar imagen de error
-                        withContext(Dispatchers.Main) {
-                            showErrorImage()
+                    )
+                    .target(this@loadBase64Image)
+                    .apply {
+                        if (applyCircleCrop) {
+                            transformations(CircleCropTransformation())
                         }
                     }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    withContext(Dispatchers.Main) {
-                        showErrorImage()
+                    .build()
+                
+                imageLoader.enqueue(request)
+                
+                // Si la imagen no está en caché, decodificar y guardar en memoria
+                if (!CoilImageCache.isInCache(context, cacheKey)) {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        try {
+                            val imageBytes = Base64.decode(base64Image, Base64.DEFAULT)
+                            val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+                            
+                            if (bitmap != null) {
+                                // Guardar en caché de memoria legada
+                                synchronized(memoryCache) {
+                                    memoryCache.put(cacheKey, bitmap)
+                                }
+                            }
+                        } catch (e: Exception) {
+                            Log.e("ImageUtils", "Error al decodificar imagen base64", e)
+                        }
                     }
                 }
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e("ImageUtils", "Error al cargar imagen base64", e)
             withContext(Dispatchers.Main) {
-                hideSpinner()
-                showErrorImage()
+                val defaultDrawable = errorDrawable ?: ContextCompat.getDrawable(context, R.drawable.img)!!
+                this@loadBase64Image.loadSafely(defaultDrawable, applyCircleCrop)
             }
         }
     }
@@ -310,6 +276,8 @@ fun ImageView.loadSafely(drawable: Drawable, applyCircleCrop: Boolean = false) {
     val imageLoader = CoilImageCache.getImageLoader(context)
     val request = ImageRequest.Builder(context)
         .data(drawable)
+        .memoryCachePolicy(CachePolicy.ENABLED)
+        .diskCachePolicy(CachePolicy.ENABLED)
         .target(this)
         .apply {
             if (applyCircleCrop) {
@@ -317,7 +285,7 @@ fun ImageView.loadSafely(drawable: Drawable, applyCircleCrop: Boolean = false) {
             }
         }
         .crossfade(true)
-        .crossfade(200)
+        .crossfade(50)  // Usar 50ms para coherencia con el resto del código
         .build()
     
     imageLoader.enqueue(request)
@@ -340,7 +308,7 @@ fun ImageView.loadSafely(resourceId: Int, applyCircleCrop: Boolean = false) {
             }
         }
         .crossfade(true)
-        .crossfade(200)
+        .crossfade(50)  // Usar 50ms para coherencia
         .build()
     
     imageLoader.enqueue(request)
@@ -364,7 +332,7 @@ fun ImageView.loadSafely(bitmap: Bitmap, applyCircleCrop: Boolean = false) {
         }
         .placeholder(R.drawable.img)
         .crossfade(true)
-        .crossfade(200)
+        .crossfade(50)  // Usar 50ms para coherencia
         .build()
     
     imageLoader.enqueue(request)
@@ -556,6 +524,101 @@ fun preloadImages(context: Context, base64Images: List<String?>) {
                     e.printStackTrace()
                 }
             }
+        }
+    }
+}
+
+/**
+ * Precarga todas las imágenes de un usuario y sus perros asociados.
+ * 
+ * @param context Contexto de la aplicación
+ * @param userId ID del usuario actual
+ */
+fun precargarImagenesUsuario(context: Context, userId: String) {
+    val database = com.google.firebase.database.FirebaseDatabase.getInstance().reference
+    
+    // Log para depuración
+    Log.d("ImageUtils", "Iniciando precarga de imágenes para el usuario: $userId")
+    
+    // Precargar imágenes relacionadas con el usuario
+    CoroutineScope(Dispatchers.IO).launch {
+        try {
+            // 1. Cargar imagen del usuario con prioridad alta
+            database.child("users").child(userId).child("imagenBase64")
+                .get().addOnSuccessListener { snapshot ->
+                    val imageBase64 = snapshot.getValue(String::class.java)
+                    if (!imageBase64.isNullOrEmpty()) {
+                        Log.d("ImageUtils", "Precargando imagen de perfil del usuario")
+                        preloadImages(context, listOf(imageBase64))
+                        
+                        // Asegurarnos de que la imagen esté en memoria inmediatamente
+                        val cacheKey = CoilImageCache.generateCacheKey(imageBase64)
+                        if (!CoilImageCache.isInCache(context, cacheKey)) {
+                            try {
+                                val imageBytes = Base64.decode(imageBase64, Base64.DEFAULT)
+                                val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+                                if (bitmap != null) {
+                                    // Forzar guardado en caché
+                                    synchronized(memoryCache) {
+                                        memoryCache.put(cacheKey, bitmap)
+                                    }
+                                    CoilImageCache.registerInCache(cacheKey)
+                                }
+                            } catch (e: Exception) {
+                                Log.e("ImageUtils", "Error decodificando imagen de usuario", e)
+                            }
+                        }
+                    }
+                }
+            
+            // 2. Obtener lista de perros asociados al usuario con precarga agresiva
+            database.child("users").child(userId).child("perros")
+                .get().addOnSuccessListener { snapshot ->
+                    val perros = mutableListOf<String>()
+                    snapshot.children.forEach { perroSnapshot ->
+                        val perroId = perroSnapshot.key
+                        if (!perroId.isNullOrEmpty()) {
+                            perros.add(perroId)
+                        }
+                    }
+                    
+                    Log.d("ImageUtils", "Se encontraron ${perros.size} perros para precargar imágenes")
+                    
+                    // 3. Para cada perro, precargar su imagen con alta prioridad
+                    perros.forEach { perroId ->
+                        database.child("perros").child(perroId).child("imagenBase64")
+                            .get().addOnSuccessListener { imgSnapshot ->
+                                val perroImg = imgSnapshot.getValue(String::class.java)
+                                if (!perroImg.isNullOrEmpty()) {
+                                    Log.d("ImageUtils", "Precargando imagen del perro $perroId")
+                                    preloadImages(context, listOf(perroImg))
+                                    
+                                    // Asegurarnos de que la imagen esté disponible inmediatamente
+                                    val cacheKey = CoilImageCache.generateCacheKey(perroImg)
+                                    if (!CoilImageCache.isInCache(context, cacheKey)) {
+                                        try {
+                                            val imageBytes = Base64.decode(perroImg, Base64.DEFAULT)
+                                            val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+                                            if (bitmap != null) {
+                                                // Forzar guardado en caché
+                                                synchronized(memoryCache) {
+                                                    memoryCache.put(cacheKey, bitmap)
+                                                }
+                                                CoilImageCache.registerInCache(cacheKey)
+                                            }
+                                        } catch (e: Exception) {
+                                            Log.e("ImageUtils", "Error decodificando imagen de perro", e)
+                                        }
+                                    }
+                                }
+                            }
+                    }
+                    
+                    // Notificar que la precarga ha terminado
+                    Log.d("ImageUtils", "Precarga de imágenes completada para usuario $userId")
+                }
+        } catch (e: Exception) {
+            Log.e("ImageUtils", "Error en precarga de imágenes", e)
         }
     }
 } 

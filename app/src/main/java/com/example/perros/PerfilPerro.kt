@@ -270,6 +270,7 @@ class PerfilPerro : AppCompatActivity() {
             val intent = Intent(this, EditarPerro::class.java)
             intent.putExtra("perroId", perroId)
             startActivity(intent)
+            overridePendingTransition(R.anim.slide_up, R.anim.slide_down)
         }
     }
 }

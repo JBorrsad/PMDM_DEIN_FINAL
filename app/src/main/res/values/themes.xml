@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.SoloBambas" parent="Theme.Material3.Light.NoActionBar">
@@ -8,6 +9,17 @@
         <item name="android:navigationBarColor">?attr/colorSurface</item>
     </style>
 
-
     <style name="Theme.SoloBambas" parent="Base.Theme.SoloBambas" />
+
+    <!-- Tema para el Splash Screen -->
+    <style name="SplashTheme" parent="AppTheme">
+        <item name="android:windowBackground">@drawable/splash_background</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+    
+    <!-- Tema para el Splash Screen inicial de la aplicación -->
+    <style name="AppSplashTheme" parent="SplashTheme">
+        <item name="android:windowBackground">@drawable/app_splash_background</item>
+    </style>
 </resources>

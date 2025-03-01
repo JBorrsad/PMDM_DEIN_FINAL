@@ -471,5 +471,13 @@ class EditarUsuario : AppCompatActivity() {
         val intent = Intent(this, PerfilUsuario::class.java)
         startActivity(intent)
         finish()
+        // Aplicar la animación de deslizamiento de izquierda a derecha
+        overridePendingTransition(R.anim.slide_right_to_left, R.anim.slide_left_to_right)
+    }
+    
+    override fun onBackPressed() {
+        super.onBackPressed()
+        // Aplicar la animación de deslizamiento de izquierda a derecha
+        overridePendingTransition(R.anim.slide_right_to_left, R.anim.slide_left_to_right)
     }
 }

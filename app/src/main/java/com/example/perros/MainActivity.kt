@@ -85,6 +85,9 @@ class MainActivity : AppCompatActivity() {
      * @param savedInstanceState Estado guardado de la actividad
      */
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Restaurar tema normal (quitar splash screen)
+        setTheme(R.style.AppTheme)
+        
         super.onCreate(savedInstanceState)
 
         // Cargar preferencias y aplicar tema antes de establecer el contenido de vista
@@ -149,51 +152,14 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Mostrar progreso de login
-            val loadingDialog = ProgressDialog(this)
-            loadingDialog.setMessage("Iniciando sesión...")
-            loadingDialog.setCancelable(false)
-            loadingDialog.show()
-
-            // Autenticación con Firebase
-            auth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this) { task ->
-                    loadingDialog.dismiss()
-                    
-                    if (task.isSuccessful) {
-                        // Inicio de sesión exitoso
-                        Log.d(TAG, "signInWithEmail:success")
-                        val user = auth.currentUser
-                        
-                        // Guardar preferencia de recordar usuario
-                        sharedPreferences.edit()
-                            .putLong("last_login_time", Date().time)
-                            .putBoolean("remember_me", rememberMeCheckbox.isChecked)
-                            .apply()
-                            
-                        // Si está marcado "recordar usuario", guardar el email
-                        if (rememberMeCheckbox.isChecked) {
-                            sharedPreferences.edit()
-                                .putString("saved_email", email)
-                                .apply()
-                        } else {
-                            // Si no está marcado, eliminar email guardado
-                            sharedPreferences.edit()
-                                .remove("saved_email")
-                                .apply()
-                        }
-
-                        Toast.makeText(this, "Inicio de sesión exitoso", Toast.LENGTH_SHORT).show()
-                        suscribirNotificaciones()
-                        startActivity(Intent(this, MapsActivity::class.java))
-                        finish()
-                    } else {
-                        // Si falla el inicio de sesión
-                        Log.w(TAG, "signInWithEmail:failure", task.exception)
-                        Toast.makeText(baseContext, "Usuario o contraseña incorrectos", 
-                            Toast.LENGTH_SHORT).show()
-                    }
-                }
+            // Iniciar SplashLoginActivity con los datos para login con email
+            val intent = Intent(this, SplashLoginActivity::class.java).apply {
+                putExtra(SplashLoginActivity.EXTRA_LOGIN_TYPE, SplashLoginActivity.LOGIN_TYPE_EMAIL)
+                putExtra(SplashLoginActivity.EXTRA_EMAIL, email)
+                putExtra(SplashLoginActivity.EXTRA_PASSWORD, password)
+                putExtra(SplashLoginActivity.EXTRA_REMEMBER_ME, rememberMeCheckbox.isChecked)
+            }
+            startActivity(intent)
         }
         
         // Configurar botón de Google Sign In
@@ -232,35 +198,16 @@ class MainActivity : AppCompatActivity() {
     private fun handleSignInResult(completedTask: Task<GoogleSignInAccount>) {
         try {
             val account = completedTask.getResult(ApiException::class.java)
-            // Autenticación con Firebase exitosa, autenticar con Firebase
-            firebaseAuthWithGoogle(account.idToken!!)
+            // Iniciar SplashLoginActivity con los datos para login con Google
+            val intent = Intent(this, SplashLoginActivity::class.java).apply {
+                putExtra(SplashLoginActivity.EXTRA_LOGIN_TYPE, SplashLoginActivity.LOGIN_TYPE_GOOGLE)
+                putExtra(SplashLoginActivity.EXTRA_ID_TOKEN, account.idToken)
+            }
+            startActivity(intent)
         } catch (e: ApiException) {
             // Error en la autenticación con Google
             Toast.makeText(this, "Error al iniciar sesión con Google: ${e.message}", Toast.LENGTH_SHORT).show()
         }
-    }
-    
-    /**
-     * Autentica con Firebase usando el token de ID proporcionado por Google.
-     */
-    private fun firebaseAuthWithGoogle(idToken: String) {
-        val credential = GoogleAuthProvider.getCredential(idToken, null)
-        auth.signInWithCredential(credential)
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    // Guardar tiempo de inicio de sesión
-                    sharedPreferences.edit()
-                        .putLong("last_login_time", Date().time)
-                        .apply()
-                        
-                    Toast.makeText(this, "Inicio de sesión con Google exitoso", Toast.LENGTH_SHORT).show()
-                    suscribirNotificaciones()
-                    startActivity(Intent(this, MapsActivity::class.java))
-                    finish()
-                } else {
-                    Toast.makeText(this, "Error de autenticación: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
-                }
-            }
     }
 
     /**
@@ -273,6 +220,19 @@ class MainActivity : AppCompatActivity() {
      */
     override fun onResume() {
         super.onResume()
+        
+        // Verificar si venimos de un intento de login fallido
+        val loginStatus = intent.getIntExtra(SplashLoginActivity.EXTRA_LOGIN_STATUS, -1)
+        val errorMessage = intent.getStringExtra(SplashLoginActivity.EXTRA_ERROR_MESSAGE)
+        
+        if (loginStatus == SplashLoginActivity.STATUS_FAILED && !errorMessage.isNullOrEmpty()) {
+            Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+            // Limpiar los extras para no repetir el mensaje
+            intent.removeExtra(SplashLoginActivity.EXTRA_LOGIN_STATUS)
+            intent.removeExtra(SplashLoginActivity.EXTRA_ERROR_MESSAGE)
+        }
+        
+        // Verificar sesión activa
         if (auth.currentUser != null) {
             val lastLoginTime = sharedPreferences.getLong("last_login_time", 0)
             val currentTime = Date().time
