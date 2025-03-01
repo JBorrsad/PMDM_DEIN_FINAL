@@ -19,7 +19,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/white">
+            android:background="?attr/colorSurface">
 
             <ImageButton
                 android:id="@+id/btnBack"
@@ -29,13 +29,14 @@
                 android:contentDescription="Volver"
                 android:padding="12dp"
                 app:srcCompat="@drawable/ic_back_arrow"
-                app:tint="@color/text_tertiary"/>
+                app:tint="?attr/colorOnSurface"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="Perfil"
+                android:textColor="?attr/colorOnSurface"
                 android:textAppearance="@style/TextAppearance.App.H3" />
 
             <ImageButton

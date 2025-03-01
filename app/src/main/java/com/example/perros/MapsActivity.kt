@@ -238,6 +238,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         btnPerfilUsuario.setOnClickListener {
             startActivity(Intent(this, PerfilUsuario::class.java))
         }
+        
+        // Botón de ajustes
+        findViewById<View>(R.id.btnAjustes).setOnClickListener {
+            startActivity(Intent(this, AjustesActivity::class.java))
+        }
     }
 
     /**
@@ -380,6 +385,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     if (dogItems.isNotEmpty()) {
                         val adapter = DogSpinnerAdapter(this@MapsActivity, dogItems)
                         spinnerPerros.adapter = adapter
+                        
                         // Seleccionar el primero por defecto
                         perroSeleccionadoId = dogItems.first().id
                         mostrarZonaSegura()
@@ -397,19 +403,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         database.child("users").child(usuarioId).child("imagenBase64")
             .get().addOnSuccessListener { snapshot ->
                 val imageBase64 = snapshot.getValue(String::class.java)
-                if (!imageBase64.isNullOrEmpty()) {
-                    try {
-                        val imageBytes = Base64.decode(imageBase64, Base64.DEFAULT)
-                        val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-                        btnPerfilUsuario.setImageBitmap(bitmap)
-                    } catch (e: Exception) {
-                        btnPerfilUsuario.setImageResource(R.drawable.img)
-                    }
-                } else {
-                    btnPerfilUsuario.setImageResource(R.drawable.img)
-                }
+                btnPerfilUsuario.loadBase64Image(imageBase64, applyCircleCrop = true)
             }.addOnFailureListener {
-                btnPerfilUsuario.setImageResource(R.drawable.img)
+                btnPerfilUsuario.loadBase64Image(null)
             }
     }
 
@@ -483,20 +479,33 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         .addOnSuccessListener { snapImg ->
                             val imageBase64 = snapImg.getValue(String::class.java)
                             if (!imageBase64.isNullOrEmpty()) {
-                                val imageBytes = Base64.decode(imageBase64, Base64.DEFAULT)
-                                val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-                                val dogIcon = createCustomMarker(this@MapsActivity, bitmap)
+                                try {
+                                    val imageBytes = Base64.decode(imageBase64, Base64.DEFAULT)
+                                    val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+                                    val dogIcon = createCustomMarker(this@MapsActivity, bitmap)
 
-                                if (dogMarker == null) {
-                                    dogMarker = mMap.addMarker(
-                                        MarkerOptions()
-                                            .position(pos)
-                                            .title("Ubicación de ${listaPerros.find { it.second == perroSeleccionadoId }?.first}")
-                                            .icon(dogIcon)
-                                    )
-                                } else {
-                                    dogMarker!!.setIcon(dogIcon)
-                                    dogMarker!!.position = pos
+                                    if (dogMarker == null) {
+                                        dogMarker = mMap.addMarker(
+                                            MarkerOptions()
+                                                .position(pos)
+                                                .title("Ubicación de ${listaPerros.find { it.second == perroSeleccionadoId }?.first}")
+                                                .icon(dogIcon)
+                                        )
+                                    } else {
+                                        dogMarker!!.setIcon(dogIcon)
+                                        dogMarker!!.position = pos
+                                    }
+                                } catch (e: Exception) {
+                                    // Si hay error al decodificar la imagen, usar marcador por defecto
+                                    if (dogMarker == null) {
+                                        dogMarker = mMap.addMarker(
+                                            MarkerOptions()
+                                                .position(pos)
+                                                .title("Ubicación de ${listaPerros.find { it.second == perroSeleccionadoId }?.first}")
+                                        )
+                                    } else {
+                                        dogMarker!!.position = pos
+                                    }
                                 }
                             } else {
                                 // Si no tiene imagen, marcador por defecto

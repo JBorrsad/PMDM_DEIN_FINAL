@@ -102,7 +102,7 @@ class PerfilPerro : AppCompatActivity() {
         tvLoginDueno = findViewById(R.id.tvLoginDueno)
 
         if (ivFoto.drawable == null) {
-            ivFoto.setImageResource(R.drawable.img)
+            ivFoto.loadBase64Image(null)
         }
     }
 
@@ -205,34 +205,12 @@ class PerfilPerro : AppCompatActivity() {
     /**
      * Carga y muestra la imagen del perro.
      *
-     * Decodifica la imagen Base64 y la muestra en el ImageView.
-     * Si hay error, muestra una imagen por defecto.
+     * Utiliza Coil para cargar la imagen Base64 y mostrar un spinner durante la carga.
      *
      * @param imagenBase64 Imagen codificada en Base64
      */
     private fun cargarImagenPerro(imagenBase64: String?) {
-        // Mostrar spinner
-        val spinner = LoadingSpinner(this)
-        ivFoto.setImageDrawable(null)  // Limpiar imagen anterior
-        (ivFoto.parent as ViewGroup).addView(spinner)
-
-        if (!imagenBase64.isNullOrEmpty()) {
-            try {
-                val imageBytes = Base64.decode(imagenBase64, Base64.DEFAULT)
-                val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-                ivFoto.setImageBitmap(bitmap)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                ivFoto.setImageResource(R.drawable.img)
-            } finally {
-                // Ocultar spinner
-                (ivFoto.parent as ViewGroup).removeView(spinner)
-            }
-        } else {
-            ivFoto.setImageResource(R.drawable.img)
-            // Ocultar spinner
-            (ivFoto.parent as ViewGroup).removeView(spinner)
-        }
+        ivFoto.loadBase64Image(imagenBase64)
     }
 
     /**
@@ -268,31 +246,12 @@ class PerfilPerro : AppCompatActivity() {
     /**
      * Carga y muestra la imagen del dueño.
      *
+     * Utiliza Coil para cargar la imagen Base64 y mostrar un spinner durante la carga.
+     *
      * @param imagenBase64 Imagen codificada en Base64
      */
     private fun cargarImagenDueno(imagenBase64: String?) {
-        // Mostrar spinner
-        val spinner = LoadingSpinner(this)
-        ivImagenDueno.setImageDrawable(null)  // Limpiar imagen anterior
-        (ivImagenDueno.parent as ViewGroup).addView(spinner)
-
-        if (!imagenBase64.isNullOrEmpty()) {
-            try {
-                val imageBytes = Base64.decode(imagenBase64, Base64.DEFAULT)
-                val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-                ivImagenDueno.setImageBitmap(bitmap)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                ivImagenDueno.setImageResource(R.drawable.img)
-            } finally {
-                // Ocultar spinner
-                (ivImagenDueno.parent as ViewGroup).removeView(spinner)
-            }
-        } else {
-            ivImagenDueno.setImageResource(R.drawable.img)
-            // Ocultar spinner
-            (ivImagenDueno.parent as ViewGroup).removeView(spinner)
-        }
+        ivImagenDueno.loadBase64Image(imagenBase64)
     }
 
     /**

@@ -43,6 +43,7 @@ android {
 
     buildFeatures {
         viewBinding = true
+        dataBinding = true
     }
 }
 
@@ -72,6 +73,22 @@ dependencies {
 
     // Glide para cargar imágenes
     implementation("com.github.bumptech.glide:glide:4.16.0")
+
+    // Coil para cargar imágenes
+    implementation("io.coil-kt:coil:2.4.0")
+    
+    // Forzar versiones específicas de androidx.core para evitar conflictos
+    configurations.all {
+        resolutionStrategy {
+            force("androidx.core:core-ktx:1.12.0")
+            force("androidx.core:core:1.12.0")
+        }
+    }
+
+    // La dependencia de CircleCropTransformation está incluida en el paquete principal de Coil
+
+    // Google Sign In
+    implementation("com.google.android.gms:play-services-auth:20.5.0")
 }
 
 java {

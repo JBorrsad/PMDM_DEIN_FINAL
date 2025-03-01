@@ -1,7 +1,148 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.SoloBambas" parent="Theme.AppCompat.Light.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+    <!-- Base application theme for dark mode -->
+    <style name="Base.Theme.SoloBambas" parent="Theme.Material3.Dark.NoActionBar">
+        <!-- Colores primarios ajustados para modo oscuro -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryVariant">@color/colorPrimaryVariant</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/colorSecondary</item>
+        <item name="colorSecondaryVariant">@color/colorSecondaryVariant</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorAccent">@color/colorAccent</item>
+
+        <!-- Estado de la barra de estado y navegación -->
+        <item name="android:statusBarColor">@color/background</item>
+        <item name="android:navigationBarColor">@color/background</item>
+
+        <!-- Colores específicos para modo oscuro -->
+        <item name="android:colorBackground">@color/background</item>
+        <item name="colorSurface">@color/surface</item>
+        <!-- Forzamos que en modo oscuro la superficie (incluyendo textos en tarjetas) use blanco -->
+        <item name="colorOnSurface">@color/white</item>
+        <item name="colorOnBackground">@color/white</item>
+        <item name="colorOutline">@color/border_color</item>
+
+        <!-- Adaptación de interfaz al modo oscuro -->
+        <item name="android:windowLightStatusBar">false</item>
+
+        <!-- Estilos de texto -->
+        <item name="textAppearanceHeadline1">@style/TextAppearance.App.H1.Dark</item>
+        <item name="textAppearanceHeadline2">@style/TextAppearance.App.H2.Dark</item>
+        <item name="textAppearanceHeadline3">@style/TextAppearance.App.H3.Dark</item>
+        <item name="textAppearanceBody1">@style/TextAppearance.App.Body1.Dark</item>
+        <item name="textAppearanceBody2">@style/TextAppearance.App.Body2.Dark</item>
+        <item name="textAppearanceSubtitle1">@style/TextAppearance.App.Subtitle1.Dark</item>
+        <item name="textAppearanceSubtitle2">@style/TextAppearance.App.Subtitle2.Dark</item>
+        <item name="textAppearanceCaption">@style/TextAppearance.App.Caption.Dark</item>
+
+        <!-- Estilos de componentes -->
+        <item name="materialButtonStyle">@style/Widget.App.Button.Dark</item>
+        <item name="textInputStyle">@style/Widget.App.TextInputLayout.Dark</item>
+        <item name="switchStyle">@style/Widget.App.Switch.Dark</item>
+        <item name="materialCardViewStyle">@style/CardView.Dark</item>
+        <item name="toolbarStyle">@style/Widget.App.Toolbar.Dark</item>
+        <item name="editTextStyle">@style/Widget.App.EditText.Dark</item>
+        <item name="imageButtonStyle">@style/Widget.App.ImageButton.Dark</item>
+        <item name="materialCardViewOutlinedStyle">@style/CardView.Dark</item>
     </style>
+
+    <!-- Estilo para tarjetas en modo oscuro -->
+    <style name="CardView.Dark" parent="Widget.MaterialComponents.CardView">
+        <!-- Se usa un fondo oscuro para las tarjetas -->
+        <item name="cardBackgroundColor">@color/dark_card_background</item>
+        <item name="strokeColor">@color/grey_400</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="cardCornerRadius">16dp</item>
+        <item name="cardElevation">1dp</item>
+        <item name="rippleColor">@color/colorPrimary</item>
+        <item name="contentPadding">8dp</item>
+    </style>
+
+    <!-- Estilos de texto para modo oscuro -->
+    <style name="TextAppearance.App.H1.Dark" parent="TextAppearance.MaterialComponents.Headline1">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">30sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="TextAppearance.App.H2.Dark" parent="TextAppearance.MaterialComponents.Headline2">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="TextAppearance.App.H3.Dark" parent="TextAppearance.MaterialComponents.Headline3">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="TextAppearance.App.Body1.Dark" parent="TextAppearance.MaterialComponents.Body1">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="TextAppearance.App.Body2.Dark" parent="TextAppearance.MaterialComponents.Body2">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="TextAppearance.App.Subtitle1.Dark" parent="TextAppearance.MaterialComponents.Subtitle1">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="TextAppearance.App.Subtitle2.Dark" parent="TextAppearance.MaterialComponents.Subtitle2">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="TextAppearance.App.Caption.Dark" parent="TextAppearance.MaterialComponents.Caption">
+        <!-- Para captions podemos usar un gris claro -->
+        <item name="android:textColor">@color/grey_300</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <!-- Estilos de componentes para modo oscuro -->
+    <style name="Widget.App.Button.Dark" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">@color/colorPrimary</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="cornerRadius">8dp</item>
+    </style>
+
+    <style name="Widget.App.TextInputLayout.Dark" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">@color/grey_500</item>
+        <item name="boxBackgroundColor">@color/surface</item>
+        <item name="hintTextColor">@color/colorPrimary</item>
+        <item name="android:textColorHint">@color/grey_300</item>
+    </style>
+
+    <style name="Widget.App.Switch.Dark" parent="Widget.MaterialComponents.CompoundButton.Switch">
+        <item name="android:thumbTint">@color/colorPrimary</item>
+        <item name="android:trackTint">@color/grey_500</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="Widget.App.Toolbar.Dark" parent="Widget.MaterialComponents.Toolbar">
+        <item name="android:background">@color/background</item>
+        <item name="titleTextColor">@color/white</item>
+        <item name="subtitleTextColor">@color/grey_300</item>
+        <item name="colorControlNormal">@color/white</item>
+    </style>
+
+    <style name="Widget.App.EditText.Dark" parent="Widget.MaterialComponents.TextInputEditText.OutlinedBox">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textColorHint">@color/grey_300</item>
+        <item name="android:background">@color/surface</item>
+    </style>
+
+    <style name="Widget.App.ImageButton.Dark" parent="Widget.MaterialComponents.Button.Icon">
+        <item name="android:tint">@color/white</item>
+        <item name="backgroundTint">@android:color/transparent</item>
+        <item name="rippleColor">@color/colorPrimary</item>
+    </style>
+
+    <style name="Theme.SoloBambas" parent="Base.Theme.SoloBambas" />
 </resources>

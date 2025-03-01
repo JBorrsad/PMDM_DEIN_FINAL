@@ -9,6 +9,11 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import com.google.android.material.imageview.ShapeableImageView
+import coil.load
+import androidx.core.content.ContextCompat
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /**
  * Adaptador personalizado para mostrar una lista de [DogItem] en un Spinner.
@@ -34,6 +39,25 @@ class DogSpinnerAdapter(
     context: Context,
     private val dogs: List<DogItem>
 ) : ArrayAdapter<DogItem>(context, 0, dogs) {
+
+    init {
+        // Precargar las imágenes al inicializar el adaptador
+        preloadDogImages()
+    }
+
+    /**
+     * Precarga las imágenes de los perros en la caché
+     * para mejorar la velocidad de carga del spinner.
+     */
+    private fun preloadDogImages() {
+        // Extraer las imágenes Base64 de todos los perros
+        val base64Images = dogs.mapNotNull { it.imageBase64 }
+        
+        // Si hay imágenes, precargarlas en la caché
+        if (base64Images.isNotEmpty()) {
+            preloadImages(context, base64Images)
+        }
+    }
 
     /**
      * Devuelve la vista para el elemento seleccionado en el Spinner.
@@ -67,8 +91,9 @@ class DogSpinnerAdapter(
      * Este método:
      * 1. Infla el layout si no hay vista reciclada
      * 2. Configura la imagen del perro:
-     *    - Decodifica la imagen Base64 si existe
-     *    - Usa imagen por defecto si no hay imagen o hay error
+     *    - Usa la imagen cacheada si existe
+     *    - Decodifica la imagen Base64 si es necesario
+     *    - Usa imagen por defecto si no hay imagen
      * 3. Establece el nombre del perro
      *
      * @param position Posición del elemento a mostrar
@@ -86,19 +111,40 @@ class DogSpinnerAdapter(
 
         dog?.let {
             textView.text = it.nombre
+            
+            // Verificar que la imagen Base64 existe antes de intentar cargarla
             if (!it.imageBase64.isNullOrEmpty()) {
                 try {
-                    val imageBytes = Base64.decode(it.imageBase64, Base64.DEFAULT)
-                    val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-                    imageView.setImageBitmap(bitmap)
+                    // Comprobar si ya está en caché para cargarla más rápido
+                    if (isImageInCache(context, it.imageBase64)) {
+                        // Usar la versión mejorada con caché persistente
+                        imageView.loadBase64Image(
+                            base64Image = it.imageBase64,
+                            errorDrawable = ContextCompat.getDrawable(context, R.drawable.img),
+                            applyCircleCrop = true
+                        )
+                    } else {
+                        // Si no está en caché, cargar normalmente
+                        // (también se guardará en caché para el futuro)
+                        imageView.loadBase64Image(
+                            base64Image = it.imageBase64,
+                            errorDrawable = ContextCompat.getDrawable(context, R.drawable.img),
+                            applyCircleCrop = true
+                        )
+                    }
                 } catch (e: Exception) {
-                    // En caso de error, se muestra una imagen por defecto.
-                    imageView.setImageResource(R.drawable.img)
+                    // Manejo mejorado de errores
+                    imageView.loadSafely(R.drawable.img, applyCircleCrop = true)
+                    e.printStackTrace()
                 }
             } else {
-                // Si no hay imagen codificada, se muestra la imagen por defecto.
-                imageView.setImageResource(R.drawable.img)
+                // Si no hay imagen, mostrar imagen por defecto
+                imageView.loadSafely(R.drawable.img, applyCircleCrop = true)
             }
+        } ?: run {
+            // Si dog es nulo, asegurarnos de mostrar una imagen por defecto
+            textView.text = "Seleccionar perro"
+            imageView.loadSafely(R.drawable.img, applyCircleCrop = true)
         }
 
         return view

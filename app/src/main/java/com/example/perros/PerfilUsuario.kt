@@ -211,13 +211,7 @@ class PerfilUsuario : AppCompatActivity() {
                 .get().addOnSuccessListener { snapshot ->
                     if (snapshot.exists()) {
                         val imageBase64 = snapshot.getValue(String::class.java)
-                        if (!imageBase64.isNullOrEmpty()) {
-                            val imageBytes = Base64.decode(imageBase64, Base64.DEFAULT)
-                            val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-                            ivFoto.setImageBitmap(bitmap)
-                        } else {
-                            mostrarImagenPorDefecto()
-                        }
+                        ivFoto.loadBase64Image(imageBase64)
                     } else {
                         mostrarImagenPorDefecto()
                     }
@@ -237,6 +231,6 @@ class PerfilUsuario : AppCompatActivity() {
      * - La imagen está corrupta
      */
     private fun mostrarImagenPorDefecto() {
-        ivFoto.setImageResource(R.drawable.img)
+        ivFoto.loadBase64Image(null)
     }
 }

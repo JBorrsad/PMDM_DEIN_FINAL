@@ -7,6 +7,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Base64
 import android.view.View
 import android.widget.*
@@ -21,6 +22,7 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
+import coil.load
 
 /**
  * Actividad para editar los datos de un perro existente.
@@ -70,6 +72,7 @@ class EditarPerro : AppCompatActivity() {
     private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     private var selectedBirthDate: Date? = null
     private var selectedAdoptionDate: Date? = null
+    private var imagenRecortada: Bitmap? = null
 
     private val imagePickerLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -306,16 +309,7 @@ class EditarPerro : AppCompatActivity() {
     }
 
     private fun cargarImagenPerro(imagenBase64: String?) {
-        if (!imagenBase64.isNullOrEmpty()) {
-            try {
-                val imageBytes = Base64.decode(imagenBase64, Base64.DEFAULT)
-                val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-                ivImagen.setImageBitmap(bitmap)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                ivImagen.setImageResource(R.drawable.img)
-            }
-        }
+        ivImagen.loadBase64Image(imagenBase64)
     }
 
     private fun configurarBotones() {
@@ -400,12 +394,17 @@ class EditarPerro : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == UCrop.REQUEST_CROP && resultCode == RESULT_OK) {
             val resultUri = UCrop.getOutput(data!!)
-            if (resultUri != null) {
-                val bitmap = uriToBitmap(resultUri)
-                bitmap?.let {
-                    ivImagen.setImageBitmap(it)
-                    guardarImagenRecortadaEnFirebase(it)
-                }
+            try {
+                // Convertir Uri a Bitmap
+                val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, resultUri)
+                
+                // Cargar la imagen recortada usando el método de extensión
+                ivImagen.loadBase64Image(bitmapToBase64OriginalQuality(bitmap))
+                
+                // Guardar la imagen en Firebase
+                guardarImagenRecortadaEnFirebase(bitmap)
+            } catch (e: Exception) {
+                Toast.makeText(this, "Error al recortar imagen: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         } else if (requestCode == UCrop.REQUEST_CROP && resultCode == UCrop.RESULT_ERROR) {
             val cropError = UCrop.getError(data!!)
@@ -413,22 +412,14 @@ class EditarPerro : AppCompatActivity() {
         }
     }
 
-    private fun uriToBitmap(uri: Uri): Bitmap? {
-        return try {
-            val inputStream = contentResolver.openInputStream(uri)
-            BitmapFactory.decodeStream(inputStream)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
-    }
-
+    /**
+     * Guarda la imagen recortada en Firebase en formato Base64
+     */
     private fun guardarImagenRecortadaEnFirebase(bitmap: Bitmap) {
         perroId?.let { id ->
-            val baos = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
-            val imageBytes = baos.toByteArray()
-            val imageBase64 = Base64.encodeToString(imageBytes, Base64.DEFAULT)
+            // Mantener la calidad original de la imagen
+            val imageBase64 = bitmapToBase64OriginalQuality(bitmap)
+            
             database.child("users").child(id).child("imagenBase64").setValue(imageBase64)
                 .addOnSuccessListener {
                     Toast.makeText(this, "Imagen guardada correctamente", Toast.LENGTH_SHORT).show()

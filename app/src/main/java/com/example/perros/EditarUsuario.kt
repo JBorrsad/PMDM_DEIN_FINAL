@@ -21,6 +21,8 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
+import coil.load
+import com.example.perros.bitmapToBase64OriginalQuality
 
 /**
  * Actividad para editar el perfil de usuario.
@@ -101,7 +103,7 @@ class EditarUsuario : AppCompatActivity() {
         spinnerDueño = findViewById(R.id.spinnerDueño)
 
         if (ivImagen.drawable == null) {
-            ivImagen.setImageResource(R.drawable.img)
+            ivImagen.loadBase64Image(null)
         }
 
         etEdad.isEnabled = false
@@ -411,12 +413,17 @@ class EditarUsuario : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == UCrop.REQUEST_CROP && resultCode == RESULT_OK) {
             val resultUri = UCrop.getOutput(data!!)
-            if (resultUri != null) {
-                val bitmap = uriToBitmap(resultUri)
-                bitmap?.let {
-                    ivImagen.setImageBitmap(it)
-                    guardarImagenRecortadaEnFirebase(it)
-                }
+            try {
+                // Convertir Uri a Bitmap
+                val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, resultUri)
+                
+                // Cargar la imagen recortada usando el método de extensión que muestra el spinner
+                ivImagen.loadBase64Image(bitmapToBase64OriginalQuality(bitmap))
+                
+                // Guardar la imagen en Firebase
+                guardarImagenRecortadaEnFirebase(bitmap)
+            } catch (e: Exception) {
+                Toast.makeText(this, "Error al recortar imagen: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         } else if (requestCode == UCrop.REQUEST_CROP && resultCode == UCrop.RESULT_ERROR) {
             val cropError = UCrop.getError(data!!)
@@ -428,23 +435,11 @@ class EditarUsuario : AppCompatActivity() {
         }
     }
 
-    private fun uriToBitmap(uri: Uri): Bitmap? {
-        return try {
-            val inputStream = contentResolver.openInputStream(uri)
-            BitmapFactory.decodeStream(inputStream)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
-    }
-
     private fun guardarImagenRecortadaEnFirebase(bitmap: Bitmap) {
         usuarioId?.let { id ->
-            val baos = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
-            val imageBytes = baos.toByteArray()
-            val imageBase64 = Base64.encodeToString(imageBytes, Base64.DEFAULT)
-
+            // Mantener la calidad original de la imagen
+            val imageBase64 = bitmapToBase64OriginalQuality(bitmap)
+            
             database.child("users").child(id).child("imagenBase64").setValue(imageBase64)
                 .addOnSuccessListener {
                     Toast.makeText(this, "Imagen guardada correctamente", Toast.LENGTH_SHORT).show()
@@ -461,14 +456,13 @@ class EditarUsuario : AppCompatActivity() {
                 .get().addOnSuccessListener { snapshot ->
                     if (snapshot.exists()) {
                         val imageBase64 = snapshot.getValue(String::class.java)
-                        if (!imageBase64.isNullOrEmpty()) {
-                            val imageBytes = Base64.decode(imageBase64, Base64.DEFAULT)
-                            val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-                            ivImagen.setImageBitmap(bitmap)
-                        }
+                        ivImagen.loadBase64Image(imageBase64)
+                    } else {
+                        ivImagen.loadBase64Image(null)
                     }
                 }.addOnFailureListener {
                     Toast.makeText(this, "Error al cargar imagen", Toast.LENGTH_SHORT).show()
+                    ivImagen.loadBase64Image(null)
                 }
         }
     }
