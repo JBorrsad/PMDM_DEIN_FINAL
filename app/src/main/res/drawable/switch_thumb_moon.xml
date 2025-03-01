@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Sombra sutil -->
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#20000000"/>
+            <size android:width="20dp" android:height="20dp"/>
+        </shape>
+    </item>
+    <!-- Círculo principal con color de tema -->
+    <item android:bottom="0.5dp" android:left="0.5dp" android:right="0.5dp" android:top="0.5dp">
+        <shape android:shape="oval">
+            <solid android:color="@color/colorPrimary"/>
+            <stroke android:width="0.5dp" android:color="#15000000"/>
+            <size android:width="19dp" android:height="19dp"/>
+        </shape>
+    </item>
+    <!-- Icono de luna -->
+    <item android:drawable="@drawable/ic_moon"
+          android:width="12dp"
+          android:height="12dp"
+          android:gravity="center"/>
+</layer-list> 

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dimensiones generales -->
+    <dimen name="spacing_small">4dp</dimen>
+    <dimen name="spacing_medium">8dp</dimen>
+    <dimen name="spacing_large">16dp</dimen>
+    <dimen name="spacing_xlarge">24dp</dimen>
+    <dimen name="spacing_xxlarge">32dp</dimen>
+    
+    <!-- Dimensiones específicas para componentes -->
+    <dimen name="corner_radius">8dp</dimen>
+    <dimen name="elevation_card">2dp</dimen>
+    <dimen name="border_width">1dp</dimen>
+    <dimen name="icon_size">24dp</dimen>
+    <dimen name="icon_size_small">16dp</dimen>
+    
+    <!-- Dimensiones para spinner -->
+    <dimen name="spinner_inset">8dp</dimen>
+    <dimen name="spinner_radius">8dp</dimen>
+    <dimen name="spinner_border">1dp</dimen>
+</resources> 
