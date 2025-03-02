@@ -27,12 +27,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.FileOutputStream
 import java.security.MessageDigest
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import kotlin.math.min
 import android.view.View
 import android.util.Log
+import com.google.firebase.database.FirebaseDatabase
+import java.util.concurrent.atomic.AtomicInteger
 
 // Enumeración que define los niveles de calidad de imagen
 enum class ImageQuality(val quality: Int, val maxDimension: Int) {
@@ -484,28 +487,44 @@ fun isImageInCache(context: Context, base64Image: String?): Boolean {
 
 /**
  * Precarga una lista de imágenes Base64 en la caché para uso futuro.
- * Ideal para llamar cuando la aplicación inicia o durante tiempos de inactividad.
+ * Ideal para llamar durante la carga inicial de la aplicación.
  * 
  * @param context Contexto de la aplicación
- * @param base64Images Lista de imágenes Base64 para precargar
+ * @param base64Images Lista de strings Base64 para precargar
  */
-fun preloadImages(context: Context, base64Images: List<String?>) {
+fun preloadImages(context: Context, base64Images: List<String>) {
+    // Usar corrutina para no bloquear el hilo principal
     CoroutineScope(Dispatchers.IO).launch {
+        // Contador para seguimiento de precarga
+        val totalImages = base64Images.size
+        val completedImages = AtomicInteger(0)
+        
+        Log.d("ImageUtils", "Iniciando precarga de $totalImages imágenes")
+        
         base64Images.forEach { base64Image ->
-            if (!base64Image.isNullOrEmpty() && !isImageInCache(context, base64Image)) {
-                try {
+            try {
+                if (base64Image.isNotEmpty()) {
+                    // Generar clave de caché
+                    val cacheKey = CoilImageCache.generateCacheKey(base64Image)
+                    
+                    // Verificar si ya está en caché
+                    if (CoilImageCache.isInCache(context, cacheKey)) {
+                        Log.d("ImageUtils", "Imagen ya en caché: $cacheKey")
+                        completedImages.incrementAndGet()
+                        return@forEach
+                    }
+                    
+                    // Decodificar imagen
                     val imageBytes = Base64.decode(base64Image, Base64.DEFAULT)
                     val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
                     
                     if (bitmap != null) {
-                        val cacheKey = CoilImageCache.generateCacheKey(base64Image)
-                        
-                        // Guardar en la caché de memoria legada
+                        // Guardar en caché de memoria
                         synchronized(memoryCache) {
                             memoryCache.put(cacheKey, bitmap)
                         }
                         
-                        // Guardar en la caché de Coil
+                        // Guardar en caché de Coil
                         withContext(Dispatchers.Main) {
                             val imageLoader = CoilImageCache.getImageLoader(context)
                             val request = ImageRequest.Builder(context)
@@ -514,17 +533,60 @@ fun preloadImages(context: Context, base64Images: List<String?>) {
                                 .diskCacheKey(cacheKey)
                                 .build()
                             
-                            val result = imageLoader.execute(request)
-                            if (result is SuccessResult) {
-                                CoilImageCache.registerInCache(cacheKey)
+                            imageLoader.enqueue(request).job.invokeOnCompletion { throwable ->
+                                if (throwable == null) {
+                                    CoilImageCache.registerInCache(cacheKey)
+                                    Log.d("ImageUtils", "Imagen precargada exitosamente: $cacheKey")
+                                } else {
+                                    Log.e("ImageUtils", "Error precargando imagen: ${throwable.message}")
+                                }
+                                completedImages.incrementAndGet()
                             }
                         }
+                    } else {
+                        Log.e("ImageUtils", "No se pudo decodificar la imagen")
+                        completedImages.incrementAndGet()
                     }
-                } catch (e: Exception) {
-                    e.printStackTrace()
+                } else {
+                    completedImages.incrementAndGet()
                 }
+            } catch (e: Exception) {
+                Log.e("ImageUtils", "Error precargando imagen: ${e.message}", e)
+                completedImages.incrementAndGet()
             }
         }
+        
+        // Esperar a que todas las imágenes se procesen
+        while (completedImages.get() < totalImages) {
+            kotlinx.coroutines.delay(100)
+        }
+        
+        Log.d("ImageUtils", "Precarga completa de $totalImages imágenes")
+    }
+}
+
+/**
+ * Guarda una imagen Bitmap en la caché de disco
+ * 
+ * @param context Contexto de la aplicación
+ * @param cacheKey Clave para identificar la imagen
+ * @param bitmap Bitmap a guardar
+ */
+private fun saveBitmapToCache(context: Context, cacheKey: String, bitmap: Bitmap) {
+    try {
+        // Obtener directorio de caché
+        val cacheDir = context.cacheDir
+        val imageFile = File(cacheDir, "img_$cacheKey.png")
+        
+        // Guardar bitmap como archivo
+        val outputStream = FileOutputStream(imageFile)
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+        outputStream.flush()
+        outputStream.close()
+        
+        Log.d("ImageUtils", "Bitmap guardado en caché de disco: $cacheKey")
+    } catch (e: Exception) {
+        Log.e("ImageUtils", "Error guardando bitmap en disco: ${e.message}")
     }
 }
 
@@ -621,4 +683,142 @@ fun precargarImagenesUsuario(context: Context, userId: String) {
             Log.e("ImageUtils", "Error en precarga de imágenes", e)
         }
     }
+}
+
+/**
+ * Función para precargar datos de un usuario (dueño) y sus perros asociados desde Firebase.
+ * Esto mejora el rendimiento al evitar múltiples llamadas a Firebase durante el uso de la app.
+ *
+ * @param userId ID del dueño cuyos datos y perros se van a precargar
+ * @param callback Función de retorno que indica cuando se completa la precarga
+ */
+fun preloadUserData(userId: String, callback: () -> Unit) {
+    Log.d("PreloadData", "Iniciando precarga de datos para dueño: $userId")
+    
+    // Limpiar datos previos para evitar problemas de datos obsoletos
+    DatosPrecargados.limpiarDatos()
+    
+    // 1. Cargar datos del dueño
+    val database = FirebaseDatabase.getInstance().reference
+    database.child("users").child(userId).get()
+        .addOnSuccessListener { duenoSnapshot ->
+            if (duenoSnapshot.exists()) {
+                Log.d("PreloadData", "Datos del dueño obtenidos correctamente")
+                DatosPrecargados.guardarUsuario(userId, duenoSnapshot)
+                
+                // 2. Obtener IDs de los perros asociados a este dueño
+                database.child("users")
+                    .orderByChild("dueñoId")
+                    .equalTo(userId)
+                    .get()
+                    .addOnSuccessListener { perrosSnapshot ->
+                        if (perrosSnapshot.exists() && perrosSnapshot.childrenCount > 0) {
+                            val numPerros = perrosSnapshot.childrenCount
+                            Log.d("PreloadData", "Se encontraron $numPerros perros asociados al dueño")
+                            
+                            // Guardar la lista completa para referencia
+                            DatosPrecargados.guardarPerrosUsuario(userId, perrosSnapshot)
+                            
+                            // Contador para saber cuando hemos terminado con todos los perros
+                            var perrosProcesados = 0
+                            var perrosValidos = 0
+                            
+                            // 3. Para cada perro, cargar sus datos y ubicación
+                            perrosSnapshot.children.forEach { perroSnapshot ->
+                                val perroId = perroSnapshot.key
+                                val isPerro = perroSnapshot.child("isPerro").getValue(Boolean::class.java) ?: false
+                                
+                                if (perroId != null && isPerro) {
+                                    perrosValidos++
+                                    val nombre = perroSnapshot.child("nombre").getValue(String::class.java) ?: "Sin nombre"
+                                    Log.d("PreloadData", "Procesando perro: $nombre (ID: $perroId)")
+                                    
+                                    // Guardar los datos del perro
+                                    DatosPrecargados.guardarPerro(perroId, perroSnapshot)
+                                    
+                                    // 4. Obtener la zona segura del perro
+                                    database.child("users").child(perroId).child("zonaSegura").get()
+                                        .addOnSuccessListener { zonaSeguraSnapshot ->
+                                            if (zonaSeguraSnapshot.exists()) {
+                                                Log.d("PreloadData", "Zona segura del perro obtenida: $perroId")
+                                                DatosPrecargados.guardarZonaSeguraPerro(perroId, zonaSeguraSnapshot)
+                                            }
+                                        }
+                                        .addOnFailureListener { e ->
+                                            Log.e("PreloadData", "Error obteniendo zona segura para perro $perroId: ${e.message}")
+                                        }
+                                    
+                                    // 5. Obtener la ubicación del perro
+                                    database.child("locations").child(perroId).get()
+                                        .addOnSuccessListener { locationSnapshot ->
+                                            if (locationSnapshot.exists()) {
+                                                Log.d("PreloadData", "Ubicación del perro obtenida: $perroId")
+                                                DatosPrecargados.guardarUbicacionPerro(perroId, locationSnapshot)
+                                            }
+                                            
+                                            // Independientemente del resultado, incrementar contador
+                                            perrosProcesados++
+                                            
+                                            // Si ya procesamos todos los perros, llamar al callback
+                                            if (perrosProcesados >= numPerros) {
+                                                Log.d("PreloadData", "Precarga completa para todos los perros")
+                                                callback()
+                                            }
+                                        }
+                                        .addOnFailureListener { e ->
+                                            Log.e("PreloadData", "Error obteniendo ubicación para perro $perroId: ${e.message}")
+                                            
+                                            // Incluso si hay error, incrementar contador
+                                            perrosProcesados++
+                                            
+                                            // Si ya procesamos todos los perros, llamar al callback
+                                            if (perrosProcesados >= numPerros) {
+                                                Log.d("PreloadData", "Precarga completa (con algunos errores)")
+                                                callback()
+                                            }
+                                        }
+                                } else {
+                                    Log.d("PreloadData", "Elemento en 'users' no es un perro o no tiene ID válido")
+                                    // Contar como procesado aunque no sea un perro válido
+                                    perrosProcesados++
+                                    
+                                    // Verificar si ya terminamos
+                                    if (perrosProcesados >= numPerros) {
+                                        Log.d("PreloadData", "Precarga completa")
+                                        callback()
+                                    }
+                                }
+                            }
+                            
+                            // Si no hay perros válidos, llamar al callback
+                            if (perrosValidos == 0) {
+                                Log.d("PreloadData", "No se encontraron perros válidos, completando precarga")
+                                callback()
+                            }
+                        } else {
+                            Log.d("PreloadData", "No se encontraron perros asociados al dueño")
+                            // Marcar como inicializado incluso sin perros
+                            DatosPrecargados.setInicializado(true)
+                            callback()
+                        }
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("PreloadData", "Error cargando perros: ${e.message}")
+                        // Marcar como inicializado a pesar del error
+                        DatosPrecargados.setInicializado(true)
+                        callback()
+                    }
+            } else {
+                Log.e("PreloadData", "No se encontró el dueño con ID: $userId")
+                // Marcar como inicializado a pesar del error
+                DatosPrecargados.setInicializado(true)
+                callback()
+            }
+        }
+        .addOnFailureListener { e ->
+            Log.e("PreloadData", "Error cargando datos del dueño: ${e.message}")
+            // Marcar como inicializado a pesar del error
+            DatosPrecargados.setInicializado(true)
+            callback()
+        }
 } 

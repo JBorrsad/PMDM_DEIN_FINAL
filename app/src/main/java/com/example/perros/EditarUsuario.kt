@@ -19,6 +19,7 @@ import com.google.firebase.database.*
 import com.yalantis.ucrop.UCrop
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
 import coil.load
@@ -393,7 +394,18 @@ class EditarUsuario : AppCompatActivity() {
             if (result.resultCode == RESULT_OK && result.data != null) {
                 val selectedImageUri: Uri? = result.data!!.data
                 if (selectedImageUri != null) {
+                    // Si la imagen viene de la galería
                     iniciarUCrop(selectedImageUri)
+                } else if (result.data!!.extras?.containsKey("data") == true) {
+                    // Si la imagen viene de la cámara (se recibe como Bitmap)
+                    val imageBitmap = result.data!!.extras?.get("data") as Bitmap
+                    // Guardamos temporalmente el bitmap en un archivo para pasarlo a UCrop
+                    val tempFile = File.createTempFile("camera_image", ".jpg", cacheDir)
+                    val outputStream = FileOutputStream(tempFile)
+                    imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+                    outputStream.close()
+                    // Iniciamos UCrop con este archivo temporal
+                    iniciarUCrop(Uri.fromFile(tempFile))
                 } else {
                     Toast.makeText(this, "Error al seleccionar imagen", Toast.LENGTH_SHORT).show()
                 }

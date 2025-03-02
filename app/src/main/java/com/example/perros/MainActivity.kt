@@ -106,7 +106,16 @@ class MainActivity : AppCompatActivity() {
                 auth.signOut()
                 sharedPreferences.edit().clear().apply()
             } else {
-                startActivity(Intent(this, MapsActivity::class.java))
+                // IMPORTANTE: No podemos ir directamente a MapsActivity porque necesitamos
+                // asegurarnos de que los datos precargados (perros, ubicaciones, etc.) estén
+                // inicializados. Por eso redirigimos a SplashLoginActivity con un tipo especial
+                // de login que indica que hay una sesión activa, y SplashLoginActivity se
+                // encargará de cargar los datos antes de ir a MapsActivity.
+                Log.d(TAG, "Sesión activa detectada, redirigiendo a SplashLoginActivity para cargar datos")
+                val intent = Intent(this, SplashLoginActivity::class.java).apply {
+                    putExtra(SplashLoginActivity.EXTRA_LOGIN_TYPE, SplashLoginActivity.LOGIN_TYPE_SESSION_ACTIVE)
+                }
+                startActivity(intent)
                 finish()
                 return
             }
@@ -242,7 +251,16 @@ class MainActivity : AppCompatActivity() {
                 auth.signOut()
                 sharedPreferences.edit().clear().apply()
             } else {
-                startActivity(Intent(this, MapsActivity::class.java))
+                // IMPORTANTE: No podemos ir directamente a MapsActivity porque necesitamos
+                // asegurarnos de que los datos precargados (perros, ubicaciones, etc.) estén
+                // inicializados. Por eso redirigimos a SplashLoginActivity con un tipo especial
+                // de login que indica que hay una sesión activa, y SplashLoginActivity se
+                // encargará de cargar los datos antes de ir a MapsActivity.
+                Log.d(TAG, "Sesión activa detectada en onResume, redirigiendo a SplashLoginActivity")
+                val intent = Intent(this, SplashLoginActivity::class.java).apply {
+                    putExtra(SplashLoginActivity.EXTRA_LOGIN_TYPE, SplashLoginActivity.LOGIN_TYPE_SESSION_ACTIVE)
+                }
+                startActivity(intent)
                 finish()
             }
         }

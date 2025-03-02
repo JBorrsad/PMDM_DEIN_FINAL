@@ -63,6 +63,7 @@ dependencies {
     // Maps y Location
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
+    implementation("com.google.maps.android:android-maps-utils:2.4.0")
 
     // uCrop para recorte de imágenes
     implementation("com.github.yalantis:ucrop:2.2.8")

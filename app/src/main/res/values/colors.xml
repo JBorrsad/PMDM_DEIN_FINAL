@@ -3,8 +3,11 @@
     <!-- Colores primarios -->
     <color name="colorPrimary">#246BFD</color>
     <color name="colorPrimaryDark">#1D54CC</color>
+    <color name="colorPrimaryVariant">#3A75E6</color>
     <color name="colorAccent">#246BFD</color>
     <color name="secondary">#FF6D00</color>
+    <color name="colorSecondary">#FF8A3C</color>
+    <color name="colorSecondaryVariant">#E67C36</color>
 
     <!-- Colores de estado -->
     <color name="success">#4ADE80</color>
@@ -32,15 +35,19 @@
     <color name="text_primary">#212529</color>
     <color name="text_secondary">#757575</color>
     <color name="text_tertiary">#ADB5BD</color>
+    <color name="text_disabled">#666666</color>
 
     <!-- Colores de fondo -->
     <color name="background">#FAFAFA</color>  <!-- Actualizado para el fondo de la app -->
     <color name="surface">#FFFFFF</color>     <!-- Actualizado para superficies -->
+    <color name="overlay">#33000000</color>
 
     <!-- Colores para botones -->
     <color name="button_primary">@color/colorPrimary</color>
     <color name="button_text">@color/white</color>
     <color name="button_success">#4CAF50</color>
+    <color name="button_secondary">@color/surface</color>
+    <color name="button_disabled">#CCCCCC</color>
 
     <!-- Colores para el switch de tema -->
     <color name="switch_theme_light">#FDCA40</color>
@@ -53,5 +60,30 @@
     <color name="input_field_border">#E0E0E0</color>
     <color name="input_field_background">#FFFFFF</color>
     <color name="cardview_background">#F9F9F9</color>
+
+    <!-- Colores específicos para componentes -->
+    <color name="card_background">@color/white</color>
+    <color name="divider">#E0E0E0</color>
+    <color name="spinner_border">#E0E0E0</color>
+    <color name="app_background">@color/background</color>
+    <color name="item_background">@color/white</color>
+    
+    <!-- Colores para campos de formulario -->
+    <color name="input_background">@color/white</color>
+    <color name="input_stroke">#E0E0E0</color>
+    <color name="input_hint">#9E9E9E</color>
+    
+    <!-- Colores para elementos de toolbar -->
+    <color name="toolbar_background">@color/background</color>
+    <color name="toolbar_text">@color/text_primary</color>
+    <color name="toolbar_icon">@color/text_primary</color>
+    
+    <!-- Colores para bordes y separadores -->
+    <color name="border_color">#E0E0E0</color>
+    <color name="separator_color">#F5F5F5</color>
+    
+    <!-- Colores para ripples y efectos de selección -->
+    <color name="ripple_color">#20000000</color>
+    <color name="selection_color">#33246BFD</color>
 
 </resources>

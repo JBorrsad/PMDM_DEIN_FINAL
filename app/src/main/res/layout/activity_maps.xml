@@ -66,6 +66,69 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
+    <!-- Banner de edición de zona segura -->
+    <TextView
+        android:id="@+id/tvEditingZone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="⚠️ EDITANDO ZONA SEGURA"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:padding="8dp"
+        android:background="#FFAA00"
+        android:visibility="gone"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:elevation="4dp"/>
+
+    <!-- Botones de aceptar y cancelar zona segura -->
+    <LinearLayout
+        android:id="@+id/layoutZoneButtons"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="120dp"
+        android:layout_marginEnd="16dp"
+        android:visibility="gone">
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btnCancelZone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            app:fabSize="mini"
+            app:tint="@android:color/white"
+            app:backgroundTint="#F44336"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            android:contentDescription="Cancelar edición de zona segura"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btnSaveZone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:fabSize="mini"
+            app:tint="@android:color/white"
+            app:backgroundTint="#4CAF50"
+            android:src="@drawable/ic_check_custom"
+            android:contentDescription="Guardar zona segura"/>
+    </LinearLayout>
+
+    <!-- Botón para editar zona segura -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btnEditZone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="120dp"
+        android:layout_marginEnd="16dp"
+        app:fabSize="normal"
+        app:tint="@android:color/white"
+        app:backgroundTint="#2196F3"
+        android:src="@drawable/edit"
+        android:contentDescription="Editar zona segura"/>
+
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -104,7 +167,7 @@
                     android:id="@+id/btnZonaText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Editar Zona Segura"
+                    android:text="Zona segura"
                     android:textAppearance="@style/TextAppearance.App.Caption"
                     android:textColor="@color/text_tertiary"
                     android:gravity="center"
