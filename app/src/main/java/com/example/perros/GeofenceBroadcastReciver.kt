@@ -132,20 +132,21 @@ class GeofenceBroadcastReciver : BroadcastReceiver() {
             return
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                channelId, "Geofence Alerts", NotificationManager.IMPORTANCE_HIGH
-            ).apply {
-                description = "Notificación cuando la mascota sale de la zona segura"
-            }
-            val notificationManager = context.getSystemService(NotificationManager::class.java)
-            notificationManager.createNotificationChannel(channel)
+        // Crear canal de notificación (requerido para Android 8.0+)
+        val channel = NotificationChannel(
+            channelId,
+            context.getString(R.string.geofence_channel_name),
+            NotificationManager.IMPORTANCE_HIGH
+        ).apply {
+            description = context.getString(R.string.geofence_channel_description)
         }
+        val notificationManager = context.getSystemService(NotificationManager::class.java)
+        notificationManager.createNotificationChannel(channel)
 
         val builder = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(android.R.drawable.ic_dialog_alert)
-            .setContentTitle("¡Alerta de geocerca!")
-            .setContentText("Tu mascota ha salido de la zona segura.")
+            .setContentTitle(context.getString(R.string.alerta_geocerca))
+            .setContentText(context.getString(R.string.mascota_fuera_zona))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
 

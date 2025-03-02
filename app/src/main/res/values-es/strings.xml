@@ -29,19 +29,6 @@
     <string name="alerta_geocerca">¡Alerta de geocerca!</string>
     <string name="mascota_fuera_zona">Tu mascota ha salido de la zona segura.</string>
     <string name="mascota_fuera_zona_nombre">¡%1$s ha salido de la zona segura!</string>
-    <string name="geofence_channel_name">Geofence Alerts</string>
+    <string name="geofence_channel_name">Alertas de Geocerca</string>
     <string name="geofence_channel_description">Notificación cuando la mascota sale de la zona segura</string>
-    <string name="dog_photo" translatable="false">Foto del perro</string>
-    <string name="todo">TODO</string>
-    <string name="todo2">TODO</string>
-    <string name="editando_zona_segura">⚠️ EDITANDO ZONA SEGURA</string>
-    <string name="cancelar_edici_n_de_zona_segura">Cancelar edición de zona segura</string>
-    <string name="guardar_zona_segura">Guardar zona segura</string>
-    <string name="editar_zona_segura">Editar zona segura</string>
-    <string name="zona_segura">Zona segura</string>
-    <string name="perfil">Perfil</string>
-    <string name="settings">settings</string>
-    <string name="ajustes">Ajustes</string>
-    <string name="placeholder">placeholder</string>
-    <string name="wip">WIP</string>
-</resources>
+</resources> 

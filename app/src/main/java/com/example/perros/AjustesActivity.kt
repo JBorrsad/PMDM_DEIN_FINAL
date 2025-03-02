@@ -1,12 +1,12 @@
 package com.example.perros
 
-import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.edit
 import com.example.perros.databinding.ActivityAjustesBinding
 import com.google.firebase.auth.FirebaseAuth
 
@@ -48,12 +48,12 @@ class AjustesActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         // Inicialización
-        sharedPreferences = getSharedPreferences("AppSettings", Context.MODE_PRIVATE)
+        sharedPreferences = getSharedPreferences("AppSettings", MODE_PRIVATE)
         auth = FirebaseAuth.getInstance()
 
         // Configurar estado inicial de los switches
         setupInitialState()
-        
+
         // Configurar listeners
         setupListeners()
     }
@@ -71,7 +71,7 @@ class AjustesActivity : AppCompatActivity() {
         val isDarkMode = sharedPreferences.getBoolean("dark_mode", false)
         binding.switchTema.isChecked = isDarkMode
         updateSwitchTheme(isDarkMode)
-        
+
         // Estado de las notificaciones
         val notificationsEnabled = sharedPreferences.getBoolean("notifications_enabled", true)
         binding.switchNotificaciones.isChecked = notificationsEnabled
@@ -93,18 +93,18 @@ class AjustesActivity : AppCompatActivity() {
             startActivity(intent)
             finish()
         }
-        
+
         // Switch para cambiar tema
         binding.switchTema.setOnCheckedChangeListener { _, isChecked ->
             toggleDarkMode(isChecked)
             updateSwitchTheme(isChecked)
         }
-        
+
         // Switch para notificaciones
         binding.switchNotificaciones.setOnCheckedChangeListener { _, isChecked ->
             toggleNotifications(isChecked)
         }
-        
+
         // Botón para cerrar sesión
         binding.btnCerrarSesion.setOnClickListener {
             logout()
@@ -117,90 +117,81 @@ class AjustesActivity : AppCompatActivity() {
      * @param isDarkMode `true` si estamos en modo oscuro, `false` si estamos en modo claro
      */
     private fun updateSwitchTheme(isDarkMode: Boolean) {
-        try {
-            val switchColor = if (isDarkMode) {
-                getColor(R.color.switch_theme_dark)
-            } else {
-                getColor(R.color.switch_theme_light)
-            }
-            binding.switchTema.thumbTintList = android.content.res.ColorStateList.valueOf(switchColor)
-        } catch (e: Exception) {
-            // Si hay algún problema al aplicar el tinte, simplemente lo ignoramos
-            // y dejamos el switch con su apariencia predeterminada
-            e.printStackTrace()
-        }
+        binding.switchTema.text = if (isDarkMode) "Tema oscuro" else "Tema claro"
     }
 
     /**
-     * Alterna entre el modo claro y oscuro de la aplicación.
+     * Activa o desactiva el modo oscuro en la aplicación.
      *
      * Este método:
-     * 1. Guarda la preferencia del usuario en SharedPreferences
-     * 2. Aplica el tema correspondiente a través de AppCompatDelegate
+     * - Actualiza la preferencia de modo oscuro en SharedPreferences
+     * - Aplica el cambio de tema a nivel de sistema usando AppCompatDelegate
+     * - Muestra un mensaje informativo al usuario
      *
-     * El cambio de tema se aplica inmediatamente, pero para una aplicación
-     * completa del tema puede requerirse reiniciar la actividad.
-     *
-     * @param enable `true` para activar el modo oscuro, `false` para el modo claro
+     * @param enable `true` para activar el modo oscuro, `false` para desactivarlo
      */
     private fun toggleDarkMode(enable: Boolean) {
         // Guardar preferencia
-        sharedPreferences.edit().putBoolean("dark_mode", enable).apply()
-        
-        // Aplicar tema
-        if (enable) {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-        } else {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        sharedPreferences.edit {
+            putBoolean("dark_mode", enable)
         }
+
+        // Aplicar tema
+        val mode = if (enable) {
+            AppCompatDelegate.MODE_NIGHT_YES
+        } else {
+            AppCompatDelegate.MODE_NIGHT_NO
+        }
+        AppCompatDelegate.setDefaultNightMode(mode)
+
+        // Mostrar mensaje
+        val message = if (enable) "Modo oscuro activado" else "Modo claro activado"
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
     /**
      * Activa o desactiva las notificaciones de la aplicación.
      *
      * Este método:
-     * 1. Guarda la preferencia del usuario en SharedPreferences
-     * 2. Muestra un mensaje Toast confirmando la acción
+     * - Actualiza la preferencia de notificaciones en SharedPreferences
+     * - Muestra un mensaje informativo al usuario
      *
-     * La implementación actual solo guarda la preferencia. La lógica para
-     * activar/desactivar las notificaciones reales debe implementarse
-     * en un servicio de notificaciones específico.
-     *
-     * @param enable `true` para habilitar notificaciones, `false` para deshabilitarlas
+     * @param enable `true` para activar las notificaciones, `false` para desactivarlas
      */
     private fun toggleNotifications(enable: Boolean) {
         // Guardar preferencia
-        sharedPreferences.edit().putBoolean("notifications_enabled", enable).apply()
-        
-        // Mostrar mensaje informativo
-        val message = if (enable) 
-            "Notificaciones activadas" 
-        else 
+        sharedPreferences.edit {
+            putBoolean("notifications_enabled", enable)
+        }
+
+        // Mostrar mensaje
+        val message = if (enable) {
+            "Notificaciones activadas"
+        } else {
             "Notificaciones desactivadas"
-        
+        }
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
     /**
-     * Cierra la sesión del usuario actual y redirige a la pantalla de inicio.
+     * Cierra la sesión del usuario actual.
      *
      * Este método:
-     * 1. Llama a `signOut()` en la instancia de FirebaseAuth
-     * 2. Crea un Intent para navegar a MainActivity (pantalla de login)
-     * 3. Establece flags para limpiar la pila de actividades
-     * 4. Inicia la actividad MainActivity y finaliza la actual
-     *
-     * Al establecer los flags FLAG_ACTIVITY_NEW_TASK y FLAG_ACTIVITY_CLEAR_TASK,
-     * se asegura que el usuario no pueda volver a esta pantalla presionando el
-     * botón Atrás después de cerrar sesión.
+     * - Cierra la sesión en Firebase Authentication
+     * - Muestra un mensaje informativo
+     * - Redirige al usuario a la pantalla de login
      */
     private fun logout() {
+        // Cerrar sesión en Firebase
         auth.signOut()
-        
-        // Redirigir a MainActivity o LoginActivity
-        val intent = Intent(this, MainActivity::class.java)
+
+        // Mostrar mensaje
+        Toast.makeText(this, "Sesión cerrada", Toast.LENGTH_SHORT).show()
+
+        // Ir a LoginActivity
+        val intent = Intent(this, LoginActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
         finish()
     }
-} 
+}

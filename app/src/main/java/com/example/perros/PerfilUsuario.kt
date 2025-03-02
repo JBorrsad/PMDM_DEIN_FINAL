@@ -1,9 +1,9 @@
 package com.example.perros
 
 import android.content.Intent
-import android.graphics.BitmapFactory
+
 import android.os.Bundle
-import android.util.Base64
+
 import android.util.Log
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
@@ -37,6 +37,7 @@ import java.util.*
  * @property auth Instancia de Firebase Authentication
  * @property usuarioId ID del usuario actual
  */
+@Suppress("DEPRECATION")
 class PerfilUsuario : AppCompatActivity() {
 
     private lateinit var ivFoto: ImageView
@@ -144,7 +145,11 @@ class PerfilUsuario : AppCompatActivity() {
 
                         tvNombre.text = nombre
                         tvApellidos.text = apellidos
-                        tvNombreUsuarioGrande.text = "$nombre $apellidos"
+                        tvNombreUsuarioGrande.text = buildString {
+                            append(nombre)
+                            append(" ")
+                            append(apellidos)
+                        }
 
                         val fechaNacimiento = snapshot.child("fechaNacimiento").getValue(String::class.java)
                         if (!fechaNacimiento.isNullOrEmpty()) {
@@ -153,18 +158,23 @@ class PerfilUsuario : AppCompatActivity() {
                                 val fecha = dateFormat.parse(fechaNacimiento)
                                 if (fecha != null) {
                                     val edad = calcularEdad(fecha)
-                                    tvEdad.text = "$edad años"
+                                    tvEdad.text = buildString {
+                                        append(edad)
+                                        append(" años")
+                                    }
                                 }
                             } catch (e: Exception) {
                                 e.printStackTrace()
                                 tvEdad.text = "N/A"
                             }
                         } else {
-                            tvFechaNacimiento.text = "No especificada"
+                                tvFechaNacimiento.text = buildString {
+            append("No especificada")
+        }
                             tvEdad.text = "N/A"
                         }
 
-                        val esPerro = snapshot.child("isPerro").getValue(Boolean::class.java) ?: false
+                        val esPerro = snapshot.child("isPerro").getValue(Boolean::class.java) == true
                         tvEsPerro.text = if (esPerro) "Sí" else "No"
                     } else {
                         Log.e("PerfilUsuario", "No se encontraron datos del usuario en Firebase.")

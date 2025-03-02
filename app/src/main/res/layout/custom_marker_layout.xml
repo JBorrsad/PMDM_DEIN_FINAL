@@ -1,56 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:background="@android:color/transparent"
-    android:padding="4dp">
+    android:layout_height="wrap_content">
 
+    <!-- Contenedor principal del marcador -->
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
-        android:orientation="horizontal"
-        android:padding="4dp"
-        android:gravity="center_vertical">
+        android:background="@drawable/custom_marker1"
+        android:orientation="vertical"
+        android:padding="5dp">
 
+        <!-- ImageView circular para la foto del perro -->
         <ImageView
-            android:id="@+id/img_dog"
+            android:id="@+id/pet_image"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/img"
-            android:contentDescription="Imagen del perro" />
+            android:layout_gravity="center"
+            android:contentDescription="@string/dog_photo"
+            android:scaleType="centerCrop" />
 
-        <TextView
-            android:id="@+id/txt_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:text="Nombre del perro"
-            android:textColor="@android:color/black"
-            android:textSize="14sp"
-            android:textStyle="bold" />
-
-        <ImageView
-            android:id="@+id/img_owner"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_marginStart="4dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/img"
-            android:contentDescription="Imagen del dueño" />
     </LinearLayout>
 
-    <!-- Triángulo que apunta hacia abajo para indicar la ubicación exacta -->
-    <View
-        android:layout_width="16dp"
-        android:layout_height="16dp"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="-4dp"
-        android:rotation="45"
-        android:background="@android:color/white" />
-
-</LinearLayout> 
+</FrameLayout> 

@@ -3,11 +3,9 @@ package com.example.perros
 import android.app.Dialog
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Base64
 import android.view.View
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
@@ -17,13 +15,10 @@ import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.yalantis.ucrop.UCrop
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
-import coil.load
-import com.example.perros.bitmapToBase64OriginalQuality
 
 /**
  * Actividad para editar el perfil de usuario.
@@ -67,12 +62,12 @@ class EditarUsuario : AppCompatActivity() {
     private lateinit var etFechaNacimiento: EditText
     private lateinit var etEdad: EditText
     private lateinit var switchEsPerro: SwitchMaterial
-    private lateinit var tvDueño: TextView
-    private lateinit var spinnerDueño: Spinner
+    private lateinit var tvDuenio: TextView
+    private lateinit var spinnerDuenio: Spinner
     private lateinit var database: DatabaseReference
     private lateinit var auth: FirebaseAuth
     private var usuarioId: String? = null
-    private var dueñoSeleccionadoId: String? = null
+    private var duenioSeleccionadoId: String? = null
     private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     private var selectedDate: Date? = null
 
@@ -100,8 +95,8 @@ class EditarUsuario : AppCompatActivity() {
         btnGuardar = findViewById(R.id.btnGuardarUsuario)
         btnBack = findViewById(R.id.btnBack)
         switchEsPerro = findViewById(R.id.switchEsPerro)
-        tvDueño = findViewById(R.id.tvDueño)
-        spinnerDueño = findViewById(R.id.spinnerDueño)
+        tvDuenio = findViewById(R.id.tvDueño)
+        spinnerDuenio = findViewById(R.id.spinnerDueño)
 
         if (ivImagen.drawable == null) {
             ivImagen.loadBase64Image(null)
@@ -209,8 +204,8 @@ class EditarUsuario : AppCompatActivity() {
 
     private fun configurarSwitch() {
         switchEsPerro.setOnCheckedChangeListener { _, isChecked ->
-            tvDueño.visibility = if (isChecked) View.VISIBLE else View.GONE
-            spinnerDueño.visibility = if (isChecked) View.VISIBLE else View.GONE
+            tvDuenio.visibility = if (isChecked) View.VISIBLE else View.GONE
+            spinnerDuenio.visibility = if (isChecked) View.VISIBLE else View.GONE
 
             if (isChecked) {
                 cargarListaDueños()
@@ -239,23 +234,23 @@ class EditarUsuario : AppCompatActivity() {
                         dueños.map { it.second }
                     )
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-                    spinnerDueño.adapter = adapter
+                    spinnerDuenio.adapter = adapter
 
-                    spinnerDueño.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                    spinnerDuenio.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                         override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                            dueñoSeleccionadoId = dueños[position].first
+                            duenioSeleccionadoId = dueños[position].first
                         }
 
                         override fun onNothingSelected(parent: AdapterView<*>?) {
-                            dueñoSeleccionadoId = null
+                            duenioSeleccionadoId = null
                         }
                     }
 
                     // Si hay un dueño seleccionado previamente, seleccionarlo
-                    if (dueñoSeleccionadoId != null) {
-                        val index = dueños.indexOfFirst { it.first == dueñoSeleccionadoId }
+                    if (duenioSeleccionadoId != null) {
+                        val index = dueños.indexOfFirst { it.first == duenioSeleccionadoId }
                         if (index != -1) {
-                            spinnerDueño.setSelection(index)
+                            spinnerDuenio.setSelection(index)
                         }
                     }
                 }
@@ -297,12 +292,12 @@ class EditarUsuario : AppCompatActivity() {
                         switchEsPerro.isChecked = isPerro
 
                         if (isPerro) {
-                            tvDueño.visibility = View.VISIBLE
-                            spinnerDueño.visibility = View.VISIBLE
+                            tvDuenio.visibility = View.VISIBLE
+                            spinnerDuenio.visibility = View.VISIBLE
 
                             val dueñoId = snapshot.child("dueñoId").getValue(String::class.java)
                             if (dueñoId != null) {
-                                dueñoSeleccionadoId = dueñoId
+                                duenioSeleccionadoId = dueñoId
                                 cargarListaDueños()
                             }
                         }
@@ -364,8 +359,8 @@ class EditarUsuario : AppCompatActivity() {
             }
 
             updates["isPerro"] = switchEsPerro.isChecked
-            if (switchEsPerro.isChecked && dueñoSeleccionadoId != null) {
-                updates["dueñoId"] = dueñoSeleccionadoId!!
+            if (switchEsPerro.isChecked && duenioSeleccionadoId != null) {
+                updates["dueñoId"] = duenioSeleccionadoId!!
             }
 
             database.child("users").child(id).updateChildren(updates)

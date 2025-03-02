@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import com.google.android.material.imageview.ShapeableImageView
-import androidx.core.content.ContextCompat
+
 
 /**
  * Adaptador personalizado para mostrar una lista de perros en un Spinner.
@@ -87,7 +87,7 @@ class DogSpinnerAdapter(
             }
         } ?: run {
             // Si dog es nulo, asegurarnos de mostrar una imagen por defecto
-            textView.text = "Seleccionar perro"
+            textView.setText(R.string.seleccionar_perro)
             imageView.setImageResource(R.drawable.img)
         }
 

@@ -19,7 +19,6 @@ import java.util.Date
 import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
 import android.widget.CheckBox
-import android.app.ProgressDialog
 import android.util.Log
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -29,6 +28,8 @@ import com.google.android.gms.common.SignInButton
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.GoogleAuthProvider
+import androidx.activity.result.ActivityResultLauncher
+import androidx.core.content.edit
 
 /**
  * Actividad principal que maneja la autenticación y el inicio de sesión de usuarios.
@@ -71,6 +72,7 @@ class MainActivity : AppCompatActivity() {
     
     // Google Sign In
     private lateinit var googleSignInClient: GoogleSignInClient
+    private lateinit var googleSignInLauncher: ActivityResultLauncher<Intent>
 
     /**
      * Inicializa la actividad y configura la interfaz de usuario.
@@ -95,6 +97,16 @@ class MainActivity : AppCompatActivity() {
         applyUserTheme()
 
         auth = FirebaseAuth.getInstance()
+        
+        // Registrar el ActivityResultLauncher para la autenticación de Google
+        googleSignInLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                handleSignInResult(task)
+            }
+        }
 
         // Verificar si la sesión ha expirado
         if (auth.currentUser != null) {
@@ -104,7 +116,9 @@ class MainActivity : AppCompatActivity() {
             if (currentTime - lastLoginTime > SESSION_TIMEOUT) {
                 // La sesión ha expirado, cerrar sesión
                 auth.signOut()
-                sharedPreferences.edit().clear().apply()
+                sharedPreferences.edit {
+                    clear()
+                }
             } else {
                 // IMPORTANTE: No podemos ir directamente a MapsActivity porque necesitamos
                 // asegurarnos de que los datos precargados (perros, ubicaciones, etc.) estén
@@ -183,21 +197,7 @@ class MainActivity : AppCompatActivity() {
      */
     private fun signInWithGoogle() {
         val signInIntent = googleSignInClient.signInIntent
-        startActivityForResult(signInIntent, RC_SIGN_IN)
-    }
-    
-    /**
-     * Maneja el resultado del inicio de sesión con Google.
-     * Procesa la cuenta seleccionada por el usuario y autentica con Firebase.
-     */
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        // Resultado de inicio de sesión con Google
-        if (requestCode == RC_SIGN_IN) {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-            handleSignInResult(task)
-        }
+        googleSignInLauncher.launch(signInIntent)
     }
     
     /**
@@ -249,7 +249,9 @@ class MainActivity : AppCompatActivity() {
             if (currentTime - lastLoginTime > SESSION_TIMEOUT) {
                 // La sesión ha expirado, cerrar sesión
                 auth.signOut()
-                sharedPreferences.edit().clear().apply()
+                sharedPreferences.edit {
+                    clear()
+                }
             } else {
                 // IMPORTANTE: No podemos ir directamente a MapsActivity porque necesitamos
                 // asegurarnos de que los datos precargados (perros, ubicaciones, etc.) estén

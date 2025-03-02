@@ -5,8 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
@@ -15,6 +13,7 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityOptionsCompat
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.DataSnapshot
@@ -29,6 +28,7 @@ import kotlinx.coroutines.*
 import androidx.lifecycle.lifecycleScope
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import androidx.core.content.edit
 
 /**
  * Actividad de splash que maneja el inicio de sesión y precarga de datos.
@@ -53,6 +53,7 @@ class SplashLoginActivity : AppCompatActivity() {
         const val LOGIN_TYPE_SESSION_ACTIVE = 3
         
         // Estados de login
+        @Suppress("unused")
         const val STATUS_SUCCESS = 1
         const val STATUS_FAILED = 0
         
@@ -132,9 +133,8 @@ class SplashLoginActivity : AppCompatActivity() {
                 
                 // Registrar tiempo de login para timeout de sesión
                 // Esto mantiene la sesión activa otros 5 minutos más
-                sharedPreferences.edit().apply {
+                sharedPreferences.edit {
                     putLong("last_login_time", Date().time)
-                    apply()
                 }
                 
                 // Cargar los datos iniciales (perros, ubicaciones, etc.)
@@ -178,23 +178,20 @@ class SplashLoginActivity : AppCompatActivity() {
                     
                     // Guardar email si "recordarme" está activado
                     if (rememberMe) {
-                        sharedPreferences.edit().apply {
+                        sharedPreferences.edit {
                             putString("saved_email", email)
                             putBoolean("remember_me", true)
-                            apply()
                         }
                     } else {
-                        sharedPreferences.edit().apply {
+                        sharedPreferences.edit {
                             remove("saved_email")
                             putBoolean("remember_me", false)
-                            apply()
                         }
                     }
                     
                     // Registrar tiempo de login para timeout de sesión
-                    sharedPreferences.edit().apply {
+                    sharedPreferences.edit {
                         putLong("last_login_time", Date().time)
-                        apply()
                     }
                     
                     loginSuccess = true
@@ -219,9 +216,8 @@ class SplashLoginActivity : AppCompatActivity() {
                     Log.d(TAG, "Login con Google exitoso")
                     
                     // Registrar tiempo de login para timeout de sesión
-                    sharedPreferences.edit().apply {
+                    sharedPreferences.edit {
                         putLong("last_login_time", Date().time)
-                        apply()
                     }
                     
                     loginSuccess = true
@@ -300,7 +296,7 @@ class SplashLoginActivity : AppCompatActivity() {
                         // Para cada perro, cargar su ubicación y zona segura
                         snapshot.children.forEach { perroSnapshot ->
                             val perroId = perroSnapshot.key ?: return@forEach
-                            val isPerro = perroSnapshot.child("isPerro").getValue(Boolean::class.java) ?: false
+                            val isPerro = perroSnapshot.child("isPerro").getValue(Boolean::class.java) == true
                             
                             if (isPerro) {
                                 // Guardar perro individualmente
@@ -418,9 +414,11 @@ class SplashLoginActivity : AppCompatActivity() {
                     // Esperar hasta completar el tiempo mínimo
                     val remainingTime = MIN_SPLASH_TIME - elapsedTime
                     updateStatus("¡Datos cargados! Iniciando aplicación...")
-                    Handler(Looper.getMainLooper()).postDelayed({
+                    // Usar lifecycleScope en lugar de Handler para programar tareas demoradas
+                    lifecycleScope.launch {
+                        delay(remainingTime)
                         iniciarMapActivity()
-                    }, remainingTime)
+                    }
                 }
             }
         }
@@ -440,9 +438,18 @@ class SplashLoginActivity : AppCompatActivity() {
      */
     private fun iniciarMapActivity() {
         val intent = Intent(this, MapsActivity::class.java)
-        startActivity(intent)
+        
+        // Crear ActivityOptions con animaciones de transición
+        val options = ActivityOptionsCompat.makeCustomAnimation(
+            this,
+            android.R.anim.fade_in,
+            android.R.anim.fade_out
+        )
+        
+        // Iniciar actividad con las opciones de animación
+        startActivity(intent, options.toBundle())
         finish()
-        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+        // Ya no es necesario usar overridePendingTransition
     }
     
     /**

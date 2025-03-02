@@ -107,7 +107,7 @@ object DatosPrecargados {
         
         perrosSnapshot.children.forEach { perroSnapshot ->
             val perroId = perroSnapshot.key ?: return@forEach
-            val isPerro = perroSnapshot.child("isPerro").getValue(Boolean::class.java) ?: false
+            val isPerro = perroSnapshot.child("isPerro").getValue(Boolean::class.java) == true
             
             if (isPerro) {
                 listaPerrosIds.add(perroId)

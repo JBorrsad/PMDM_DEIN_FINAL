@@ -22,8 +22,8 @@ class LoadingSpinner @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : FrameLayout(context, attrs, defStyleAttr) {
 
-    private lateinit var spinnerImage: ImageView
-    private lateinit var rotateAnimation: Animation
+    private val spinnerImage: ImageView
+    private val rotateAnimation: Animation
 
     init {
         // Configurar el fondo semitransparente - mucho más visible

@@ -1,21 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <!-- Base application theme. -->
-    <style name="Base.Theme.SoloBambas" parent="Theme.Material3.Light.NoActionBar">
-        <item name="colorPrimary">#0066FF</item>
-        <item name="colorOnPrimary">#FFFFFF</item>
-        <item name="colorSecondary">#FF6D00</item>
-        <item name="android:statusBarColor">?attr/colorPrimary</item>
-        <item name="android:navigationBarColor">?attr/colorSurface</item>
+    <style name="Theme.Perros" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <!-- PawTracker brand colors -->
+        <item name="colorPrimary">@color/primary_color</item>
+        <item name="colorPrimaryVariant">@color/primary_variant</item>
+        <item name="colorPrimaryDark">@color/primary_dark_color</item>
+        <item name="colorOnPrimary">@color/on_primary</item>
+        
+        <item name="colorSecondary">@color/secondary_color</item>
+        <item name="colorSecondaryVariant">@color/secondary_variant</item>
+        <item name="colorOnSecondary">@color/on_secondary</item>
+        
+        <!-- Tema de aplicación PawTracker -->
+        <item name="colorSurface">@color/surface_light</item>
+        <item name="colorOnSurface">@color/on_surface_light</item>
+        <item name="android:colorBackground">@color/background_light</item>
+        <item name="colorOnBackground">@color/on_background_light</item>
+        
+        <!-- Status bar -->
+        <item name="android:statusBarColor">@color/primary_dark_color</item>
+        <item name="android:navigationBarColor">@color/primary_dark_color</item>
+        <item name="android:windowLightStatusBar">true</item>
+        
+        <!-- Tema inicial para la aplicación -->
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
     </style>
-
-    <style name="Theme.SoloBambas" parent="Base.Theme.SoloBambas" />
-
+    
+    <!-- Tema específico para PawTracker -->
+    <style name="Theme.Perros.PawTracker" parent="Theme.Perros">
+        <!-- Aquí puedes modificar valores específicos si lo necesitas -->
+    </style>
+    
     <!-- Tema para el Splash Screen -->
-    <style name="SplashTheme" parent="AppTheme">
+    <style name="SplashTheme" parent="Theme.Perros">
         <item name="android:windowBackground">@drawable/splash_background</item>
         <item name="android:windowFullscreen">true</item>
-        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowTranslucentStatus">true</item>
     </style>
     
     <!-- Tema para el Splash Screen inicial de la aplicación -->

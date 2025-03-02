@@ -4,11 +4,7 @@ import android.content.Context
 import android.graphics.*
 import android.util.Base64
 import android.util.Log
-import android.view.LayoutInflater
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.createBitmap
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
@@ -18,8 +14,8 @@ import com.google.maps.android.clustering.Cluster
 import com.google.maps.android.clustering.ClusterItem
 import com.google.maps.android.clustering.ClusterManager
 import com.google.maps.android.clustering.view.DefaultClusterRenderer
-import com.google.maps.android.ui.IconGenerator
-import android.graphics.BitmapFactory
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.scale
 
 /**
  * Clase que gestiona la visualización y agrupación de marcadores de perros en el mapa.
@@ -33,8 +29,8 @@ import android.graphics.BitmapFactory
  * @property context Contexto de la aplicación
  * @property mMap Mapa de Google donde se mostrarán los marcadores
  * @property clusterManager Gestor de clusters proporcionado por Google Maps Utils
- * 
- * @author Aplicación SoloBambas
+ *
+ * @author Aplicación PawTracker
  * @since 1.0
  */
 class DogsClusterManager(
@@ -42,32 +38,32 @@ class DogsClusterManager(
     private val mMap: GoogleMap,
     private val clusterManager: ClusterManager<DogItem>
 ) {
-    
+
     init {
         // Configurar el renderer personalizado
         clusterManager.renderer = DogClusterRenderer(context, mMap, clusterManager)
-        
+
         // Configurar listeners
         mMap.setOnCameraIdleListener(clusterManager)
         mMap.setOnMarkerClickListener(clusterManager)
-        
+
         // Configurar listener para clics en items individuales
         clusterManager.setOnClusterItemClickListener { item ->
             // Manejo del clic en marcador individual
             Log.d("DogsClusterManager", "Clic en perro: ${item.title} (ID: ${item.dogId})")
             true
         }
-        
+
         // Configurar listener para clics en clusters
         clusterManager.setOnClusterClickListener { cluster ->
             Log.d("DogsClusterManager", "Clic en cluster con ${cluster.size} elementos")
             false // falso para permitir el comportamiento por defecto (zoom)
         }
     }
-    
+
     /**
      * Añade un marcador de perro al mapa.
-     * 
+     *
      * @param perroId ID del perro
      * @param position Posición geográfica donde mostrar el marcador
      */
@@ -75,14 +71,14 @@ class DogsClusterManager(
         try {
             // Obtener datos del perro
             val perroSnapshot = DatosPrecargados.obtenerPerro(perroId)
-            
+
             if (perroSnapshot != null && perroSnapshot.exists()) {
                 val nombre = perroSnapshot.child("nombre").getValue(String::class.java) ?: "Perro"
                 val imagenBase64 = perroSnapshot.child("imagenBase64").getValue(String::class.java)
                 val duenioId = perroSnapshot.child("dueñoId").getValue(String::class.java)
-                
+
                 var imagenDuenio: String? = null
-                
+
                 // Obtener imagen del dueño
                 if (duenioId != null) {
                     val duenioData = DatosPrecargados.obtenerUsuario(duenioId)
@@ -90,7 +86,7 @@ class DogsClusterManager(
                         imagenDuenio = duenioData.child("imagenBase64").getValue(String::class.java)
                     }
                 }
-                
+
                 // Crear item para cluster
                 val dogItem = DogItem(
                     position = position,
@@ -100,11 +96,11 @@ class DogsClusterManager(
                     dogImage = imagenBase64,
                     ownerImage = imagenDuenio
                 )
-                
+
                 // Añadir al cluster
                 clusterManager.addItem(dogItem)
                 clusterManager.cluster()
-                
+
                 Log.d("DogsClusterManager", "Marcador añadido para perro: $nombre")
             } else {
                 Log.e("DogsClusterManager", "No se encontraron datos del perro $perroId")
@@ -113,18 +109,18 @@ class DogsClusterManager(
             Log.e("DogsClusterManager", "Error al añadir marcador de perro", e)
         }
     }
-    
+
     /**
      * Limpia todos los marcadores existentes.
      */
     fun limpiarMarcadores() {
         clusterManager.clearItems()
     }
-    
+
     /**
      * Clase que define un elemento para ser mostrado en el mapa y agrupado.
      * Implementa ClusterItem para ser compatible con ClusterManager.
-     * 
+     *
      * @property position Posición geográfica del elemento
      * @property title Título del elemento (nombre del perro)
      * @property snippet Texto descriptivo adicional
@@ -144,7 +140,7 @@ class DogsClusterManager(
         override fun getTitle(): String = title
         override fun getSnippet(): String = snippet
     }
-    
+
     /**
      * Renderer personalizado para los marcadores de perros.
      * Personaliza la apariencia de los marcadores individuales y clusters.
@@ -154,22 +150,25 @@ class DogsClusterManager(
         map: GoogleMap,
         clusterManager: ClusterManager<DogItem>
     ) : DefaultClusterRenderer<DogItem>(context, map, clusterManager) {
-        
-        private val iconGenerator = IconGenerator(context)
-        
+
         override fun onBeforeClusterItemRendered(item: DogItem, markerOptions: MarkerOptions) {
             // Personalizar marcador individual
             try {
                 if (!item.dogImage.isNullOrEmpty()) {
                     try {
                         val imageBytes = Base64.decode(item.dogImage, Base64.DEFAULT)
-                        val decodedImage = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+                        val decodedImage =
+                            BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
                         // Usar el marcador personalizado con la imagen del perro
                         val customMarker = createCustomDogMarker(context, decodedImage)
                         markerOptions.icon(customMarker).title(item.title)
                     } catch (e: Exception) {
                         Log.e("DogsClusterManager", "Error al decodificar imagen del perro", e)
-                        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+                        markerOptions.icon(
+                            BitmapDescriptorFactory.defaultMarker(
+                                BitmapDescriptorFactory.HUE_AZURE
+                            )
+                        )
                             .title(item.title)
                     }
                 } else {
@@ -183,7 +182,7 @@ class DogsClusterManager(
                     .title(item.title)
             }
         }
-        
+
         override fun shouldRenderAsCluster(cluster: Cluster<DogItem>): Boolean {
             // Agrupar solo si hay más de un elemento
             return cluster.size > 1
@@ -206,26 +205,41 @@ class DogsClusterManager(
         val markerSize = 150
         val shadowSize = 30
 
-        val bmp = Bitmap.createBitmap(markerSize + shadowSize * 2, markerSize + shadowSize * 2, Bitmap.Config.ARGB_8888)
+        val bmp = Bitmap.createBitmap(
+            markerSize + shadowSize * 2,
+            markerSize + shadowSize * 2,
+            Bitmap.Config.ARGB_8888
+        )
         val canvas = Canvas(bmp)
 
         // Sombra
         val shadowPaint = Paint().apply {
             isAntiAlias = true
             color = Color.BLACK
-            maskFilter = android.graphics.BlurMaskFilter(20f, android.graphics.BlurMaskFilter.Blur.NORMAL)
+            maskFilter =
+                BlurMaskFilter(20f, BlurMaskFilter.Blur.NORMAL)
             alpha = 100
         }
         val shadowRadius = (markerSize / 2) + shadowSize
-        canvas.drawCircle(shadowRadius.toFloat(), shadowRadius.toFloat(), (markerSize / 2).toFloat(), shadowPaint)
+        canvas.drawCircle(
+            shadowRadius.toFloat(),
+            shadowRadius.toFloat(),
+            (markerSize / 2).toFloat(),
+            shadowPaint
+        )
 
         // Dibuja la forma del marcador
         val markerDrawable = ContextCompat.getDrawable(context, R.drawable.custom_marker1)!!
-        markerDrawable.setBounds(shadowSize, shadowSize, markerSize + shadowSize, markerSize + shadowSize)
+        markerDrawable.setBounds(
+            shadowSize,
+            shadowSize,
+            markerSize + shadowSize,
+            markerSize + shadowSize
+        )
         markerDrawable.draw(canvas)
 
         // Imagen circular
-        val resizedBitmap = Bitmap.createScaledBitmap(bitmap, 100, 100, false)
+        val resizedBitmap = bitmap.scale(100, 100)
         val circularBitmap = getCircularBitmap(resizedBitmap, 100)
         val paint = Paint().apply { isAntiAlias = true }
 

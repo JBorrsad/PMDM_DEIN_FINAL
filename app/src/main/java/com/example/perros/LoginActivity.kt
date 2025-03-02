@@ -26,7 +26,7 @@ class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val textView = TextView(this)
-        textView.text = "¡Bienvenido a la app!"
+        textView.setText(R.string.bienvenido)
         textView.textSize = 24f
         textView.setPadding(50, 200, 50, 50)
 

@@ -5,9 +5,9 @@ import java.net.URL
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    kotlin("kapt")
     id("com.google.gms.google-services")
     id("org.jetbrains.dokka")
-    id("kotlin-parcelize")
 }
 
 android {
@@ -48,16 +48,36 @@ android {
         dataBinding = true
     }
 
+    kapt {
+        correctErrorTypes = true
+        useBuildCache = false
+        javacOptions {
+            option("-Xmaxerrs", 500)
+        }
+        arguments {
+            arg("kapt.kotlin.generated", layout.buildDirectory.dir("generated/kapt/src").get().asFile.absolutePath)
+        }
+    }
+
     // Configuración global para todas las tareas de Kotlin
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
         kotlinOptions {
             jvmTarget = "1.8"
-            freeCompilerArgs = freeCompilerArgs + listOf(
-                "-Xjvm-default=all",
-                "-Xsuppress-version-warnings"
-            )
         }
     }
+}
+
+// Configuración para habilitar KAPT con Java moderno
+tasks.withType<org.jetbrains.kotlin.gradle.internal.KaptWithoutKotlincTask>().configureEach {
+    javaCompiler.set(javaToolchains.compilerFor {
+        languageVersion.set(JavaLanguageVersion.of(8))
+    })
+}
+
+// Agregar opción JVM para KAPT
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KaptGenerateStubsTask>().configureEach {
+    kotlinOptions.jvmTarget = "1.8"
+    javaPackagePrefix.set("")
 }
 
 dependencies {
@@ -70,12 +90,12 @@ dependencies {
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     
-    // Usar annotationProcessor en lugar de kapt para Room
+    // Utilizar kapt para Room en lugar de annotationProcessor
     implementation("androidx.room:room-runtime:2.6.1")
-    annotationProcessor("androidx.room:room-compiler:2.6.1")
+    kapt("androidx.room:room-compiler:2.6.1")
     
-    // Usar annotationProcessor en lugar de kapt para Lifecycle
-    annotationProcessor("androidx.lifecycle:lifecycle-compiler:2.6.2")
+    // Otras dependencias KAPT para procesadores de anotaciones
+    kapt("androidx.lifecycle:lifecycle-compiler:2.6.2")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.6.2")
     
@@ -137,4 +157,4 @@ tasks.withType<DokkaTask>().configureEach {
             }
         }
     }
-} 
+}

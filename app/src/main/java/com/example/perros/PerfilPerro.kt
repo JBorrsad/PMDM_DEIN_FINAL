@@ -7,6 +7,10 @@ import android.util.Base64
 import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.OnBackPressedCallback
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.app.ActivityOptionsCompat
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.imageview.ShapeableImageView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
@@ -172,7 +176,7 @@ class PerfilPerro : AppCompatActivity() {
         tvTipoRaza.text = raza
         tvNombre.text = nombre
         tvRaza.text = raza
-        tvPeso.text = String.format("%.1f kg", peso)
+        tvPeso.text = String.format(Locale.getDefault(), "%.1f kg", peso)
 
         // Calcular edad
         val edad = calcularEdad(fechaNacimiento)
@@ -269,8 +273,12 @@ class PerfilPerro : AppCompatActivity() {
         btnEditar.setOnClickListener {
             val intent = Intent(this, EditarPerro::class.java)
             intent.putExtra("perroId", perroId)
-            startActivity(intent)
-            overridePendingTransition(R.anim.slide_up, R.anim.slide_down)
+            val options = ActivityOptionsCompat.makeCustomAnimation(
+                this,
+                R.anim.slide_up,
+                R.anim.slide_down
+            )
+            startActivity(intent, options.toBundle())
         }
     }
 }

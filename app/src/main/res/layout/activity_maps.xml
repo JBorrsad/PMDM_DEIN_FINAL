@@ -2,6 +2,7 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/surface">
@@ -28,10 +29,11 @@
                 <!-- Spinner con imagen del perro -->
                 <Spinner
                     android:id="@+id/nombreperro"
+                    style="@style/CustomSpinner"
                     android:layout_width="wrap_content"
                     android:layout_height="40dp"
                     android:minWidth="150dp"
-                    style="@style/CustomSpinner"/>
+                    tools:ignore="TouchTargetSizeCheck" />
 
 
 
@@ -57,8 +59,6 @@
     </com.google.android.material.appbar.AppBarLayout>
 
     <!-- Mapa -->
-
-    <!-- Barra de navegación inferior -->
     <fragment
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
@@ -160,6 +160,7 @@
                 <ImageView
                     android:layout_width="24dp"
                     android:layout_height="24dp"
+                    android:contentDescription="@string/todo"
                     android:src="@drawable/ic_home"
                     app:tint="@color/text_tertiary"/>
 
@@ -190,6 +191,7 @@
                 <ImageView
                     android:layout_width="24dp"
                     android:layout_height="24dp"
+                    android:contentDescription="@string/todo2"
                     android:src="@drawable/ic_pet"
                     app:tint="@color/text_tertiary"/>
 
