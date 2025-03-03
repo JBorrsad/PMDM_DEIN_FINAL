@@ -14,6 +14,8 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.NFC" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
 
     <application
@@ -34,8 +36,25 @@
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.android.gms.location.GeofenceTransitionsIntentService"/>
+                <action android:name="com.example.perros.ACTION_PERIODIC_NOTIFICATION"/>
             </intent-filter>
         </receiver>
+
+        <receiver
+            android:name=".BootCompletedReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name=".GeofencingService"
+            android:foregroundServiceType="location"
+            android:enabled="true"
+            android:exported="false" />
 
         <activity
             android:name=".MainActivity"

@@ -19,7 +19,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/white">
+            android:background="?attr/colorSurface">
 
             <ImageButton
                 android:id="@+id/btnBack"
@@ -29,13 +29,14 @@
                 android:contentDescription="Volver"
                 android:padding="12dp"
                 app:srcCompat="@drawable/ic_back_arrow"
-                app:tint="@color/text_tertiary"/>
+                app:tint="?attr/colorOnSurface"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="Editar perfil"
+                android:textColor="?android:attr/textColorPrimary"
                 android:textAppearance="@style/TextAppearance.App.H3" />
 
         </androidx.appcompat.widget.Toolbar>
@@ -59,13 +60,13 @@
                 android:layout_gravity="center_horizontal">
 
                 <com.google.android.material.imageview.ShapeableImageView
-                    android:id="@+id/ivImagen"
+                    android:id="@+id/ivFoto"
                     android:layout_width="120dp"
                     android:layout_height="120dp"
                     android:padding="1dp"
                     android:scaleType="centerCrop"
                     app:shapeAppearanceOverlay="@style/CircularImageView"
-                    app:strokeColor="@color/text_tertiary"
+                    app:strokeColor="@color/grey_400"
                     app:strokeWidth="2dp" />
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -75,9 +76,9 @@
                     android:layout_gravity="end|bottom"
                     android:contentDescription="Editar foto"
                     app:fabSize="mini"
-                    app:tint="@color/white"
-                    app:strokeColor="@color/text_tertiary"
-                    app:backgroundTint="@color/button_primary"
+                    app:tint="?attr/colorOnPrimary"
+                    app:strokeColor="@color/grey_400"
+                    app:backgroundTint="?attr/colorPrimary"
                     app:srcCompat="@drawable/edit"/>
             </FrameLayout>
 
@@ -89,15 +90,15 @@
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
                 app:strokeWidth="1dp"
-                app:strokeColor="@color/grey_200"
-                app:cardBackgroundColor="@color/white">
+                app:strokeColor="@color/grey_400"
+                app:cardBackgroundColor="?attr/colorSurface">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="16dp"
-                    android:background="@color/white">
+                    android:background="?attr/colorSurface">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -109,6 +110,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
+                            android:textColor="@color/text_secondary"
                             android:text="Nombre"/>
 
                         <EditText
@@ -118,6 +120,7 @@
                             android:background="@null"
                             android:textStyle="bold"
                             android:textSize="14sp"
+                            android:textColor="@color/grey_600"
                             android:minWidth="120dp"
                             android:gravity="end"/>
                     </LinearLayout>
@@ -132,6 +135,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
+                            android:textColor="@color/text_secondary"
                             android:text="Raza"/>
 
                         <EditText
@@ -141,6 +145,7 @@
                             android:background="@null"
                             android:textStyle="bold"
                             android:textSize="14sp"
+                            android:textColor="@color/grey_600"
                             android:minWidth="120dp"
                             android:gravity="end"/>
                     </LinearLayout>
@@ -155,6 +160,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
+                            android:textColor="@color/text_secondary"
                             android:text="Peso"/>
 
                         <EditText
@@ -164,6 +170,7 @@
                             android:background="@null"
                             android:textStyle="bold"
                             android:textSize="14sp"
+                            android:textColor="@color/grey_600"
                             android:minWidth="120dp"
                             android:gravity="end"/>
                     </LinearLayout>
@@ -177,6 +184,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
+                            android:textColor="@color/text_secondary"
                             android:text="Edad"/>
 
                         <TextView
@@ -185,6 +193,7 @@
                             android:layout_height="wrap_content"
                             android:textStyle="bold"
                             android:textSize="14sp"
+                            android:textColor="@color/grey_600"
                             android:minWidth="120dp"
                             android:gravity="end"/>
                     </LinearLayout>
@@ -199,15 +208,15 @@
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
                 app:strokeWidth="1dp"
-                app:strokeColor="@color/grey_200"
-                app:cardBackgroundColor="@color/white">
+                app:strokeColor="@color/grey_400"
+                app:cardBackgroundColor="?attr/colorSurface">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="16dp"
-                    android:background="@color/white">
+                    android:background="?attr/colorSurface">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -221,7 +230,7 @@
                             android:layout_height="24dp"
                             android:src="@drawable/ic_calendar"
                             android:layout_marginEnd="16dp"
-                            app:tint="@color/text_primary"/>
+                            app:tint="@color/grey_600"/>
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -232,6 +241,7 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
+                                android:textColor="@color/text_secondary"
                                 android:text="Fecha de nacimiento"/>
 
                             <EditText
@@ -242,6 +252,7 @@
                                 android:focusable="false"
                                 android:clickable="true"
                                 android:textStyle="bold"
+                                android:textColor="@color/grey_600"
                                 android:minWidth="120dp"
                                 android:gravity="end"/>
                         </LinearLayout>
@@ -258,7 +269,7 @@
                             android:layout_height="24dp"
                             android:src="@drawable/ic_home"
                             android:layout_marginEnd="16dp"
-                            app:tint="@color/text_primary"/>
+                            app:tint="@color/grey_600"/>
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -269,6 +280,7 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
+                                android:textColor="@color/text_secondary"
                                 android:text="Fecha de adopción"/>
 
                             <EditText
@@ -279,6 +291,7 @@
                                 android:focusable="false"
                                 android:clickable="true"
                                 android:textStyle="bold"
+                                android:textColor="@color/grey_600"
                                 android:minWidth="120dp"
                                 android:gravity="end"/>
                         </LinearLayout>
@@ -294,15 +307,15 @@
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
                 app:strokeWidth="1dp"
-                app:strokeColor="@color/grey_200"
-                app:cardBackgroundColor="@color/white">
+                app:strokeColor="@color/grey_400"
+                app:cardBackgroundColor="?attr/colorSurface">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="16dp"
-                    android:background="@color/white">
+                    android:background="?attr/colorSurface">
 
                     <TextView
                         android:layout_width="match_parent"
@@ -310,13 +323,16 @@
                         android:text="Dueño"
                         android:textStyle="bold"
                         android:textSize="16sp"
+                        android:textColor="@color/text_secondary"
                         android:layout_marginBottom="16dp"/>
 
                     <Spinner
                         android:id="@+id/spinnerDueno"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="8dp"/>
+                        android:layout_marginBottom="8dp"
+                        android:backgroundTint="@color/grey_600"
+                        android:popupBackground="?attr/colorSurface"/>
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

@@ -31,14 +31,43 @@ import kotlin.coroutines.suspendCoroutine
 import androidx.core.content.edit
 
 /**
- * Actividad de splash que maneja el inicio de sesión y precarga de datos.
+ * # SplashLoginActivity
  * 
- * Esta actividad muestra una pantalla de carga mientras:
- * 1. Realiza la autenticación del usuario (email/password o Google)
- * 2. Precarga datos necesarios para el funcionamiento de la app
- * 3. Muestra animaciones para mejorar la experiencia de usuario
+ * Pantalla de inicio con animaciones que maneja la autenticación y precarga de recursos
+ * para el sistema de monitorización de perros.
  * 
- * Una vez completada la inicialización, redirige a MapsActivity
+ * ## Funcionalidad principal
+ * Esta clase actúa como punto de entrada de la aplicación, proporcionando:
+ * - Experiencia visual atractiva mientras se cargan los recursos iniciales
+ * - Gestión completa del proceso de autenticación con múltiples métodos
+ * - Precarga optimizada de datos e imágenes necesarios para la aplicación
+ * - Transición fluida hacia la pantalla principal mediante animaciones 
+ * - Verificación de estado de sesión para usuarios recurrentes
+ * - Sincronización inicial con Firebase para los datos del usuario
+ * 
+ * ## Características técnicas implementadas:
+ * - **Splash Screen API**: Integración con el sistema nativo de pantalla de inicio de Android
+ * - **Animaciones sofisticadas**: ObjectAnimator para movimientos y transiciones fluidas
+ * - **Corrutinas de Kotlin**: Operaciones asíncronas para precarga sin bloquear la UI
+ * - **Firebase Authentication**: Soporte para inicio de sesión con email/password y Google
+ * - **Firebase Realtime Database**: Sincronización inicial de datos de usuario y perros
+ * - **Material Design 3**: Componentes visuales modernos y consistentes con las guías de diseño
+ * - **Transiciones de actividad**: Efectos visuales avanzados entre pantallas
+ * 
+ * ## Proceso de inicio:
+ * 1. Muestra animaciones de carga con el logo de la aplicación
+ * 2. Verifica si existe una sesión previa activa
+ * 3. Permite al usuario elegir entre varios métodos de autenticación
+ * 4. Ejecuta procesos de precarga de datos mientras se realiza la autenticación
+ * 5. Redirige al usuario a la pantalla principal de mapas una vez completado
+ * 
+ * Esta actividad mejora significativamente la experiencia de primer uso y
+ * recurrente, optimizando los tiempos de carga y proporcionando feedback visual.
+ * 
+ * @property auth Instancia de FirebaseAuth para la gestión de la autenticación de usuarios
+ * @property progressBar Barra de progreso animada que muestra el estado de la precarga
+ * @property statusText Información textual sobre el proceso de carga actual
+ * @property preloadCounter Contador atómico para coordinar múltiples procesos de precarga
  */
 class SplashLoginActivity : AppCompatActivity() {
     
@@ -48,9 +77,10 @@ class SplashLoginActivity : AppCompatActivity() {
         // Tipos de login
         const val LOGIN_TYPE_EMAIL = 1
         const val LOGIN_TYPE_GOOGLE = 2
+        const val LOGIN_TYPE_ANONYMOUS = 3
         // LOGIN_TYPE_SESSION_ACTIVE se usa cuando el usuario ya tiene una sesión activa
         // y viene directamente de MainActivity sin necesidad de volver a autenticarse
-        const val LOGIN_TYPE_SESSION_ACTIVE = 3
+        const val LOGIN_TYPE_SESSION_ACTIVE = 4
         
         // Estados de login
         @Suppress("unused")
@@ -81,26 +111,66 @@ class SplashLoginActivity : AppCompatActivity() {
     private var startTime = 0L
     private var loginSuccess = false
     
+    /**
+     * Inicializa la actividad y configura las animaciones y procesos de carga.
+     * 
+     * Este método establece:
+     * - La configuración visual de la pantalla de inicio
+     * - Las referencias a los elementos de UI para animaciones
+     * - La instancia de Firebase Authentication
+     * - El acceso a las preferencias compartidas
+     * - Las animaciones iniciales de los elementos visuales
+     * - La verificación de sesión de usuario existente
+     * 
+     * Además, inicia la secuencia asíncrona de autenticación y precarga
+     * que se ejecuta en paralelo para optimizar el tiempo de inicio.
+     * 
+     * @param savedInstanceState Estado guardado de la instancia si la actividad se está recreando
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash_login)
         
-        // Inicializar vistas
+        // Inicializar componentes
+        auth = FirebaseAuth.getInstance()
         progressBar = findViewById(R.id.progressBar)
         statusText = findViewById(R.id.statusText)
         logoImage = findViewById(R.id.logoImage)
+        sharedPreferences = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         
-        // Inicializar Firebase y SharedPreferences
-        auth = FirebaseAuth.getInstance()
-        sharedPreferences = getSharedPreferences("AppSettings", Context.MODE_PRIVATE)
-        
-        // Registrar tiempo de inicio
+        // Inicializar tiempo de inicio
         startTime = System.currentTimeMillis()
         
-        // Iniciar animaciones
-        startAnimations()
+        // Configurar animaciones iniciales
+        setupInitialAnimations()
         
-        // Procesar el inicio de sesión según el tipo
+        // Verificar si hay una sesión activa
+        checkExistingSession()
+    }
+    
+    /**
+     * Inicia las animaciones de la pantalla de splash
+     */
+    private fun setupInitialAnimations() {
+        // Animación de pulsación del logo
+        val pulseAnimation = ObjectAnimator.ofFloat(logoImage, "scaleX", 1f, 1.1f, 1f)
+        pulseAnimation.duration = 1500
+        pulseAnimation.interpolator = AccelerateDecelerateInterpolator()
+        pulseAnimation.repeatCount = ObjectAnimator.INFINITE
+        pulseAnimation.start()
+        
+        // Animación complementaria en Y
+        val pulseAnimationY = ObjectAnimator.ofFloat(logoImage, "scaleY", 1f, 1.1f, 1f)
+        pulseAnimationY.duration = 1500
+        pulseAnimationY.interpolator = AccelerateDecelerateInterpolator()
+        pulseAnimationY.repeatCount = ObjectAnimator.INFINITE
+        pulseAnimationY.start()
+    }
+    
+    /**
+     * Verifica si existe una sesión activa
+     */
+    private fun checkExistingSession() {
         val loginType = intent.getIntExtra(EXTRA_LOGIN_TYPE, LOGIN_TYPE_EMAIL)
         when (loginType) {
             LOGIN_TYPE_EMAIL -> {
@@ -144,25 +214,6 @@ class SplashLoginActivity : AppCompatActivity() {
                 fallarLogin("Tipo de login no válido")
             }
         }
-    }
-    
-    /**
-     * Inicia las animaciones de la pantalla de splash
-     */
-    private fun startAnimations() {
-        // Animación de pulsación del logo
-        val pulseAnimation = ObjectAnimator.ofFloat(logoImage, "scaleX", 1f, 1.1f, 1f)
-        pulseAnimation.duration = 1500
-        pulseAnimation.interpolator = AccelerateDecelerateInterpolator()
-        pulseAnimation.repeatCount = ObjectAnimator.INFINITE
-        pulseAnimation.start()
-        
-        // Animación complementaria en Y
-        val pulseAnimationY = ObjectAnimator.ofFloat(logoImage, "scaleY", 1f, 1.1f, 1f)
-        pulseAnimationY.duration = 1500
-        pulseAnimationY.interpolator = AccelerateDecelerateInterpolator()
-        pulseAnimationY.repeatCount = ObjectAnimator.INFINITE
-        pulseAnimationY.start()
     }
     
     /**

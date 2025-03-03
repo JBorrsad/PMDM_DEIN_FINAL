@@ -29,15 +29,26 @@ import coil.load
 import java.util.Locale
 
 /**
- * Actividad para editar los datos de un perro existente.
+ * # EditarPerro
  *
- * Esta actividad permite:
- * - Modificar información básica del perro (nombre, raza, peso)
- * - Actualizar fechas (nacimiento y adopción)
- * - Cambiar la imagen del perro
- * - Asignar o cambiar el dueño
+ * Actividad para editar los datos de un perro en el sistema de monitorización de mascotas.
  *
- * Estructura de datos en Firebase:
+ * ## Funcionalidad principal
+ * Esta clase permite a los usuarios modificar la información de un perro registrado, incluyendo:
+ * - Datos básicos (nombre, raza, peso)
+ * - Gestión de fechas relevantes (nacimiento, adopción)
+ * - Procesamiento y actualización de la imagen del perro
+ * - Asignación o cambio del dueño
+ *
+ * ## Características técnicas implementadas:
+ * - **Material Design 3**: Utiliza componentes MD3 como [MaterialCardView], [ShapeableImageView] y [FloatingActionButton]
+ * - **Layouts responsivos**: Implementa un diseño adaptable con [NestedScrollView] y dimensiones relativas
+ * - **Procesamiento de imágenes**: Integra la biblioteca UCrop para recortar y optimizar imágenes
+ * - **Firebase**: Almacena información del perro y sus relaciones con usuarios en la base de datos en tiempo real
+ * - **Animaciones**: Implementa transiciones personalizadas entre actividades
+ * - **Imágenes responsivas**: Utiliza ShapeableImageView para mostrar imágenes con bordes redondeados
+ *
+ * ## Estructura de datos en Firebase:
  * ```
  * users/
  *   └── {perroId}/
@@ -50,12 +61,12 @@ import java.util.Locale
  *         └── imagenBase64: String?
  * ```
  *
- * @property database Referencia a Firebase Realtime Database
- * @property auth Instancia de Firebase Authentication
- * @property perroId ID del perro a editar
+ * @property database Referencia a Firebase Realtime Database para operaciones CRUD
+ * @property auth Instancia de Firebase Authentication para verificación de usuarios
+ * @property perroId Identificador único del perro que se está editando
  *
- * @see PerfilPerro actividad que muestra el perfil del perro
- * @see UCrop biblioteca para recortar imágenes
+ * @see PerfilPerro Actividad que muestra el perfil completo del perro
+ * @see UCrop Biblioteca externa para recortar imágenes de forma eficiente
  */
 class EditarPerro : AppCompatActivity() {
 
@@ -77,6 +88,13 @@ class EditarPerro : AppCompatActivity() {
     private var selectedBirthDate: Date? = null
     private var selectedAdoptionDate: Date? = null
 
+    /**
+     * Gestor de selección de imágenes desde galería o cámara.
+     * 
+     * Utiliza el nuevo sistema de contratos de actividad para manejar
+     * de forma segura los resultados de la selección de imágenes.
+     * Soporta tanto selección desde galería como captura con cámara.
+     */
     private val imagePickerLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK && result.data != null) {
@@ -101,6 +119,13 @@ class EditarPerro : AppCompatActivity() {
             }
         }
 
+    /**
+     * Gestor de resultados del recorte de imagen con UCrop.
+     * 
+     * Procesa la imagen recortada cuando UCrop finaliza exitosamente.
+     * Maneja tanto los casos de éxito (cargando y guardando la imagen)
+     * como los errores (mostrando mensajes descriptivos).
+     */
     private val uCropLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK && result.data != null) {
@@ -131,6 +156,17 @@ class EditarPerro : AppCompatActivity() {
             }
         }
 
+    /**
+     * Inicializa la actividad, configura la interfaz y carga los datos del perro.
+     *
+     * Configura:
+     * - El layout responsivo con elementos Material Design 3
+     * - El callback para el botón Back con animaciones personalizadas
+     * - La inicialización de Firebase para persistencia de datos
+     * - Los selectores de fecha con diálogos personalizados
+     * 
+     * @param savedInstanceState Estado guardado de la instancia si la actividad se está recreando
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.editar_perro)
@@ -149,10 +185,22 @@ class EditarPerro : AppCompatActivity() {
         configurarBotones()
     }
 
+    /**
+     * Inicializa las referencias a las vistas de la interfaz.
+     *
+     * Mapea todas las vistas del layout [R.layout.editar_perro] a propiedades de la clase,
+     * incluyendo elementos Material Design como:
+     * - [ShapeableImageView] para la imagen del perro con bordes redondeados
+     * - [MaterialCardView] para agrupar información relacionada
+     * - Campos de texto con estilos consistentes con el tema de la aplicación
+     *
+     * Esta función implementa el principio de abstracción de Android UI,
+     * separando la inicialización de vistas de su configuración.
+     */
     private fun inicializarVistas() {
         btnGuardar = findViewById(R.id.btnGuardarUsuario)
         btnBack = findViewById(R.id.btnBack)
-        ivImagen = findViewById(R.id.ivImagen)
+        ivImagen = findViewById(R.id.ivFoto)
         tvNombreMascota = findViewById(R.id.tvNombreMascota)
         tvTipoRaza = findViewById(R.id.tvTipoRaza)
         tvPeso = findViewById(R.id.tvPeso)
@@ -168,12 +216,35 @@ class EditarPerro : AppCompatActivity() {
         tvFechaAdopcion.isClickable = true
     }
 
+    /**
+     * Inicializa las conexiones con Firebase para autenticación y base de datos.
+     *
+     * Establece:
+     * - La instancia de autenticación para verificar permisos
+     * - La referencia a la base de datos en tiempo real para operaciones CRUD
+     * - El ID del perro desde los extras del intent
+     *
+     * Firebase sirve como backend para la aplicación, permitiendo la sincronización
+     * de datos entre dispositivos y facilitando el monitoreo en tiempo real.
+     */
     private fun inicializarFirebase() {
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance().reference
         perroId = intent.getStringExtra("perroId")
     }
 
+    /**
+     * Carga la lista de posibles dueños para el perro desde Firebase.
+     *
+     * Realiza:
+     * - Una consulta filtrada a Firebase para obtener usuarios que no son perros
+     * - La creación de un adaptador para el spinner con nombres de usuarios
+     * - La configuración del listener para detectar selecciones del usuario
+     * - La selección automática del dueño actual si existe
+     *
+     * Este método implementa la relación entre entidades (Perro-Usuario)
+     * que permite el sistema de monitorización de mascotas.
+     */
     private fun cargarListaDuenos() {
         database.child("users")
             .orderByChild("isPerro")
@@ -233,6 +304,15 @@ class EditarPerro : AppCompatActivity() {
             })
     }
 
+    /**
+     * Configura los selectores de fecha para nacimiento y adopción.
+     *
+     * Establece listeners en los campos de texto para mostrar un diálogo
+     * personalizado de selección de fecha cuando el usuario hace clic.
+     *
+     * Estos selectores utilizan un diseño que sigue las guías de Material Design 3
+     * para ofrecer una experiencia de usuario coherente con el resto de la aplicación.
+     */
     private fun configurarFechas() {
         tvFechaNacimiento.setOnClickListener {
             mostrarDateSpinnerDialog(true)
@@ -243,6 +323,20 @@ class EditarPerro : AppCompatActivity() {
         }
     }
 
+    /**
+     * Muestra un diálogo personalizado para seleccionar una fecha.
+     *
+     * Crea un diálogo con:
+     * - Selectores de año, mes y día con diseño Material Design
+     * - Validación para asegurar fechas válidas
+     * - Actualización dinámica de los días disponibles según el mes y año seleccionados
+     * - Botones para confirmar o cancelar la selección
+     *
+     * La fecha seleccionada se utiliza para actualizar el campo correspondiente
+     * y, en caso de la fecha de nacimiento, calcular automáticamente la edad.
+     *
+     * @param isNacimiento Indica si se está seleccionando la fecha de nacimiento (true) o adopción (false)
+     */
     private fun mostrarDateSpinnerDialog(isNacimiento: Boolean) {
         val calendar = Calendar.getInstance()
         val selectedDate = if (isNacimiento) selectedBirthDate else selectedAdoptionDate
@@ -315,6 +409,19 @@ class EditarPerro : AppCompatActivity() {
         dialog.show()
     }
 
+    /**
+     * Actualiza el selector de días según el mes y año seleccionados.
+     *
+     * Ajusta dinámicamente el número máximo de días disponibles en el selector
+     * basándose en el mes seleccionado y teniendo en cuenta años bisiestos.
+     *
+     * Esta función mejora la experiencia de usuario evitando selecciones de fechas inválidas,
+     * siguiendo las mejores prácticas de validación de formularios.
+     *
+     * @param dayPicker Selector de días a actualizar
+     * @param year Año seleccionado actualmente
+     * @param month Mes seleccionado actualmente (0-11)
+     */
     private fun updateDayPicker(dayPicker: NumberPicker, year: Int, month: Int) {
         val calendar = Calendar.getInstance()
         calendar.set(year, month, 1)
@@ -323,11 +430,28 @@ class EditarPerro : AppCompatActivity() {
         dayPicker.maxValue = daysInMonth
     }
 
+    /**
+     * Actualiza el campo de edad basado en la fecha de nacimiento.
+     *
+     * Calcula la edad en años a partir de la fecha de nacimiento proporcionada
+     * y actualiza el campo correspondiente en la interfaz.
+     *
+     * @param fechaNacimientoMillis Timestamp de la fecha de nacimiento en milisegundos
+     */
     private fun actualizarEdad(fechaNacimientoMillis: Long) {
         val edad = calcularEdad(fechaNacimientoMillis)
         tvEdad.text = "$edad años"
     }
 
+    /**
+     * Carga los datos del perro desde Firebase.
+     *
+     * Realiza una consulta a la base de datos para obtener toda la información
+     * del perro y actualiza la interfaz con los datos recibidos.
+     *
+     * Este método implementa el patrón Observer, reaccionando a una respuesta
+     * asíncrona de Firebase para mostrar los datos en la UI.
+     */
     private fun cargarDatosPerro() {
         if (perroId == null) {
             Toast.makeText(this, "Error al cargar el perro", Toast.LENGTH_SHORT).show()
@@ -361,6 +485,21 @@ class EditarPerro : AppCompatActivity() {
             })
     }
 
+    /**
+     * Actualiza la interfaz de usuario con los datos del perro.
+     *
+     * Completa todos los campos del formulario con la información recibida,
+     * incluyendo:
+     * - Datos básicos (nombre, raza, peso)
+     * - Cálculo de edad a partir de la fecha de nacimiento
+     * - Formateo de fechas según el locale del dispositivo
+     *
+     * @param nombre Nombre del perro
+     * @param raza Raza del perro
+     * @param peso Peso del perro en kg
+     * @param fechaNacimiento Timestamp de la fecha de nacimiento
+     * @param fechaAdopcion Timestamp de la fecha de adopción
+     */
     private fun actualizarUI(
         nombre: String,
         raza: String,
@@ -383,6 +522,16 @@ class EditarPerro : AppCompatActivity() {
         tvFechaAdopcion.setText(dateFormat.format(selectedAdoptionDate!!))
     }
 
+    /**
+     * Calcula la edad en años a partir de una fecha de nacimiento.
+     *
+     * Implementa un cálculo preciso de edad que tiene en cuenta:
+     * - La diferencia de años entre la fecha actual y la de nacimiento
+     * - Ajuste si aún no se ha llegado al día del cumpleaños en el año actual
+     *
+     * @param fechaNacimiento Timestamp de la fecha de nacimiento en milisegundos
+     * @return Edad calculada en años
+     */
     private fun calcularEdad(fechaNacimiento: Long): Int {
         val hoy = Calendar.getInstance()
         val nacimiento = Calendar.getInstance()
@@ -394,10 +543,33 @@ class EditarPerro : AppCompatActivity() {
         return edad
     }
 
+    /**
+     * Carga la imagen del perro utilizando codificación Base64.
+     *
+     * Utiliza la extensión [loadBase64Image] para cargar la imagen:
+     * - Si hay una imagen guardada, la decodifica y muestra
+     * - Si no hay imagen, muestra una imagen predeterminada
+     *
+     * Este método implementa el procesamiento eficiente de imágenes
+     * evitando la necesidad de almacenamiento externo de archivos.
+     *
+     * @param imagenBase64 Representación en Base64 de la imagen del perro, puede ser null
+     */
     private fun cargarImagenPerro(imagenBase64: String?) {
         ivImagen.loadBase64Image(imagenBase64)
     }
 
+    /**
+     * Configura los botones de la interfaz y sus acciones.
+     *
+     * Establece listeners para:
+     * - Botón de retroceso, para volver al perfil con animación
+     * - Botón de adjuntar imagen, para abrir el selector de imágenes
+     * - Botón de guardar, para validar y guardar los cambios
+     *
+     * Implementa patrones de navegación y feedback visual siguiendo
+     * las directrices de Material Design 3.
+     */
     private fun configurarBotones() {
         btnBack.setOnClickListener {
             volverAPerfilPerro()
@@ -418,6 +590,17 @@ class EditarPerro : AppCompatActivity() {
         }
     }
 
+    /**
+     * Regresa a la pantalla de perfil del perro con animación personalizada.
+     *
+     * Implementa:
+     * - Creación del intent con el ID del perro
+     * - Aplicación de opciones de transición con animaciones personalizadas
+     * - Finalización de la actividad actual
+     *
+     * Las animaciones mejoran la experiencia del usuario proporcionando
+     * feedback visual sobre la navegación dentro de la aplicación.
+     */
     private fun volverAPerfilPerro() {
         // Crear opciones de transición con animaciones personalizadas
         val options = ActivityOptionsCompat.makeCustomAnimation(
@@ -434,6 +617,18 @@ class EditarPerro : AppCompatActivity() {
         finish()
     }
 
+    /**
+     * Valida y guarda los cambios en el perfil del perro.
+     *
+     * Realiza:
+     * - Validación de campos obligatorios y formatos correctos
+     * - Creación de un mapa con los cambios a realizar
+     * - Actualización en Firebase con gestión de éxito/error
+     * - Navegación a la pantalla de perfil con animación en caso de éxito
+     *
+     * Este método implementa la persistencia de datos en Firebase,
+     * manteniendo sincronizados los datos entre dispositivos.
+     */
     private fun guardarCambios() {
         perroId?.let { id ->
             val updates = mutableMapOf<String, Any>()
@@ -499,6 +694,20 @@ class EditarPerro : AppCompatActivity() {
 
     // -------------------- Funcionalidad de manejo de imagen --------------------
 
+    /**
+     * Inicia el proceso de recorte de imagen con UCrop.
+     *
+     * Configura:
+     * - URI de origen y destino para la imagen
+     * - Relación de aspecto 1:1 para perfil circular
+     * - Tamaño máximo para optimizar rendimiento y almacenamiento
+     * - Manejo de errores con feedback al usuario
+     *
+     * Utiliza la biblioteca externa UCrop para proporcionar una
+     * experiencia de recorte de imagen profesional e intuitiva.
+     *
+     * @param sourceUri URI de la imagen original seleccionada
+     */
     private fun iniciarUCrop(sourceUri: Uri) {
         val destinationUri = Uri.fromFile(File(cacheDir, "cropped_image_dog.jpg"))
 
@@ -518,6 +727,19 @@ class EditarPerro : AppCompatActivity() {
         }
     }
 
+    /**
+     * Guarda la imagen recortada en Firebase.
+     *
+     * Proceso:
+     * - Convierte el bitmap a una cadena Base64 manteniendo calidad
+     * - Actualiza el campo correspondiente en Firebase
+     * - Proporciona feedback al usuario sobre el resultado
+     *
+     * La codificación Base64 permite almacenar imágenes directamente
+     * en la base de datos Firebase sin necesidad de servicios adicionales.
+     *
+     * @param bitmap Imagen recortada como Bitmap
+     */
     private fun guardarImagenRecortadaEnFirebase(bitmap: Bitmap) {
         perroId?.let { id ->
             // Mantener la calidad original de la imagen

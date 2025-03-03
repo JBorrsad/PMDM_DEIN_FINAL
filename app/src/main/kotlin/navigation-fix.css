@@ -1,0 +1,41 @@
+/* Estilos para asegurar que la barra de navegación lateral se muestre correctamente */
+.navigation, #navigation-wrapper {
+    display: block !important;
+    visibility: visible !important;
+}
+
+.sidebar {
+    display: block !important;
+    visibility: visible !important;
+    min-width: 250px;
+}
+
+#sideMenu {
+    display: block !important;
+    visibility: visible !important;
+}
+
+/* Mejorar visibilidad del filtro de navegación */
+.filter-section {
+    display: flex !important;
+    visibility: visible !important;
+}
+
+/* Asegurar que el contenido principal deje espacio para la barra lateral */
+#main {
+    margin-left: 260px;
+}
+
+/* Ajustar para dispositivos móviles */
+@media screen and (max-width: 768px) {
+    #main {
+        margin-left: 0;
+    }
+    
+    .sidebar {
+        position: absolute;
+        left: 0;
+        width: 100%;
+        z-index: 1000;
+    }
+} 

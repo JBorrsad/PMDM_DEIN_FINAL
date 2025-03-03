@@ -13,22 +13,54 @@ import com.google.firebase.ktx.Firebase
 import com.example.perros.databinding.ActivityRegisterBinding
 
 /**
- * Actividad para el registro de nuevos usuarios.
- *
- * Esta actividad permite crear una nueva cuenta de usuario utilizando:
- * - Firebase Authentication para la autenticación
- * - Firebase Realtime Database para almacenar datos adicionales del usuario
- *
- * Estructura de datos en Realtime Database:
+ * # RegisterActivity
+ * 
+ * Actividad especializada en el registro de nuevos usuarios para el sistema
+ * de monitorización de mascotas.
+ * 
+ * ## Funcionalidad principal
+ * Esta pantalla gestiona el proceso completo de creación de cuentas, proporcionando:
+ * - Formulario intuitivo para introducción de credenciales
+ * - Validaciones exhaustivas de formato y seguridad
+ * - Verificación de correo electrónico y contraseñas
+ * - Aceptación de términos y condiciones
+ * - Retroalimentación clara sobre el estado del proceso
+ * - Transición fluida al inicio de sesión tras registro exitoso
+ * - Persistencia de datos básicos del usuario en la nube
+ * 
+ * ## Características técnicas implementadas:
+ * - **Firebase Authentication**: Creación segura de cuentas con email/contraseña
+ * - **Firebase Realtime Database**: Almacenamiento de información adicional del usuario
+ * - **Material Design 3**: Componentes modernos como MaterialAlertDialog y TextInputLayout
+ * - **ViewBinding**: Acceso tipo-seguro a vistas evitando findViewById
+ * - **Validaciones complejas**: Verificación de patrones avanzados para contraseñas
+ * - **Manejo de errores**: Captura y presentación amigable de excepciones
+ * - **Experiencia de usuario optimizada**: Estados de botones y mensajes contextuales
+ * 
+ * ## Estructura de datos en Firebase:
  * ```
  * users/
  *   └── {userId}/
  *         ├── email: String
- *         └── createdAt: Long (timestamp)
+ *         ├── createdAt: Long (timestamp)
+ *         ├── nombre: String?
+ *         ├── apellidos: String?
+ *         └── isPerro: Boolean (false por defecto)
  * ```
- *
- * @property auth Instancia de Firebase Authentication
- * @property database Instancia de Firebase Realtime Database
+ * 
+ * ## Flujo del registro:
+ * 1. Usuario completa el formulario con email y contraseña
+ * 2. Se realizan validaciones locales (formato, coincidencia)
+ * 3. Se crea la cuenta en Firebase Authentication
+ * 4. Se almacenan datos adicionales en Realtime Database
+ * 5. Se notifica el éxito y se redirige a la pantalla principal
+ * 
+ * @property auth Instancia de Firebase Authentication para gestión de cuentas
+ * @property database Instancia de Firebase Realtime Database para almacenamiento de datos
+ * @property binding Objeto de ViewBinding para acceso tipo-seguro a las vistas
+ * 
+ * @see MainActivity Actividad a la que se navega tras un registro exitoso
+ * @see LoginActivity Actividad alternativa para usuarios ya registrados
  */
 class RegisterActivity : AppCompatActivity() {
 

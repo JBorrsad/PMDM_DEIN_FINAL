@@ -1,0 +1,26 @@
+import org.jetbrains.dokka.gradle.DokkaTask
+import java.net.URI
+
+apply plugin: 'org.jetbrains.dokka'
+
+// Configuración básica de Dokka para HTML
+dokkaHtml {
+    moduleName.set("app")
+    outputDirectory.set(file("$buildDir/dokka-out/html"))
+    
+    dokkaSourceSets {
+        named("main") {
+            noAndroidSdkLink.set(false)
+            includeNonPublic.set(false)
+            skipEmptyPackages.set(true)
+            skipDeprecated.set(false)
+            reportUndocumented.set(false)
+            
+            // Simplificar la configuración para evitar problemas
+            sourceRoots.from(file("app/src/main/java"))
+            sourceRoots.from(file("app/src/main/kotlin"))
+            
+            // Evitar usar sourceLinks que parecen causar problemas
+        }
+    }
+} 

@@ -29,14 +29,14 @@
                 android:contentDescription="Volver"
                 android:padding="12dp"
                 app:srcCompat="@drawable/ic_back_arrow"
-                app:tint="?attr/colorOnSurface"/>
+                app:tint="@color/grey_600"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="Perfil"
-                android:textColor="?attr/colorOnSurface"
+                android:textColor="@color/grey_600"
                 android:textAppearance="@style/TextAppearance.App.H3" />
 
             <ImageButton
@@ -49,7 +49,7 @@
                 android:contentDescription="Cerrar Sesión"
                 android:padding="12dp"
                 app:srcCompat="@drawable/logout"
-                app:tint="@color/text_tertiary"/>
+                app:tint="@color/grey_600"/>
 
         </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
@@ -78,7 +78,7 @@
                     android:padding="1dp"
                     android:scaleType="centerCrop"
                     app:shapeAppearanceOverlay="@style/CircularImageView"
-                    app:strokeColor="@color/text_tertiary"
+                    app:strokeColor="@color/grey_400"
                     app:strokeWidth="2dp" />
             </FrameLayout>
 
@@ -88,6 +88,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="16dp"
+                android:textColor="@color/grey_600"
                 android:textSize="24sp"
                 android:textStyle="bold"/>
 
@@ -99,15 +100,15 @@
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
                 app:strokeWidth="1dp"
-                app:strokeColor="@color/grey_200"
-                app:cardBackgroundColor="@color/white">
+                app:strokeColor="@color/grey_400"
+                app:cardBackgroundColor="?attr/colorSurface">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="16dp"
-                    android:background="@color/white">
+                    android:background="?attr/colorSurface">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -119,6 +120,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
+                            android:textColor="@color/text_secondary"
                             android:text="Login mail"/>
 
                         <TextView
@@ -127,6 +129,7 @@
                             android:layout_height="wrap_content"
                             android:text="maildeejemplo@gmail.com"
                             android:textStyle="bold"
+                            android:textColor="@color/grey_600"
                             android:minWidth="120dp"
                             android:gravity="end"/>
                     </LinearLayout>
@@ -141,6 +144,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
+                            android:textColor="@color/text_secondary"
                             android:text="Nombre"/>
 
                         <TextView
@@ -149,6 +153,7 @@
                             android:layout_height="wrap_content"
                             android:text="Joaquin"
                             android:textStyle="bold"
+                            android:textColor="@color/grey_600"
                             android:minWidth="120dp"
                             android:gravity="end"/>
                     </LinearLayout>
@@ -163,6 +168,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
+                            android:textColor="@color/text_secondary"
                             android:text="Apellidos"/>
 
                         <TextView
@@ -171,6 +177,7 @@
                             android:layout_height="wrap_content"
                             android:text="Sada Borrás"
                             android:textStyle="bold"
+                            android:textColor="@color/grey_600"
                             android:minWidth="120dp"
                             android:gravity="end"/>
                     </LinearLayout>
@@ -184,6 +191,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
+                            android:textColor="@color/text_secondary"
                             android:text="Edad"/>
 
                         <TextView
@@ -192,6 +200,7 @@
                             android:layout_height="wrap_content"
                             android:text="N/A"
                             android:textStyle="bold"
+                            android:textColor="@color/grey_600"
                             android:minWidth="120dp"
                             android:gravity="end"/>
                     </LinearLayout>
@@ -206,8 +215,8 @@
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
                 app:strokeWidth="1dp"
-                app:strokeColor="@color/grey_200"
-                app:cardBackgroundColor="@color/white">
+                app:strokeColor="@color/grey_400"
+                app:cardBackgroundColor="?attr/colorSurface">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -215,18 +224,20 @@
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
                     android:padding="16dp"
-                    android:background="@color/white">
+                    android:background="?attr/colorSurface">
 
                     <ImageView
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:src="@drawable/ic_calendar"
-                        android:layout_marginEnd="16dp"/>
+                        android:layout_marginEnd="16dp"
+                        app:tint="@color/grey_600"/>
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        android:textColor="@color/text_secondary"
                         android:text="Fecha de nacimiento"/>
 
                     <TextView
@@ -235,6 +246,7 @@
                         android:layout_height="wrap_content"
                         android:text="fecha"
                         android:textStyle="bold"
+                        android:textColor="@color/grey_600"
                         android:minWidth="120dp"
                         android:gravity="end"/>
                 </LinearLayout>
@@ -248,21 +260,21 @@
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
                 app:strokeWidth="1dp"
-                app:strokeColor="@color/grey_200"
-                app:cardBackgroundColor="@color/white">
+                app:strokeColor="@color/grey_400"
+                app:cardBackgroundColor="?attr/colorSurface">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="16dp"
-                    android:background="@color/white">
+                    android:background="?attr/colorSurface">
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Simulando perro"
-                        android:textColor="@color/text_primary"/>
+                        android:textColor="@color/text_secondary"/>
 
                     <TextView
                         android:id="@+id/tvEsPerroValor"
@@ -270,7 +282,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:text="No"
-                        android:textStyle="bold"/>
+                        android:textStyle="bold"
+                        android:textColor="@color/grey_600"/>
 
                     <TextView
                         android:id="@+id/tvDueño"
@@ -278,7 +291,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
                         android:text="Dueño"
-                        android:textColor="@color/text_primary"
+                        android:textColor="@color/text_secondary"
                         android:visibility="gone"/>
 
                     <TextView
@@ -288,6 +301,7 @@
                         android:layout_marginTop="8dp"
                         android:text=""
                         android:textStyle="bold"
+                        android:textColor="@color/grey_600"
                         android:visibility="gone"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

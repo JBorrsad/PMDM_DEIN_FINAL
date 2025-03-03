@@ -28,22 +28,56 @@ import com.google.maps.android.clustering.ClusterManager
 import com.example.perros.DogsClusterManager.DogItem
 // Importación para loadBase64Image
 import com.example.perros.loadBase64Image
+import android.os.PowerManager
+import android.provider.Settings
+import android.net.Uri
+import android.content.Context
+import androidx.appcompat.app.AlertDialog
+import android.os.Build
 
 /**
- * Actividad principal del mapa que gestiona el monitoreo y seguimiento de perros.
- *
- * Esta actividad coordina la visualización del mapa, interacción con el usuario y navegación,
- * delegando la lógica específica a clases auxiliares para una mejor organización.
- *
- * Proporciona funcionalidades para:
- * - Visualizar ubicaciones de perros en tiempo real
- * - Gestionar zonas seguras para cada perro
- * - Cambiar entre diferentes perros registrados
- * - Acceder a perfiles y ajustes
- *
- * @property mMap Instancia del mapa de Google
- * @property database Referencia a Firebase Realtime Database
- * @property auth Instancia de Firebase Authentication
+ * # MapsActivity
+ * 
+ * Actividad principal del sistema de monitorización de perros que gestiona la visualización
+ * y seguimiento de mascotas en tiempo real a través de GPS.
+ * 
+ * ## Funcionalidad principal
+ * Esta clase implementa la interfaz central de la aplicación, permitiendo:
+ * - Visualizar la ubicación de los perros en tiempo real sobre un mapa interactivo
+ * - Definir y gestionar "zonas seguras" para cada mascota con notificaciones automáticas
+ * - Cambiar de perro mediante un selector con imágenes de perfil personalizadas
+ * - Solicitar actualizaciones de ubicación periódicas para un seguimiento preciso
+ * - Acceder a todas las funcionalidades de la aplicación mediante navegación integrada
+ * 
+ * ## Características técnicas implementadas:
+ * - **GPS y Google Maps API**: Integración completa para geolocalización en tiempo real
+ * - **Geofencing**: Sistema de zonas seguras con notificaciones cuando el perro sale del área
+ * - **Material Design 3**: Componentes modernos como FloatingActionButton y ShapeableImageView
+ * - **Firebase Realtime Database**: Sincronización en tiempo real de ubicaciones entre dispositivos
+ * - **Agrupación (Clustering)**: Gestión eficiente de marcadores en el mapa para múltiples perros
+ * - **Optimización de batería**: Ajustes específicos para equilibrar precisión y consumo energético
+ * - **Permisos adaptativos**: Gestión de permisos de ubicación según la versión de Android
+ * 
+ * ## Estructura de datos en Firebase:
+ * ```
+ * users/
+ *   └── {perroId}/
+ *         ├── latitude: Double
+ *         ├── longitude: Double
+ *         ├── lastUpdate: Long
+ *         ├── safeZones/
+ *         │     └── {zoneId}/
+ *         │           ├── latitude: Double
+ *         │           ├── longitude: Double
+ *         │           ├── radius: Double
+ *         │           └── name: String
+ *         └── imagenBase64: String?
+ * ```
+ * 
+ * @property mMap Instancia del mapa de Google para visualización e interacción
+ * @property dogLocationManager Gestor de ubicaciones que maneja la lógica de seguimiento
+ * @property currentDogId ID del perro seleccionado actualmente para seguimiento
+ * @property clusterManager Gestor de agrupación de marcadores para optimización del mapa
  */
 @Suppress("DEPRECATION")
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -265,8 +299,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         // Botones de edición de zona segura
         btnSaveZone.setOnClickListener {
             if (::locationManager.isInitialized && perroSeleccionadoId != null) {
+                Log.d("MapsActivity", "Guardando zona segura para perro: $perroSeleccionadoId")
                 locationManager.guardarZonaSegura(perroSeleccionadoId!!)
+                
+                // Primero desactivar el modo de edición
                 desactivarModoEdicionZonaSegura()
+                
+                // No es necesario llamar a mostrarZonaSegura aquí ya que 
+                // guardarZonaSegura ya se encargará de mostrar la zona actualizada
+                Log.d("MapsActivity", "Zona segura guardada y visualización actualizada")
             } else {
                 Toast.makeText(this, "No se puede guardar la zona segura", Toast.LENGTH_SHORT).show()
             }
@@ -274,6 +315,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         
         btnCancelZone.setOnClickListener {
             desactivarModoEdicionZonaSegura()
+            // Recargar la zona segura después de cancelar la edición
+            if (::locationManager.isInitialized && perroSeleccionadoId != null) {
+                locationManager.mostrarZonaSegura(perroSeleccionadoId!!)
+            }
         }
         
         btnEditZone.setOnClickListener {

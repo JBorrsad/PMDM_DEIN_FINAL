@@ -11,11 +11,39 @@ import com.google.android.material.imageview.ShapeableImageView
 
 
 /**
- * Adaptador personalizado para mostrar una lista de perros en un Spinner.
- *
- * Este adaptador infla un layout personalizado que contiene:
- * - Una imagen circular del perro ([ShapeableImageView])
- * - El nombre del perro ([TextView])
+ * # DogSpinnerAdapter
+ * 
+ * ## Funcionalidad principal
+ * 
+ * Adaptador especializado que facilita la visualización y selección de perros en componentes Spinner 
+ * de la interfaz de usuario. Proporciona una representación visual enriquecida de cada perro con su imagen 
+ * y nombre, mejorando significativamente la experiencia de usuario durante la selección de mascotas.
+ * 
+ * ## Características técnicas implementadas
+ * 
+ * - **Vistas personalizadas**: Implementa vistas infladas a partir de layouts XML personalizados que combinan
+ *   imágenes y texto de forma visualmente atractiva.
+ * - **Gestión eficiente de recursos**: Utiliza el patrón de reciclaje de vistas de Android para optimizar
+ *   el rendimiento y reducir el consumo de memoria.
+ * - **Compatibilidad con Material Design**: Integra componentes visuales como ShapeableImageView para
+ *   mostrar imágenes de perfil con esquinas redondeadas según las directrices de Material Design.
+ * - **Manejo inteligente de estados vacíos**: Implementa lógica para mostrar contenido predeterminado
+ *   cuando no hay datos disponibles.
+ * 
+ * ## Estructura de datos utilizada
+ * 
+ * ```
+ * Triple<String, String, Bitmap?>
+ * │
+ * ├─ Primer elemento: Nombre del perro (String)
+ * ├─ Segundo elemento: ID único del perro (String)
+ * └─ Tercer elemento: Imagen del perro (Bitmap? - opcional)
+ * ```
+ * 
+ * ## Modos de operación
+ * 
+ * 1. **Modo vista cerrada**: Visualización del elemento seleccionado cuando el Spinner está cerrado (getView)
+ * 2. **Modo desplegable**: Visualización de todos los elementos cuando el Spinner está desplegado (getDropDownView)
  *
  * @property context Contexto de la aplicación
  * @property dogs Lista de Triple<nombre, id, bitmap> que contiene los datos de los perros

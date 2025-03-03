@@ -37,6 +37,44 @@ import android.util.Log
 import com.google.firebase.database.FirebaseDatabase
 import java.util.concurrent.atomic.AtomicInteger
 
+/**
+ * # ImageUtils
+ * 
+ * Conjunto de utilidades para el procesamiento, optimización y carga eficiente de imágenes
+ * en el sistema de monitorización de mascotas.
+ * 
+ * ## Funcionalidad principal
+ * Este archivo proporciona un sistema completo para la gestión de imágenes, facilitando:
+ * - Carga optimizada de imágenes desde cadenas Base64 con caché multinivel
+ * - Transformación de imágenes para diferentes necesidades de visualización
+ * - Compresión inteligente según requisitos de calidad y rendimiento
+ * - Gestión eficiente de memoria para evitar problemas de OOM (Out Of Memory)
+ * - Carga asíncrona con gestión de estados de carga y errores
+ * - Optimización para la experiencia de usuario con transiciones suaves
+ * 
+ * ## Características técnicas implementadas:
+ * - **Sistema de caché multinivel**: Implementación de caché en memoria RAM y almacenamiento persistente
+ * - **Coil Integration**: Uso avanzado de la biblioteca Coil para carga asíncrona
+ * - **Transformaciones visuales**: Recorte circular y otras transformaciones visuales
+ * - **Procesamiento concurrente**: Uso de corrutinas y ejecutores para operaciones en segundo plano
+ * - **Hasheo criptográfico**: Generación de claves únicas SHA-256 para identificación de imágenes
+ * - **Control de calidad adaptativo**: Diferentes niveles de compresión según los requisitos
+ * - **Manejo de estados de carga**: Sistema completo para gestionar placeholder, éxito y error
+ * - **Optimización de Base64**: Procesamiento eficiente de imágenes codificadas en Base64
+ * 
+ * ## Niveles de calidad de imagen:
+ * ```
+ * ┌─ HIGH ──────────┐  ┌─ MEDIUM ─────────┐  ┌─ LOW ───────────┐
+ * │ - Calidad: 95%  │  │ - Calidad: 85%   │  │ - Calidad: 70%  │
+ * │ - Máx dim: 1200 │  │ - Máx dim: 800   │  │ - Máx dim: 600  │
+ * │ - Uso: Detalles │  │ - Uso: Listados  │  │ - Uso: Mapa     │
+ * └────────────────┘  └─────────────────┘  └────────────────┘
+ * ```
+ * 
+ * Este sistema de gestión de imágenes es fundamental para la experiencia de usuario,
+ * optimizando el rendimiento y la memoria, especialmente en dispositivos de gama baja.
+ */
+
 // Enumeración que define los niveles de calidad de imagen
 enum class ImageQuality(val quality: Int, val maxDimension: Int) {
     HIGH(95, 1200),
@@ -44,7 +82,26 @@ enum class ImageQuality(val quality: Int, val maxDimension: Int) {
     LOW(70, 600)
 }
 
-// Clase singleton para gestionar el ImageLoader de Coil
+/**
+ * # CoilImageCache
+ * 
+ * Sistema singleton que gestiona la caché de imágenes centralizada de la aplicación
+ * utilizando la biblioteca Coil como motor de carga y almacenamiento.
+ * 
+ * ## Funcionalidad principal
+ * - Proporciona un ImageLoader único para toda la aplicación
+ * - Gestiona la memoria y almacenamiento de forma eficiente
+ * - Evita duplicación de imágenes en memoria
+ * - Preserva imágenes entre sesiones de la aplicación
+ * - Genera claves únicas para identificación de imágenes
+ * 
+ * ## Características técnicas
+ * - Caché en RAM configurable (40% de memoria disponible)
+ * - Caché en disco persistente (150MB máximo)
+ * - Sistema de claves basado en hash SHA-256
+ * - Gestión concurrente thread-safe
+ * - Integración con el sistema de animaciones de Coil
+ */
 object CoilImageCache {
     private var imageLoader: ImageLoader? = null
     private val diskCacheFolderName = "perros_images_cache"
@@ -686,11 +743,42 @@ fun precargarImagenesUsuario(context: Context, userId: String) {
 }
 
 /**
- * Función para precargar datos de un usuario (dueño) y sus perros asociados desde Firebase.
- * Esto mejora el rendimiento al evitar múltiples llamadas a Firebase durante el uso de la app.
- *
- * @param userId ID del dueño cuyos datos y perros se van a precargar
- * @param callback Función de retorno que indica cuando se completa la precarga
+ * # preloadUserData
+ * 
+ * Sistema centralizado de precarga de datos que optimiza la experiencia inicial de la aplicación
+ * reduciendo tiempos de carga y consumo de datos.
+ * 
+ * ## Funcionalidad principal
+ * Esta función realiza una carga inteligente y anticipada de todos los datos relevantes
+ * para un usuario específico de la aplicación, incluyendo:
+ * - Datos personales y perfil del usuario (dueño)
+ * - Información completa de todas sus mascotas registradas
+ * - Ubicaciones actuales de cada perro asociado
+ * - Configuraciones de zonas seguras para monitoreo
+ * - Imágenes de perfil tanto del usuario como de sus perros
+ * 
+ * ## Flujo de precarga
+ * 1. Limpia datos obsoletos para asegurar información actualizada
+ * 2. Carga datos del perfil del dueño desde Firebase
+ * 3. Identifica y recupera información de todos sus perros asociados
+ * 4. Para cada perro, recupera sus datos básicos, ubicación y zona segura
+ * 5. Almacena toda la información en el sistema de caché centralizado
+ * 6. Notifica a través del callback cuando el proceso ha finalizado
+ * 
+ * ## Optimizaciones implementadas
+ * - **Carga paralela**: Realiza múltiples solicitudes simultáneas para mayor velocidad
+ * - **Almacenamiento eficiente**: Utiliza DatosPrecargados como sistema centralizado de caché
+ * - **Registro detallado**: Sistema de logs para monitoreo y depuración del proceso
+ * - **Manejo de errores**: Continúa con componentes restantes incluso si alguno falla
+ * - **Validación de datos**: Verifica existencia y formato correcto de la información
+ * 
+ * Esta función es fundamental para la experiencia de usuario, ya que permite
+ * una transición fluida entre pantallas sin tiempos de espera perceptibles.
+ * 
+ * @param userId Identificador único del usuario (dueño) cuyos datos serán precargados.
+ * @param callback Función que será invocada cuando finalice el proceso de precarga.
+ *                Este callback permite a la aplicación principal continuar con su flujo
+ *                una vez que todos los datos esenciales están disponibles en memoria.
  */
 fun preloadUserData(userId: String, callback: () -> Unit) {
     Log.d("PreloadData", "Iniciando precarga de datos para dueño: $userId")

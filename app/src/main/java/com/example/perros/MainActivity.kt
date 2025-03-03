@@ -32,32 +32,51 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.core.content.edit
 
 /**
- * Actividad principal que maneja la autenticación y el inicio de sesión de usuarios.
- *
- * Esta actividad es el punto de entrada de la aplicación y proporciona las siguientes funcionalidades:
- * - Autenticación de usuarios mediante Firebase Auth
- * - Control de sesión con tiempo límite
- * - Gestión de permisos de notificaciones
- * - Suscripción a notificaciones de geovallas
- *
- * La actividad implementa un sistema de timeout de sesión que cierra automáticamente
- * la sesión después de un período de inactividad.
- *
- * Estructura de datos en Firebase:
+ * # MainActivity
+ * 
+ * Actividad principal que gestiona el proceso inicial de autenticación y entrada al 
+ * sistema de monitorización de mascotas.
+ * 
+ * ## Funcionalidad principal
+ * Esta clase actúa como punto de entrada de la aplicación, proporcionando:
+ * - Múltiples métodos de autenticación (email/contraseña y Google)
+ * - Verificación automática de sesiones activas
+ * - Control de tiempo de inactividad para cierre de sesión
+ * - Gestión de credenciales guardadas con opción "recordarme"
+ * - Navegación fluida hacia el registro de nuevos usuarios
+ * - Soporte para temas claros/oscuros según preferencias
+ * - Gestión inteligente de permisos de notificaciones
+ * 
+ * ## Características técnicas implementadas:
+ * - **Firebase Authentication**: Integración completa con múltiples proveedores
+ * - **Google Sign-In**: Autenticación OAuth mediante servicios de Google
+ * - **SharedPreferences**: Almacenamiento persistente de preferencias y estado de sesión
+ * - **Material Design 3**: Interfaz moderna con componentes y estilo coherente
+ * - **Sistema de permisos adaptativo**: Solicitud de permisos según versión de Android
+ * - **Detección de sesiones activas**: Verificación de tiempo de inactividad
+ * - **Firebase Cloud Messaging**: Suscripción a notificaciones push
+ * - **Gestión de temas**: Aplicación de modo claro/oscuro según configuración
+ * 
+ * ## Estructura de datos en Firebase:
  * ```
  * users/
- *   ├── {userId}/
- *   │     ├── nombre: String
- *   │     ├── email: String
- *   │     └── imagenBase64: String?
+ *   └── {userId}/
+ *         ├── nombre: String
+ *         ├── apellidos: String?
+ *         ├── email: String
+ *         ├── imagenBase64: String?
+ *         └── fechaNacimiento: String?
  * ```
- *
- * @property auth Instancia de FirebaseAuth para manejar la autenticación
- * @property sharedPreferences Almacenamiento local para datos de sesión y preferencias
- * @property SESSION_TIMEOUT Tiempo máximo de sesión en milisegundos (5 minutos)
- *
- * @see MapsActivity actividad que se inicia tras un login exitoso
- * @see RegisterActivity actividad para registrar nuevos usuarios
+ * 
+ * @property auth Instancia de FirebaseAuth para gestión de autenticación
+ * @property sharedPreferences Almacenamiento persistente para preferencias y datos de sesión
+ * @property SESSION_TIMEOUT Tiempo de inactividad máximo para cierre automático de sesión (5 minutos)
+ * @property googleSignInClient Cliente para la autenticación con Google
+ * @property googleSignInLauncher Gestor de resultados para el inicio de sesión con Google
+ * 
+ * @see SplashLoginActivity Para el proceso de precarga y transición a la aplicación principal
+ * @see RegisterActivity Para el registro de nuevos usuarios
+ * @see MapsActivity Pantalla principal a la que se navega tras autenticación exitosa
  */
 class MainActivity : AppCompatActivity() {
 

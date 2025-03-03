@@ -8,15 +8,16 @@ buildscript {
         classpath("com.android.tools.build:gradle:8.2.0")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.10")
         classpath("com.google.gms:google-services:4.4.0")
-        classpath("org.jetbrains.dokka:dokka-gradle-plugin:1.7.20")
+        classpath("org.jetbrains.dokka:dokka-gradle-plugin:1.9.10")
+        classpath("org.jetbrains.dokka:dokka-base:1.9.10")
     }
 }
 
 plugins {
-    alias(libs.plugins.android.application) apply false
-    alias(libs.plugins.kotlin.android) apply false
-    id("com.google.gms.google-services") version "4.4.0" apply false
-    id("org.jetbrains.dokka") version "1.7.20" apply false
+    id("com.android.application") version "8.1.1" apply false
+    id("org.jetbrains.kotlin.android") version "1.9.10" apply false
+    id("com.google.gms.google-services") version "4.3.15" apply false
+    id("org.jetbrains.dokka") version "1.9.10" apply false
 }
 
 tasks.register("clean", Delete::class) {

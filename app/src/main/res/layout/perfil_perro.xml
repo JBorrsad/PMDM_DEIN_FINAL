@@ -29,13 +29,14 @@
                 android:contentDescription="Volver"
                 android:padding="12dp"
                 app:srcCompat="@drawable/ic_back_arrow"
-                app:tint="?attr/colorOnSurface"/>
+                app:tint="@color/grey_600"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="Perfil"
+                android:textColor="@color/grey_600"
                 android:textAppearance="@style/TextAppearance.App.H3" />
 
         </androidx.appcompat.widget.Toolbar>
@@ -65,7 +66,7 @@
                     android:padding="1dp"
                     android:scaleType="centerCrop"
                     app:shapeAppearanceOverlay="@style/CircularImageView"
-                    app:strokeColor="@color/text_tertiary"
+                    app:strokeColor="@color/grey_400"
                     app:strokeWidth="2dp" />
             </FrameLayout>
 
@@ -75,6 +76,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="16dp"
+                android:textColor="@color/grey_600"
                 android:textSize="24sp"
                 android:textStyle="bold"/>
 
@@ -84,7 +86,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="4dp"
-                android:textColor="@android:color/darker_gray"/>
+                android:textColor="?android:attr/textColorSecondary"/>
 
             <!-- Datos básicos -->
             <com.google.android.material.card.MaterialCardView
@@ -94,15 +96,15 @@
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
                 app:strokeWidth="1dp"
-                app:strokeColor="@color/grey_200"
-                app:cardBackgroundColor="@color/white">
+                app:strokeColor="@color/grey_400"
+                app:cardBackgroundColor="?attr/colorSurface">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="16dp"
-                    android:background="@color/white">
+                    android:background="?attr/colorSurface">
 
                     <TextView
                         android:layout_width="match_parent"
@@ -110,6 +112,7 @@
                         android:text="Appearance and distinctive signs"
                         android:textStyle="bold"
                         android:textSize="16sp"
+                        android:textColor="@color/text_secondary"
                         android:layout_marginBottom="16dp"/>
 
                     <LinearLayout
@@ -122,6 +125,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
+                            android:textColor="@color/text_secondary"
                             android:text="Nombre"/>
 
                         <TextView
@@ -129,6 +133,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textStyle="bold"
+                            android:textColor="@color/grey_600"
                             android:minWidth="120dp"
                             android:gravity="end"/>
                     </LinearLayout>
@@ -143,6 +148,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
+                            android:textColor="@color/text_secondary"
                             android:text="Raza"/>
 
                         <TextView
@@ -150,6 +156,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textStyle="bold"
+                            android:textColor="@color/grey_600"
                             android:minWidth="120dp"
                             android:gravity="end"/>
                     </LinearLayout>
@@ -164,6 +171,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
+                            android:textColor="@color/text_secondary"
                             android:text="Peso"/>
 
                         <TextView
@@ -171,6 +179,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textStyle="bold"
+                            android:textColor="@color/grey_600"
                             android:minWidth="120dp"
                             android:gravity="end"/>
                     </LinearLayout>
@@ -184,6 +193,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
+                            android:textColor="@color/text_secondary"
                             android:text="Edad"/>
 
                         <TextView
@@ -191,6 +201,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textStyle="bold"
+                            android:textColor="@color/grey_600"
                             android:minWidth="120dp"
                             android:gravity="end"/>
                     </LinearLayout>
@@ -205,15 +216,15 @@
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
                 app:strokeWidth="1dp"
-                app:strokeColor="@color/grey_200"
-                app:cardBackgroundColor="@color/white">
+                app:strokeColor="@color/grey_400"
+                app:cardBackgroundColor="?attr/colorSurface">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="16dp"
-                    android:background="@color/white">
+                    android:background="?attr/colorSurface">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -226,7 +237,8 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_calendar"
-                            android:layout_marginEnd="16dp"/>
+                            android:layout_marginEnd="16dp"
+                            app:tint="@color/grey_600"/>
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -237,13 +249,14 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:textColor="@color/text_secondary"
                                 android:text="Fecha de nacimiento"/>
 
                             <TextView
                                 android:id="@+id/tvFechaNacimiento"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textColor="@android:color/darker_gray"/>
+                                android:textColor="@color/grey_400"/>
                         </LinearLayout>
                     </LinearLayout>
 
@@ -257,7 +270,8 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_home"
-                            android:layout_marginEnd="16dp"/>
+                            android:layout_marginEnd="16dp"
+                            app:tint="@color/grey_600"/>
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -268,13 +282,14 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:textColor="@color/text_secondary"
                                 android:text="Fecha de adopción"/>
 
                             <TextView
                                 android:id="@+id/tvFechaAdopcion"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textColor="@android:color/darker_gray"/>
+                                android:textColor="@color/grey_400"/>
                         </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
@@ -288,15 +303,15 @@
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
                 app:strokeWidth="1dp"
-                app:strokeColor="@color/grey_200"
-                app:cardBackgroundColor="@color/white">
+                app:strokeColor="@color/grey_400"
+                app:cardBackgroundColor="?attr/colorSurface">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="16dp"
-                    android:background="@color/white">
+                    android:background="?attr/colorSurface">
 
                     <TextView
                         android:layout_width="match_parent"
@@ -304,6 +319,7 @@
                         android:text="Nombre del dueño"
                         android:textStyle="bold"
                         android:textSize="16sp"
+                        android:textColor="@color/text_secondary"
                         android:layout_marginBottom="16dp"/>
 
                     <LinearLayout
@@ -317,7 +333,9 @@
                             android:layout_width="40dp"
                             android:layout_height="40dp"
                             android:layout_marginEnd="16dp"
-                            app:shapeAppearanceOverlay="@style/CircularImageView"/>
+                            app:shapeAppearanceOverlay="@style/CircularImageView"
+                            app:strokeColor="@color/grey_400"
+                            app:strokeWidth="1dp"/>
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -328,13 +346,14 @@
                                 android:id="@+id/tvNombreDueno"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:textColor="@color/grey_600"
                                 android:textStyle="bold"/>
 
                             <TextView
                                 android:id="@+id/tvLoginDueno"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textColor="@android:color/darker_gray"/>
+                                android:textColor="?android:attr/textColorSecondary"/>
                         </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>

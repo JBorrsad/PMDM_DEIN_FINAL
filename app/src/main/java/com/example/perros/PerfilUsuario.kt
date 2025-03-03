@@ -11,31 +11,50 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import java.text.SimpleDateFormat
 import java.util.*
+import android.util.Base64
+import android.graphics.BitmapFactory
 
 /**
- * Actividad que muestra y gestiona el perfil del usuario.
- *
- * Esta actividad permite:
- * - Ver información personal del usuario
- * - Editar el perfil
- * - Cerrar sesión
- * - Navegar de vuelta al mapa
- *
- * Estructura de datos en Firebase:
+ * PerfilUsuario
+ * 
+ * Funcionalidad principal
+ * 
+ * Clase que gestiona la visualización y edición del perfil de usuario dentro del
+ * sistema de monitorización de mascotas. Proporciona una interfaz para ver la información
+ * personal, editar el perfil, cerrar sesión y navegar a otras secciones críticas.
+ * 
+ * Características técnicas implementadas
+ * 
+ * - Material Design 3: Implementación de componentes modernos con CardView y ShapeableImageView
+ * - Firebase Authentication: Integración para gestión de sesiones de usuario
+ * - Firebase Realtime Database: Almacenamiento y recuperación de información de perfil
+ * - Procesamiento de imágenes: Transformación y visualización de fotos de perfil desde Base64
+ * 
+ * Estructura de datos en Firebase
  * ```
- * users/
- *   └── {userId}/
- *         ├── nombre: String
- *         ├── apellidos: String
- *         ├── email: String
- *         ├── fechaNacimiento: String
- *         ├── isPerro: Boolean
- *         └── imagenBase64: String?
+ * usuarios/{userId}/
+ * │
+ * ├─ nombre: String
+ * ├─ apellidos: String
+ * ├─ email: String
+ * ├─ fechaNacimiento: String (formato DD/MM/YYYY)
+ * ├─ isPerro: Boolean
+ * └─ imagenBase64: String (opcional)
  * ```
- *
- * @property database Referencia a Firebase Realtime Database
- * @property auth Instancia de Firebase Authentication
- * @property usuarioId ID del usuario actual
+ * 
+ * Modos de operación
+ * 
+ * 1. Modo usuario normal: Visualización/edición de datos del usuario autenticado
+ * 2. Modo desarrollador: Visualización de perfil de desarrollador en modo de solo lectura
+ * 
+ * @property database Referencia a la base de datos de Firebase para recuperar datos de usuario
+ * @property auth Instancia de Firebase Auth para gestionar la sesión actual
+ * @property userId Identificador único del usuario autenticado
+ * @property desarrollador Boolean que indica si se está visualizando un perfil de desarrollador
+ * @property perfilImageView ImageView donde se muestra la foto de perfil del usuario
+ * @property nombreTextView TextView donde se muestra el nombre completo del usuario
+ * @property emailTextView TextView donde se muestra el correo electrónico del usuario
+ * @property edadTextView TextView donde se muestra la edad calculada del usuario
  */
 @Suppress("DEPRECATION")
 class PerfilUsuario : AppCompatActivity() {
@@ -56,6 +75,12 @@ class PerfilUsuario : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private var usuarioId: String? = null
     private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    
+    // Flag para indicar si venimos de Ajustes
+    private var fromSettings = false
+    
+    // Datos del desarrollador (si corresponde)
+    private var developerData: Map<String, String>? = null
 
     /**
      * Inicializa la actividad y carga los datos del perfil del usuario.
@@ -81,8 +106,16 @@ class PerfilUsuario : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance().reference
         usuarioId = auth.currentUser?.uid
-
-        if (usuarioId != null) {
+        
+        // Comprobar si estamos visualizando un perfil de desarrollador
+        fromSettings = intent.getBooleanExtra("FROM_SETTINGS", false)
+        
+        if (fromSettings) {
+            // Estamos mostrando el perfil de un desarrollador
+            cargarPerfilDesarrollador()
+            btnEditar.visibility = android.view.View.GONE // Ocultar botón de editar
+        } else if (usuarioId != null) {
+            // Estamos mostrando el perfil del usuario normal
             cargarPerfil()
             cargarImagenDesdeFirebase()
         } else {
@@ -96,15 +129,23 @@ class PerfilUsuario : AppCompatActivity() {
      * Configura los listeners de los botones.
      *
      * Configura:
-     * - Botón de retroceso: vuelve al mapa
+     * - Botón de retroceso: vuelve al mapa o a ajustes según el origen
      * - Botón de cerrar sesión: cierra la sesión y vuelve al login
      * - Botón de edición: abre la actividad de edición del perfil
      */
     private fun configurarBotones() {
         btnBack.setOnClickListener {
-            val intent = Intent(this, MapsActivity::class.java)
-            startActivity(intent)
-            finish()
+            if (fromSettings) {
+                // Si venimos de ajustes, volvemos a la actividad de ajustes
+                val intent = Intent(this, AjustesActivity::class.java)
+                startActivity(intent)
+                finish()
+            } else {
+                // Comportamiento normal: volver a MapsActivity
+                val intent = Intent(this, MapsActivity::class.java)
+                startActivity(intent)
+                finish()
+            }
         }
 
         btnCerrarSesion.setOnClickListener {
@@ -119,6 +160,71 @@ class PerfilUsuario : AppCompatActivity() {
             startActivity(intent)
             overridePendingTransition(R.anim.slide_up, R.anim.slide_down)
         }
+    }
+    
+    /**
+     * Carga y muestra los datos del perfil de un desarrollador.
+     */
+    private fun cargarPerfilDesarrollador() {
+        // Obtener datos del intent
+        val nombre = intent.getStringExtra("DEVELOPER_NAME") ?: "Desconocido"
+        val apellidos = intent.getStringExtra("DEVELOPER_LASTNAME") ?: "Desconocido"
+        val email = intent.getStringExtra("DEVELOPER_EMAIL") ?: "Desconocido"
+        val fechaNacimiento = intent.getStringExtra("DEVELOPER_BIRTHDAY") ?: ""
+        val isPerro = intent.getBooleanExtra("DEVELOPER_IS_DOG", false)
+        val userId = intent.getStringExtra("DEVELOPER_USER_ID")
+        
+        // Mostrar los datos en la interfaz
+        tvNombre.text = nombre
+        tvApellidos.text = apellidos
+        tvNombreUsuarioGrande.text = "$nombre $apellidos"
+        tvEmail.text = email
+        
+        if (fechaNacimiento.isNotEmpty()) {
+            tvFechaNacimiento.text = fechaNacimiento
+            try {
+                val fecha = dateFormat.parse(fechaNacimiento)
+                if (fecha != null) {
+                    val edad = calcularEdad(fecha)
+                    tvEdad.text = "$edad años"
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                tvEdad.text = "N/A"
+            }
+        } else {
+            tvFechaNacimiento.text = "No especificada"
+            tvEdad.text = "N/A"
+        }
+        
+        tvEsPerro.text = if (isPerro) "Sí" else "No"
+        
+        // Cargar imagen desde Firebase
+        if (!userId.isNullOrEmpty()) {
+            cargarImagenDesarrolladorDesdeFirebase(userId)
+        } else {
+            mostrarImagenPorDefecto()
+        }
+    }
+
+    /**
+     * Carga la imagen de perfil de un desarrollador desde Firebase.
+     *
+     * @param userId ID del usuario en Firebase
+     */
+    private fun cargarImagenDesarrolladorDesdeFirebase(userId: String) {
+        database.child("users").child(userId).child("imagenBase64")
+            .get().addOnSuccessListener { snapshot ->
+                if (snapshot.exists()) {
+                    val imageBase64 = snapshot.getValue(String::class.java)
+                    ivFoto.loadBase64Image(imageBase64, true)
+                } else {
+                    mostrarImagenPorDefecto()
+                }
+            }.addOnFailureListener {
+                Log.e("PerfilUsuario", "Error al cargar imagen del desarrollador", it)
+                mostrarImagenPorDefecto()
+            }
     }
 
     /**
@@ -222,7 +328,7 @@ class PerfilUsuario : AppCompatActivity() {
                 .get().addOnSuccessListener { snapshot ->
                     if (snapshot.exists()) {
                         val imageBase64 = snapshot.getValue(String::class.java)
-                        ivFoto.loadBase64Image(imageBase64)
+                        ivFoto.loadBase64Image(imageBase64, true)
                     } else {
                         mostrarImagenPorDefecto()
                     }
@@ -242,6 +348,6 @@ class PerfilUsuario : AppCompatActivity() {
      * - La imagen está corrupta
      */
     private fun mostrarImagenPorDefecto() {
-        ivFoto.loadBase64Image(null)
+        ivFoto.loadBase64Image(null, true)
     }
 }

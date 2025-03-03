@@ -10,11 +10,39 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 
 /**
- * Componente de interfaz de usuario que muestra un spinner de carga animado.
+ * # LoadingSpinner
  * 
- * Este spinner es un ImageView con una animación de rotación continua.
- * Se utiliza para indicar al usuario que se está llevando a cabo un proceso
- * en segundo plano (como la carga de una imagen).
+ * Componente visual personalizado que proporciona un indicador de carga animado
+ * para el sistema de monitorización de mascotas.
+ * 
+ * ## Funcionalidad principal
+ * Este componente visual proporciona feedback visual durante procesos asíncronos, permitiendo:
+ * - Indicar al usuario que se está ejecutando un proceso en segundo plano
+ * - Bloquear parcialmente la interfaz durante operaciones críticas
+ * - Mejorar la percepción de respuesta de la aplicación
+ * - Unificar la experiencia de carga en toda la aplicación
+ * - Proporcionar un elemento visualmente atractivo durante tiempos de espera
+ * 
+ * ## Características técnicas implementadas:
+ * - **Animación fluida**: Rotación continua con duración personalizada de 600ms
+ * - **Fondo semitransparente**: Overlay con opacidad parcial para enfoque visual
+ * - **Elevación Z**: Posicionamiento por encima de otros elementos de la UI (z=20)
+ * - **Gestión automática**: Control del ciclo de vida vinculado a la visibilidad del componente
+ * - **Compatibilidad con XML**: Soporte para instanciación desde layouts o código
+ * - **Gravedad ajustada**: Centrado automático en el contenedor padre
+ * 
+ * ## Ciclo de vida de la animación:
+ * ```
+ * Constructor → onAttachedToWindow → startAnimation → [visible al usuario] 
+ *                                                     ↓
+ * [destrucción]  ← onDetachedFromWindow ← stopAnimation
+ * ```
+ * 
+ * Este spinner se integra perfectamente con el lenguaje visual de la aplicación,
+ * proporcionando una experiencia cohesiva incluso durante operaciones de carga.
+ *
+ * @property spinnerImage ImageView central que muestra el ícono giratorio
+ * @property rotateAnimation Animación de rotación aplicada al spinner
  */
 class LoadingSpinner @JvmOverloads constructor(
     context: Context,

@@ -18,20 +18,47 @@ import androidx.core.graphics.createBitmap
 import androidx.core.graphics.scale
 
 /**
- * Clase que gestiona la visualización y agrupación de marcadores de perros en el mapa.
- *
- * Esta clase se encarga de:
- * - Crear y personalizar marcadores para los perros
- * - Gestionar la agrupación (clustering) de marcadores cercanos
- * - Configurar la apariencia de los marcadores y grupos
- * - Gestionar eventos de interacción con los marcadores
- *
- * @property context Contexto de la aplicación
- * @property mMap Mapa de Google donde se mostrarán los marcadores
- * @property clusterManager Gestor de clusters proporcionado por Google Maps Utils
- *
- * @author Aplicación PawTracker
- * @since 1.0
+ * # DogsClusterManager
+ * 
+ * Gestor especializado para la visualización y agrupación de marcadores de perros en el mapa
+ * del sistema de monitorización de mascotas.
+ * 
+ * ## Funcionalidad principal
+ * Esta clase gestiona la representación visual de perros en el mapa, proporcionando:
+ * - Marcadores personalizados con imágenes de perfil de los perros
+ * - Agrupación inteligente de marcadores cercanos para evitar sobrecarga visual
+ * - Gestión de eventos de interacción con marcadores (clics individuales y en grupos)
+ * - Optimización de rendimiento con reciclaje de marcadores
+ * - Transiciones suaves al navegar por el mapa
+ * - Carga dinámica de datos desde la caché de aplicación
+ * 
+ * ## Características técnicas implementadas:
+ * - **Google Maps Clustering**: Uso avanzado de ClusterManager para agrupación automática
+ * - **Marcadores personalizados**: Visualización de imágenes de perfil en forma circular
+ * - **Procesamiento de imágenes**: Transformaciones circulares y efectos de sombra
+ * - **Manejo de eventos**: Sistema de listeners para interacción con el usuario
+ * - **Integración con DatosPrecargados**: Carga eficiente desde la caché de la aplicación
+ * - **Optimización de dibujo**: Renderización eficiente con Canvas personalizado
+ * - **Efectos visuales**: Sombras, bordes y formas personalizadas para mejor UX
+ * 
+ * ## Flujo de creación de marcadores:
+ * ```
+ * 1. addDogMarker(perroId, position)
+ * 2. Recuperación de datos desde DatosPrecargados
+ * 3. Creación de objeto DogItem con información del perro
+ * 4. Procesamiento de imagen para marcador personalizado
+ * 5. Adición al ClusterManager y actualización del mapa
+ * ```
+ * 
+ * La personalización avanzada de marcadores mejora significativamente la experiencia
+ * de usuario, facilitando la identificación visual rápida de cada mascota en el mapa.
+ * 
+ * @property context Contexto de la aplicación para acceso a recursos y servicios
+ * @property mMap Instancia de GoogleMap donde se mostrarán los marcadores
+ * @property clusterManager Gestor de clustering proporcionado por Google Maps Utils
+ * 
+ * @see DogItem Clase interna que representa un elemento en el mapa
+ * @see DogClusterRenderer Renderizador personalizado para marcadores y clusters
  */
 class DogsClusterManager(
     private val context: Context,
@@ -118,32 +145,61 @@ class DogsClusterManager(
     }
 
     /**
-     * Clase que define un elemento para ser mostrado en el mapa y agrupado.
-     * Implementa ClusterItem para ser compatible con ClusterManager.
+     * DogItem
      *
-     * @property position Posición geográfica del elemento
-     * @property title Título del elemento (nombre del perro)
-     * @property snippet Texto descriptivo adicional
-     * @property dogId ID único del perro
-     * @property dogImage Imagen del perro en formato Base64 (opcional)
-     * @property ownerImage Imagen del dueño en formato Base64 (opcional)
+     * Funcionalidad principal
+     *
+     * Clase que encapsula la información necesaria para representar un perro 
+     * como un elemento dentro del mapa de Google Maps, incluyendo su posición
+     * geográfica, datos de identificación y recursos visuales asociados.
+     *
+     * Características técnicas implementadas
+     *
+     * - Implementación de ClusterItem para integración con el sistema de clustering
+     * - Almacenamiento optimizado de recursos gráficos para marcadores
+     * - Soporte para información extendida como título y snippet para InfoWindow
+     * - Referencias eficientes a recursos de imagen para perfiles de perros y dueños
+     *
+     * @property position Coordenada geográfica (latitud/longitud) del perro
+     * @property title Nombre del perro mostrado como título principal
+     * @property snippet Información adicional mostrada en el InfoWindow
+     * @property dogId Identificador único del perro en la base de datos
+     * @property dogImage Imagen de perfil del perro en formato String (Base64)
+     * @property ownerImage Imagen de perfil del dueño en formato String (Base64)
      */
     class DogItem(
         private val position: LatLng,
-        private val title: String,
-        private val snippet: String,
+        private val title: String?,
+        private val snippet: String?,
         val dogId: String,
-        var dogImage: String? = null,
-        var ownerImage: String? = null
+        val dogImage: String?,
+        val ownerImage: String?
     ) : ClusterItem {
         override fun getPosition(): LatLng = position
-        override fun getTitle(): String = title
-        override fun getSnippet(): String = snippet
+        override fun getTitle(): String = title ?: ""
+        override fun getSnippet(): String = snippet ?: ""
     }
 
     /**
-     * Renderer personalizado para los marcadores de perros.
-     * Personaliza la apariencia de los marcadores individuales y clusters.
+     * DogClusterRenderer
+     *
+     * Funcionalidad principal
+     *
+     * Renderizador personalizado para visualizar perros y clusters de perros
+     * en el mapa, aplicando transformaciones visuales avanzadas a los marcadores
+     * para mejorar la identificación y experiencia de usuario.
+     *
+     * Características técnicas implementadas
+     *
+     * - Transformación de imágenes: Procesamiento de imágenes para renderizado circular
+     * - Manejo de estados de error: Visualización de marcadores por defecto cuando no hay imagen
+     * - Personalización avanzada: Configuración detallada de la apariencia de marcadores 
+     * - Optimización gráfica: Gestión eficiente de la memoria durante las transformaciones
+     * - Compatibilidad con clustering: Integración con Google Maps Utils para agrupación
+     *
+     * @property context Contexto de la aplicación para acceso a recursos
+     * @property map Instancia de GoogleMap donde se renderizarán los elementos
+     * @property clusterManager Gestor de clustering que coordina la agrupación
      */
     private inner class DogClusterRenderer(
         context: Context,
@@ -154,7 +210,7 @@ class DogsClusterManager(
         override fun onBeforeClusterItemRendered(item: DogItem, markerOptions: MarkerOptions) {
             // Personalizar marcador individual
             try {
-                if (!item.dogImage.isNullOrEmpty()) {
+                if (item.dogImage != null && item.dogImage.isNotEmpty()) {
                     try {
                         val imageBytes = Base64.decode(item.dogImage, Base64.DEFAULT)
                         val decodedImage =

@@ -5,10 +5,49 @@ import com.google.firebase.database.DataSnapshot
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * Singleton que gestiona los datos precargados de la aplicación.
- *
- * Esta clase se encarga de almacenar en caché los datos frecuentemente 
- * accedidos para reducir consultas a Firebase y mejorar el rendimiento.
+ * # DatosPrecargados
+ * 
+ * Sistema de caché centralizado que optimiza el rendimiento y reduce consultas a Firebase
+ * en el sistema de monitorización de mascotas.
+ * 
+ * ## Funcionalidad principal
+ * Este singleton gestiona el almacenamiento y recuperación eficiente de datos frecuentemente
+ * accedidos, proporcionando:
+ * - Almacenamiento local de datos de usuarios, perros, ubicaciones y zonas seguras
+ * - Acceso rápido a información sin necesidad de consultas repetidas a Firebase
+ * - Relaciones entre dueños y sus perros para navegación fluida
+ * - Control del estado de inicialización de la aplicación
+ * - Persistencia temporal de datos para funcionamiento sin conexión
+ * - Gestión de memoria optimizada usando estructuras concurrentes
+ * 
+ * ## Características técnicas implementadas:
+ * - **Patrón Singleton**: Instancia única accesible desde cualquier parte de la aplicación
+ * - **ConcurrentHashMap**: Estructuras de datos thread-safe para acceso concurrente
+ * - **Logging detallado**: Registro minucioso de operaciones para facilitar depuración
+ * - **DataSnapshot**: Almacenamiento directo de respuestas de Firebase para preservar estructura
+ * - **Gestión de estado**: Control centralizado del estado de inicialización
+ * - **Optimización de memoria**: Limpieza de caché y gestión eficiente de recursos
+ * - **Relaciones entre entidades**: Mapeo de relaciones dueño-perro para consultas rápidas
+ * 
+ * ## Estructura de caché:
+ * ```
+ * - cacheUsuarios: Map<String (userId), DataSnapshot>
+ * - cachePerros: Map<String (perroId), DataSnapshot> 
+ * - cacheUbicacionesPerros: Map<String (perroId), DataSnapshot>
+ * - cacheZonasSeguras: Map<String (perroId), DataSnapshot>
+ * - cachePerrosPorDueno: Map<String (dueñoId), List<String (perroId)>>
+ * ```
+ * 
+ * Este componente es fundamental para la experiencia de usuario fluida,
+ * reduciendo latencia y tráfico de red, especialmente en conexiones lentas o inestables.
+ * 
+ * @property inicializacionCompleta Indica si todos los datos necesarios han sido cargados
+ * @property userId Identificador del usuario actualmente autenticado
+ * @property cacheUsuarios Almacenamiento de datos de usuarios por ID
+ * @property cachePerros Almacenamiento de datos de perros por ID
+ * @property cacheUbicacionesPerros Almacenamiento de ubicaciones GPS de perros por ID
+ * @property cacheZonasSeguras Almacenamiento de configuraciones de zonas seguras por ID de perro
+ * @property cachePerrosPorDueno Mapeo de relaciones entre dueños y sus perros (dueñoId -> lista de perroIds)
  */
 object DatosPrecargados {
     private const val TAG = "DatosPrecargados"

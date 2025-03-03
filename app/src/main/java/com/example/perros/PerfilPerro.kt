@@ -18,15 +18,30 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 /**
- * Actividad que muestra el perfil detallado de un perro.
- *
- * Esta actividad muestra información completa sobre un perro, incluyendo:
- * - Datos básicos (nombre, raza, peso)
- * - Información temporal (edad, fechas de nacimiento y adopción)
- * - Información del dueño
- * - Imágenes del perro y del dueño
- *
- * Estructura de datos en Firebase:
+ * # PerfilPerro
+ * 
+ * Actividad que muestra la información detallada y completa de un perro registrado
+ * en el sistema de monitorización de mascotas.
+ * 
+ * ## Funcionalidad principal
+ * Esta pantalla es el punto central de información sobre cada mascota, proporcionando:
+ * - Visualización detallada de datos básicos del perro (nombre, raza, peso)
+ * - Cálculo y presentación de información temporal (edad, fechas relevantes)
+ * - Relación con el dueño e información de contacto
+ * - Presentación visual optimizada con imagen de perfil del perro
+ * - Acceso directo a la edición de información
+ * - Navegación intuitiva con animaciones personalizadas
+ * 
+ * ## Características técnicas implementadas:
+ * - **Material Design 3**: Interfaz moderna con componentes como ShapeableImageView y MaterialButtons
+ * - **Layouts responsivos**: Diseño adaptable utilizando ConstraintLayout
+ * - **Firebase Realtime Database**: Acceso y visualización de datos en tiempo real
+ * - **Gestión de imágenes**: Carga y visualización optimizada de imágenes desde Base64
+ * - **Animaciones de transición**: Efectos visuales en navegación entre actividades
+ * - **Formato de datos**: Presentación con formatos localizados para fechas y números
+ * - **Cálculos automáticos**: Derivación de edad a partir de la fecha de nacimiento
+ * 
+ * ## Estructura de datos visualizada:
  * ```
  * users/
  *   └── {perroId}/
@@ -38,10 +53,17 @@ import java.util.*
  *         ├── dueñoId: String
  *         └── imagenBase64: String?
  * ```
- *
- * @property database Referencia a Firebase Realtime Database
- * @property auth Instancia de Firebase Authentication
- * @property perroId Identificador único del perro a mostrar
+ * 
+ * Esta pantalla es fundamental para la experiencia de usuario, proporcionando
+ * una visión completa y centralizada de toda la información de cada mascota registrada.
+ * 
+ * @property database Referencia a Firebase Realtime Database para acceso a datos
+ * @property auth Instancia de Firebase Authentication para verificación de permisos
+ * @property perroId Identificador único del perro cuya información se está mostrando
+ * @property dateFormat Formateador de fechas con formato localizado
+ * 
+ * @see EditarPerro Actividad para edición de la información mostrada
+ * @see loadBase64Image Extensión utilizada para cargar imágenes desde codificación Base64
  */
 class PerfilPerro : AppCompatActivity() {
 

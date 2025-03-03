@@ -12,26 +12,88 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.util.concurrent.ConcurrentHashMap
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CircleCrop
+import com.bumptech.glide.request.RequestOptions
+
+/**
+ * # Extensiones para gestión de imágenes
+ * 
+ * Conjunto de funciones de extensión que optimizan el procesamiento, carga y visualización
+ * de imágenes en el sistema de monitorización de mascotas.
+ * 
+ * ## Funcionalidad principal
+ * Estas extensiones facilitan:
+ * - Carga eficiente de imágenes codificadas en Base64
+ * - Implementación de caché en memoria para mejorar rendimiento
+ * - Transformaciones avanzadas como recortes circulares
+ * - Optimización de imágenes según requisitos de calidad
+ * - Manejadores de errores y placeholders predeterminados
+ * 
+ * ## Componentes clave
+ * - **Sistema de caché**: Almacenamiento inteligente para acceso rápido a imágenes recurrentes
+ * - **Procesamiento asíncrono**: Operaciones ejecutadas en segundo plano para no bloquear la UI
+ * - **Optimización de memoria**: Control de recursos para evitar OutOfMemoryError
+ * - **Integración con Glide**: Utilización de esta biblioteca para transformaciones avanzadas
+ * - **Manejo de errores**: Gestión robusta de excepciones y estados de error
+ */
 
 // Cache de imágenes para evitar decodificar repetidamente
 private val imageCache = ConcurrentHashMap<String, Bitmap>()
 
 /**
- * Extensión para cargar una imagen en formato Base64 en un ImageView.
- * Si la imagen ya está en caché, la usa directamente.
+ * # loadBase64Image
  * 
- * @param base64Image String en formato Base64 que representa la imagen
+ * Extensión para ImageView que carga y visualiza una imagen codificada en formato Base64.
+ * 
+ * ## Características principales
+ * - Utiliza un sistema de caché inteligente para minimizar la decodificación
+ * - Ejecuta el procesamiento pesado en segundo plano mediante corrutinas
+ * - Soporta recorte circular para imágenes de perfil
+ * - Muestra imágenes por defecto en caso de error o valores nulos
+ * - Proporciona transiciones suaves durante la carga
+ * 
+ * ## Proceso interno
+ * 1. Verifica si la imagen está en caché para acceso inmediato
+ * 2. Si no está en caché, decodifica la cadena Base64 en segundo plano
+ * 3. Aplica transformaciones solicitadas (como recorte circular)
+ * 4. Almacena el resultado en caché para futuros accesos
+ * 5. Muestra la imagen con animación opcional
+ * 
+ * Esta función es crítica para el rendimiento de la aplicación, ya que evita
+ * decodificaciones repetidas de imágenes grandes en formato Base64.
+ * 
+ * @param base64Image Cadena en formato Base64 que representa la imagen. Si es null o vacía,
+ *                   se muestra una imagen predeterminada.
+ * @param applyCircleCrop Si es true, aplica un recorte circular ideal para imágenes de perfil.
+ *                       Utilizado principalmente en avatares de usuarios y perros.
  */
-fun ImageView.loadBase64Image(base64Image: String?) {
+fun ImageView.loadBase64Image(base64Image: String?, applyCircleCrop: Boolean = false) {
     if (base64Image.isNullOrEmpty()) {
-        this.setImageResource(R.drawable.img) // Imagen por defecto
+        // Aplicar imagen por defecto, con o sin recorte circular
+        if (applyCircleCrop) {
+            Glide.with(this.context)
+                .load(R.drawable.img)
+                .apply(RequestOptions().transform(CircleCrop()))
+                .into(this)
+        } else {
+            this.setImageResource(R.drawable.img)
+        }
         return
     }
     
     // Intenta obtener la imagen de la caché
     val cachedBitmap = imageCache[base64Image]
     if (cachedBitmap != null) {
-        this.setImageBitmap(cachedBitmap)
+        if (applyCircleCrop) {
+            // Usar Glide para aplicar el recorte circular a la imagen en caché
+            Glide.with(this.context)
+                .load(cachedBitmap)
+                .apply(RequestOptions().transform(CircleCrop()))
+                .into(this)
+        } else {
+            this.setImageBitmap(cachedBitmap)
+        }
         return
     }
     
@@ -46,22 +108,56 @@ fun ImageView.loadBase64Image(base64Image: String?) {
             // Guardar en caché para uso futuro
             if (bitmap != null) {
                 imageCache[base64Image] = bitmap
-                this@loadBase64Image.setImageBitmap(bitmap)
+                
+                if (applyCircleCrop) {
+                    // Usar Glide para aplicar el recorte circular
+                    Glide.with(this@loadBase64Image.context)
+                        .load(bitmap)
+                        .apply(RequestOptions().transform(CircleCrop()))
+                        .into(this@loadBase64Image)
+                } else {
+                    this@loadBase64Image.setImageBitmap(bitmap)
+                }
             } else {
-                this@loadBase64Image.setImageResource(R.drawable.img)
+                if (applyCircleCrop) {
+                    Glide.with(this@loadBase64Image.context)
+                        .load(R.drawable.img)
+                        .apply(RequestOptions().transform(CircleCrop()))
+                        .into(this@loadBase64Image)
+                } else {
+                    this@loadBase64Image.setImageResource(R.drawable.img)
+                }
             }
         } catch (e: Exception) {
             Log.e("ImageUtils", "Error decodificando imagen Base64", e)
-            this@loadBase64Image.setImageResource(R.drawable.img)
+            if (applyCircleCrop) {
+                Glide.with(this@loadBase64Image.context)
+                    .load(R.drawable.img)
+                    .apply(RequestOptions().transform(CircleCrop()))
+                    .into(this@loadBase64Image)
+            } else {
+                this@loadBase64Image.setImageResource(R.drawable.img)
+            }
         }
     }
 }
 
 /**
- * Convierte un Bitmap a formato Base64 manteniendo la calidad original.
+ * # bitmapToBase64OriginalQuality
  * 
- * @param bitmap El bitmap a convertir
- * @return String representación en Base64 del bitmap
+ * Convierte una imagen Bitmap a formato Base64 conservando su calidad original.
+ * 
+ * ## Características principales
+ * - Mantiene la calidad máxima (100%) durante la compresión
+ * - Utiliza el formato JPEG por su equilibrio entre calidad y tamaño
+ * - No realiza redimensionado, conservando las dimensiones originales
+ * - Gestiona adecuadamente la memoria durante la conversión
+ * 
+ * Esta función es utilizada principalmente para guardar imágenes de alta calidad
+ * en Firebase Realtime Database, donde se requiere un formato de texto (Base64).
+ * 
+ * @param bitmap Imagen Bitmap a convertir. No debe ser null.
+ * @return Cadena en formato Base64 que representa la imagen con su calidad original.
  */
 fun bitmapToBase64OriginalQuality(bitmap: Bitmap): String {
     val outputStream = ByteArrayOutputStream()

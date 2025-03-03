@@ -1,58 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Tema para modo oscuro - PawTracker -->
-    <!-- Colores primarios ajustados para modo oscuro -->
+    <!-- Theme for dark mode -->
     <style name="Theme.Perros" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/primary_color_dark</item>
-        <item name="colorPrimaryVariant">@color/primary_variant_dark</item>
-        <item name="colorPrimaryDark">@color/primary_dark_color_dark</item>
-        <item name="colorOnPrimary">@color/on_primary_dark</item>
+        <!-- Primary brand color -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
         
-        <!-- Estado de barra de estado y navegación -->
-        <item name="android:statusBarColor">@color/primary_dark_color_dark</item>
-        <item name="android:navigationBarColor">@color/primary_dark_color_dark</item>
-        
-        <!-- Colores específicos para modo oscuro -->
-        <item name="colorSecondary">@color/secondary_color_dark</item>
-        <item name="colorSecondaryVariant">@color/secondary_variant_dark</item>
-        <item name="colorOnSecondary">@color/on_secondary_dark</item>
-        
-        <!-- Forzamos modo oscuro para todas las superficie incluyendo textos y tarjetas -->
-        <item name="colorSurface">@color/surface_dark</item>
-        <item name="colorOnSurface">@color/on_surface_dark</item>
-        <item name="android:colorBackground">@color/background_dark</item>
-        <item name="colorOnBackground">@color/on_background_dark</item>
-        
-        <!-- Adaptación de interfaz en modo oscuro -->
+        <!-- Status bar color -->
+        <item name="android:statusBarColor">@color/background</item>
         <item name="android:windowLightStatusBar">false</item>
         
-        <!-- Estilos de texto -->
-        <item name="textAppearanceHeadline1">@style/TextAppearance.App.Headline1.Dark</item>
-        <item name="textAppearanceHeadline2">@style/TextAppearance.App.Headline2.Dark</item>
-        <item name="textAppearanceHeadline3">@style/TextAppearance.App.Headline3.Dark</item>
-        <item name="textAppearanceHeadline4">@style/TextAppearance.App.Headline4.Dark</item>
-        <item name="textAppearanceHeadline5">@style/TextAppearance.App.Headline5.Dark</item>
-        <item name="textAppearanceHeadline6">@style/TextAppearance.App.Headline6.Dark</item>
-        <item name="textAppearanceSubtitle1">@style/TextAppearance.App.Subtitle1.Dark</item>
-        <item name="textAppearanceSubtitle2">@style/TextAppearance.App.Subtitle2.Dark</item>
-        <item name="textAppearanceBody1">@style/TextAppearance.App.Body1.Dark</item>
-        <item name="textAppearanceBody2">@style/TextAppearance.App.Body2.Dark</item>
+        <!-- Background colors -->
+        <item name="android:colorBackground">@color/background</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorOnBackground">@color/text_primary</item>
         
-        <!-- Estilos de componentes -->
-        <item name="materialButtonStyle">@style/Widget.App.Button.Dark</item>
-        <item name="bottomNavigationStyle">@style/Widget.App.BottomNavigation.Dark</item>
-        <item name="toolbarStyle">@style/Widget.App.Toolbar.Dark</item>
+        <!-- Text colors -->
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <item name="android:textColorTertiary">@color/text_tertiary</item>
         
-        <!-- Estilo tarjetas en modo oscuro -->
-        <item name="materialCardViewStyle">@style/Widget.App.CardView.Dark</item>
-        <!-- fondo oscuro para tarjetas -->
-        <item name="cardBackgroundColor">@color/card_background_dark</item>
+        <!-- Button colors -->
+        <item name="colorButtonNormal">@color/button_primary</item>
+        <item name="colorControlHighlight">@color/grey_400</item>
         
-        <!-- Estilos de texto específicos para modo oscuro -->
-        <item name="android:textColorPrimary">@color/text_primary_dark</item>
-        <item name="android:textColorSecondary">@color/text_secondary_dark</item>
-        <item name="android:textColorTertiary">@color/text_tertiary_dark</item>
-        <item name="android:textColorHint">@color/text_hint_dark</item>
+        <!-- Control colors -->
+        <item name="colorControlNormal">@color/grey_600</item>
+        <item name="colorControlActivated">@color/colorPrimary</item>
+        <item name="android:editTextColor">@color/text_primary</item>
     </style>
     
     <!-- Estilos de texto para modo oscuro -->

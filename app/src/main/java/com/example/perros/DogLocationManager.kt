@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.location.Location
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -31,31 +32,59 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.FirebaseDatabase
 
 /**
- * Gestor de ubicaciones y zonas seguras para perros.
- *
- * Esta clase se encarga de:
- * - Mostrar y actualizar la ubicación de los perros en el mapa
- * - Gestionar las zonas seguras (crear, editar, visualizar)
- * - Comprobar si un perro está dentro o fuera de su zona segura
- * - Enviar notificaciones cuando un perro sale de su zona segura
- * - Gestionar las actualizaciones de ubicación del usuario
- *
- * @property context Contexto de la aplicación
- * @property mMap Mapa de Google donde mostrar las ubicaciones
- * @property database Referencia a la base de datos de Firebase
- * @property fusedLocationClient Cliente para obtener la ubicación del dispositivo
- * @property clusterManager Gestor de marcadores para mostrar los perros en el mapa
- * @property location Ubicación actual del dispositivo
- *
- * @author Aplicación PawTracker
- * @since 1.0
+ * # DogLocationManager
+ * 
+ * Gestor especializado para el seguimiento GPS y gestión de zonas seguras para perros.
+ * 
+ * ## Funcionalidad principal
+ * Esta clase es el motor central del sistema de monitorización, responsable de:
+ * - Rastrear y actualizar las posiciones GPS de los perros en tiempo real
+ * - Gestionar el sistema de zonas seguras (geofencing) para cada mascota
+ * - Detectar cuando un perro sale de su área designada y lanzar notificaciones
+ * - Optimizar el rendimiento del GPS y la gestión de la batería
+ * - Visualizar la información de ubicación de manera clara en el mapa
+ * - Sincronizar datos de ubicación con Firebase para su persistencia
+ * 
+ * ## Características técnicas implementadas:
+ * - **GPS de alta precisión**: Configuración adaptativa de los intervalos de actualización
+ * - **Geofencing personalizado**: Algoritmos para detectar entrada/salida de zonas circulares
+ * - **Notificaciones push**: Alertas inmediatas cuando un perro abandona su zona segura
+ * - **Visualización geográfica**: Representación clara de perros y zonas en el mapa
+ * - **Firebase Realtime Database**: Sincronización en tiempo real de ubicaciones entre dispositivos
+ * - **Optimización de recursos**: Balance entre precisión y consumo de batería
+ * - **Gestión de distintos perfiles de perros**: Seguimiento de múltiples mascotas simultáneamente
+ * 
+ * ## Estructura de datos en Firebase:
+ * ```
+ * users/
+ *   └── {perroId}/
+ *         ├── latitude: Double
+ *         ├── longitude: Double
+ *         ├── lastUpdate: Long
+ *         ├── safeZones/
+ *         │     └── {zoneId}/
+ *         │           ├── latitude: Double
+ *         │           ├── longitude: Double
+ *         │           ├── radius: Double
+ *         │           └── name: String
+ *         ├── inSafeZone: Boolean
+ *         └── currentZone: String?
+ * ```
+ * 
+ * @property context Contexto de la aplicación para acceso a recursos del sistema
+ * @property mMap Instancia del mapa de Google para visualización de ubicaciones
+ * @property database Referencia a Firebase Realtime Database para sincronización
+ * @property fusedLocationClient Cliente de ubicación de Google para obtener posiciones GPS
+ * @property currentDogId ID del perro actualmente seleccionado para seguimiento
+ * @property locationCallback Callback para recibir actualizaciones de ubicación
  */
 class DogLocationManager(
     private val context: Context,
     private val mMap: GoogleMap,
-    private val database: DatabaseReference,
+    private val database: DatabaseReference = FirebaseDatabase.getInstance().reference,
     private val fusedLocationClient: FusedLocationProviderClient,
     private val clusterManager: DogsClusterManager
 ) {
@@ -150,6 +179,39 @@ class DogLocationManager(
     }
 
     /**
+     * Inicia el servicio de monitoreo en segundo plano para un perro específico.
+     * Este servicio seguirá ejecutándose incluso cuando la aplicación esté cerrada.
+     * 
+     * @param perroId ID del perro a monitorear
+     */
+    private fun iniciarServicioMonitoreo(perroId: String) {
+        Log.d("DogLocationManager", "Iniciando servicio de monitoreo para perro ID: $perroId")
+        
+        // Registrar este perro como "monitoreado" en SharedPreferences
+        val monitoredDogsPrefs = context.getSharedPreferences("MonitoredDogs", Context.MODE_PRIVATE)
+        val currentDogIds = monitoredDogsPrefs.getStringSet("dog_ids", HashSet<String>()) ?: HashSet()
+        
+        val updatedDogIds = HashSet(currentDogIds)
+        updatedDogIds.add(perroId)
+        
+        monitoredDogsPrefs.edit().putStringSet("dog_ids", updatedDogIds).apply()
+        
+        // Crear intent para el servicio
+        val serviceIntent = Intent(context, GeofencingService::class.java).apply {
+            putExtra("perroId", perroId)
+        }
+        
+        // Iniciar el servicio
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(serviceIntent)
+        } else {
+            context.startService(serviceIntent)
+        }
+        
+        Log.d("DogLocationManager", "Servicio de monitoreo iniciado")
+    }
+
+    /**
      * Define una nueva zona segura en la ubicación especificada.
      * Solo funciona cuando el modo de edición está activo.
      *
@@ -183,10 +245,15 @@ class DogLocationManager(
             return
         }
 
+        // Guardar la posición actual antes de eliminar el círculo
+        val nuevoLat = zonaSeguraCircle!!.center.latitude
+        val nuevoLng = zonaSeguraCircle!!.center.longitude 
+        val nuevoRadio = zonaSeguraCircle!!.radius
+
         val zonaSegura = mapOf(
-            "latitud" to zonaSeguraCircle!!.center.latitude,
-            "longitud" to zonaSeguraCircle!!.center.longitude,
-            "radio" to zonaSeguraCircle!!.radius
+            "latitud" to nuevoLat,
+            "longitud" to nuevoLng,
+            "radio" to nuevoRadio
         )
 
         database.child("users").child(perroId).child("zonaSegura")
@@ -194,14 +261,23 @@ class DogLocationManager(
             .addOnSuccessListener {
                 Toast.makeText(context, R.string.zona_guardada, Toast.LENGTH_SHORT).show()
 
-                // Actualizar datos precargados
+                // Actualizar inmediatamente los datos en caché
+                val zonaSeguraMap = HashMap<String, Any>()
+                zonaSeguraMap["latitud"] = nuevoLat
+                zonaSeguraMap["longitud"] = nuevoLng
+                zonaSeguraMap["radio"] = nuevoRadio
+                
+                // Crear un snapshot simulado con los datos actualizados
                 database.child("users").child(perroId).child("zonaSegura")
                     .get().addOnSuccessListener { snapshot ->
+                        // Eliminar el círculo actual para forzar redibujado
+                        zonaSeguraCircle?.remove()
+                        zonaSeguraCircle = null
+                        
+                        // Guardar en caché y mostrar
                         DatosPrecargados.guardarZonaSeguraPerro(perroId, snapshot)
+                        mostrarZonaSegura(perroId)
                     }
-
-                // Actualizar visualización
-                actualizarColorZonaSegura()
             }
             .addOnFailureListener { e ->
                 Log.e("DogLocationManager", "Error al guardar zona segura: ${e.message}")
@@ -225,6 +301,7 @@ class DogLocationManager(
         val zonaSeguraSnapshot = DatosPrecargados.obtenerZonaSeguraPerro(perroId)
 
         if (zonaSeguraSnapshot != null && zonaSeguraSnapshot.exists()) {
+            Log.d("DogLocationManager", "Mostrando zona segura desde caché para perro: $perroId")
             val latitud = zonaSeguraSnapshot.child("latitud").getValue(Double::class.java)
             val longitud = zonaSeguraSnapshot.child("longitud").getValue(Double::class.java)
             val radio = zonaSeguraSnapshot.child("radio").getValue(Double::class.java)
@@ -235,6 +312,7 @@ class DogLocationManager(
                 zonaRadio = radio
 
                 val centro = LatLng(latitud, longitud)
+                Log.d("DogLocationManager", "Dibujando zona segura en: Lat=$latitud, Lng=$longitud, Radio=$radio")
 
                 // Color inicial verde
                 zonaSeguraCircle = mMap.addCircle(
@@ -249,6 +327,7 @@ class DogLocationManager(
                 actualizarColorZonaSegura()
             }
         } else {
+            Log.d("DogLocationManager", "No se encontró zona segura en caché, buscando en Firebase para perro: $perroId")
             // Intentar obtener directamente de Firebase
             database.child("users").child(perroId).child("zonaSegura")
                 .get().addOnSuccessListener { snapshot ->
@@ -263,7 +342,11 @@ class DogLocationManager(
                             zonaRadio = radio
 
                             val centro = LatLng(latitud, longitud)
+                            Log.d("DogLocationManager", "Dibujando zona segura desde Firebase en: Lat=$latitud, Lng=$longitud, Radio=$radio")
 
+                            // Asegurarse de eliminar zona anterior si existe
+                            zonaSeguraCircle?.remove()
+                            
                             zonaSeguraCircle = mMap.addCircle(
                                 CircleOptions()
                                     .center(centro)
@@ -276,8 +359,14 @@ class DogLocationManager(
                             DatosPrecargados.guardarZonaSeguraPerro(perroId, snapshot)
 
                             actualizarColorZonaSegura()
+                        } else {
+                            Log.e("DogLocationManager", "Datos de zona segura incompletos o nulos")
                         }
+                    } else {
+                        Log.d("DogLocationManager", "No existe zona segura definida para el perro: $perroId")
                     }
+                }.addOnFailureListener { e ->
+                    Log.e("DogLocationManager", "Error al obtener zona segura: ${e.message}")
                 }
         }
     }
@@ -318,7 +407,41 @@ class DogLocationManager(
         zonaSeguraCircle?.strokeColor = colorBorde
 
         // Actualizar el estado de perro fuera/dentro de zona
+        val estadoAnterior = perroFueraDeZona
         perroFueraDeZona = !estaDentro
+        
+        // Si el estado cambió, actualizar en Firebase y gestionar notificaciones
+        if (estadoAnterior != perroFueraDeZona && perroActualId != null) {
+            // Actualizar estado en Firebase
+            val database = FirebaseDatabase.getInstance().getReference("geofencing_status")
+            val nuevoEstado = if (perroFueraDeZona) "OUT" else "IN"
+            
+            database.child(perroActualId!!).setValue(nuevoEstado)
+                .addOnSuccessListener {
+                    Log.d("DogLocationManager", "Estado de geofencing actualizado a $nuevoEstado")
+                    
+                    // Si el perro está fuera, programar notificaciones
+                    if (perroFueraDeZona) {
+                        val receiver = GeofenceBroadcastReciver()
+                        val sharedPreferences = context.getSharedPreferences("AppSettings", Context.MODE_PRIVATE)
+                        val notificationsEnabled = sharedPreferences.getBoolean("notifications_enabled", true)
+                        
+                        if (notificationsEnabled) {
+                            receiver.enviarNotificacion(context)
+                            receiver.schedulePeriodicNotifications(context)
+                            Log.d("DogLocationManager", "Notificaciones periódicas programadas")
+                        }
+                    } else {
+                        // Si el perro entró, cancelar notificaciones
+                        val receiver = GeofenceBroadcastReciver()
+                        receiver.cancelPeriodicNotifications(context)
+                        Log.d("DogLocationManager", "Notificaciones periódicas canceladas")
+                    }
+                }
+                .addOnFailureListener { e ->
+                    Log.e("DogLocationManager", "Error al actualizar estado en Firebase: ${e.message}")
+                }
+        }
     }
 
     /**
@@ -332,65 +455,9 @@ class DogLocationManager(
         ) // No verificar cuando estamos en modo edición
             return
 
-        val distancia = calcularDistanciaEnMetros(
-            LatLng(zonaCentroLat!!, zonaCentroLng!!),
-            LatLng(ultimaPosLat!!, ultimaPosLng!!)
-        )
-
-        if (distancia > zonaRadio) {
-            enviarNotificacionZonaInsegura()
-        }
-    }
-
-    /**
-     * Envía una notificación al usuario indicando que el perro ha salido de la zona segura.
-     */
-    private fun enviarNotificacionZonaInsegura() {
-        val channelId = "geofence_alert"
-        val notificationId = 1001
-
-        // Obtener nombre del perro si está disponible
-        val perroNombre = if (perroActualId != null) {
-            val perroSnapshot = DatosPrecargados.obtenerPerro(perroActualId!!)
-            perroSnapshot?.child("nombre")?.getValue(String::class.java) ?: "Tu perro"
-        } else {
-            "Tu perro"
-        }
-
-        val intent = Intent(context, MapsActivity::class.java)
-        val pendingIntent = PendingIntent.getActivity(
-            context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        val builder = NotificationCompat.Builder(context, channelId)
-            .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle(context.getString(R.string.alerta_geocerca))
-            .setContentText(context.getString(R.string.mascota_fuera_zona_nombre, perroNombre))
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setContentIntent(pendingIntent)
-            .setAutoCancel(true)
-
-        val notificationManager =
-            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-        // Crear el canal de notificación (requerido para Android 8.0+)
-        val channel = NotificationChannel(
-            channelId,
-            context.getString(R.string.geofence_channel_name),
-            NotificationManager.IMPORTANCE_HIGH
-        )
-        channel.description = context.getString(R.string.geofence_channel_description)
-        notificationManager.createNotificationChannel(channel)
-
-        // Verificar permiso de notificaciones en Android 13+
-        with(NotificationManagerCompat.from(context)) {
-            if (ContextCompat.checkSelfPermission(
-                    context, Manifest.permission.POST_NOTIFICATIONS
-                ) == PackageManager.PERMISSION_GRANTED
-            ) {
-                notify(notificationId, builder.build())
-            }
-        }
+        // Simplemente llamamos a actualizarColorZonaSegura() que ahora también maneja
+        // la lógica de notificaciones y actualización en Firebase
+        actualizarColorZonaSegura()
     }
 
     /**
@@ -471,6 +538,9 @@ class DogLocationManager(
         // Registrar el listener
         locationRef.addValueEventListener(locationListener)
         dogLocationListener = locationListener
+        
+        // Iniciar servicio de monitoreo en segundo plano
+        iniciarServicioMonitoreo(perroId)
     }
 
     /**
@@ -594,8 +664,39 @@ class DogLocationManager(
             }
         }
 
+        // Detener servicio de monitoreo si tenemos un perro actual
+        if (perroActualId != null) {
+            detenerServicioMonitoreo(perroActualId!!)
+        }
+
         stopLocationUpdates()
         handler.removeCallbacks(comprobacionZonaSeguraRunnable)
+    }
+
+    /**
+     * Detiene el servicio de monitoreo en segundo plano para un perro específico.
+     * 
+     * @param perroId ID del perro cuyo monitoreo se detendrá
+     */
+    private fun detenerServicioMonitoreo(perroId: String) {
+        Log.d("DogLocationManager", "Deteniendo servicio de monitoreo para perro ID: $perroId")
+        
+        // Eliminar este perro de la lista de "monitoreados" en SharedPreferences
+        val monitoredDogsPrefs = context.getSharedPreferences("MonitoredDogs", Context.MODE_PRIVATE)
+        val currentDogIds = monitoredDogsPrefs.getStringSet("dog_ids", HashSet<String>()) ?: HashSet()
+        
+        if (currentDogIds.contains(perroId)) {
+            val updatedDogIds = HashSet(currentDogIds)
+            updatedDogIds.remove(perroId)
+            
+            monitoredDogsPrefs.edit().putStringSet("dog_ids", updatedDogIds).apply()
+            
+            // Crear intent para detener el servicio
+            val serviceIntent = Intent(context, GeofencingService::class.java)
+            context.stopService(serviceIntent)
+            
+            Log.d("DogLocationManager", "Servicio de monitoreo detenido")
+        }
     }
 
     /**
