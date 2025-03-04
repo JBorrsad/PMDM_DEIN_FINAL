@@ -10,6 +10,7 @@ import android.view.View
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.firebase.auth.FirebaseAuth
@@ -78,6 +79,7 @@ class EditarUsuario : AppCompatActivity() {
     private var duenioSeleccionadoId: String? = null
     private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     private var selectedDate: Date? = null
+    private lateinit var btnCambiarPassword: MaterialButton
 
     /**
      * Inicializa la actividad, configura la interfaz y carga los datos del usuario.
@@ -130,6 +132,7 @@ class EditarUsuario : AppCompatActivity() {
         switchEsPerro = findViewById(R.id.switchEsPerro)
         tvDuenio = findViewById(R.id.tvDueño)
         spinnerDuenio = findViewById(R.id.spinnerDueño)
+        btnCambiarPassword = findViewById(R.id.btnCambiarPassword)
 
         if (ivImagen.drawable == null) {
             ivImagen.loadBase64Image(null)
@@ -462,6 +465,12 @@ class EditarUsuario : AppCompatActivity() {
 
         btnBack.setOnClickListener {
             redirigirAPerfil()
+        }
+
+        btnCambiarPassword.setOnClickListener {
+            val intent = Intent(this, ChangePasswordActivity::class.java)
+            startActivity(intent)
+            overridePendingTransition(R.anim.slide_right_to_left, R.anim.slide_left_to_right)
         }
 
         etNombre.addTextChangedListener(object : android.text.TextWatcher {

@@ -328,6 +328,14 @@
                 android:visibility="gone"/>
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCambiarPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:text="Cambiar contraseña"
+                style="@style/Widget.App.Button.Secondary"/>
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnGuardarUsuario"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
