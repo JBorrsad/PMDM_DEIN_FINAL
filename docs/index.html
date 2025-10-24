@@ -1,0 +1,2640 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<title>
+   Documentación funcional - PawTracker
+  </title>
+<style>
+  /* Estilos globales para el body */
+  body { 
+      font-family: Arial, sans-serif; 
+      line-height: 1.6; 
+      margin: 0 auto; 
+      padding: 20px; 
+      /* Puedes aumentar el max-width para tener más espacio total */
+      max-width: 65%;
+  }
+  
+  /* Contenedor global que agrupa el índice y el contenido principal */
+  .container {
+      /* No usamos grid en el body, sino dentro de este contenedor */
+      display: grid;
+      grid-template-columns: 420px 1fr;
+  }
+  
+  /* Índice fijo a la izquierda */
+  .toc {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 420px;
+      height: 100vh;
+      overflow-y: auto;
+      background-color: #f9f9f9;
+      border-right: 1px solid #ddd;
+      padding: 20px;
+      box-sizing: border-box;
+      z-index: 100;
+  }
+  
+  /* Contenedor del contenido principal que deja espacio para el índice fijo */
+  .main-content {
+      margin-left: 420px; /* Reserva espacio para el índice */
+      padding: 20px;
+  }
+  
+  /* Contenedor interno para centrar el contenido principal */
+  .main-inner {
+     
+      margin: 0 auto;
+  }
+  
+  /* Resto de estilos existentes */
+  .credenciales-prueba {
+      background-color: #f8f9fa;
+      border: 2px solid #246BFD;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .credenciales-prueba h2 {
+      color: #246BFD;
+      margin-top: 0;
+      text-align: center;
+  }
+  
+  .credenciales-prueba .cuenta {
+      background-color: white;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 15px;
+      margin: 10px 0;
+  }
+  
+  .credenciales-prueba .cuenta h3 {
+      color: #333;
+      margin-top: 0;
+  }
+  
+  .credenciales-prueba .credencial {
+      font-family: monospace;
+      background-color: #f1f1f1;
+      padding: 5px 10px;
+      border-radius: 4px;
+      display: inline-block;
+      margin: 2px 0;
+  }
+  
+  h1 { 
+      color: #2c3e50; 
+      border-bottom: 2px solid #eee; 
+      padding-bottom: 10px; 
+      text-align: center; 
+  }
+  
+  h2 { 
+      color: #3498db; 
+      margin-top: 30px; 
+      border-bottom: 1px solid #eee; 
+      padding-bottom: 5px; 
+  }
+  
+  h3 { 
+      color: #2980b9; 
+      margin-top: 25px; 
+  }
+  
+  h4 { 
+      color: #2973a9; 
+      margin-top: 20px; 
+  }
+  
+  p { 
+      margin: 15px 0; 
+      text-align: justify; 
+  }
+  
+  strong { 
+      font-weight: bold; 
+      color: #2c3e50; 
+  }
+  
+  blockquote { 
+      margin-left: 20px; 
+      padding-left: 15px; 
+      border-left: 3px solid #eee; 
+      color: #555; 
+  }
+  
+  img { 
+      max-width: 100%; 
+      height: auto; 
+      display: block; 
+      margin: 20px auto; 
+      border: 1px solid #000; 
+      padding: 5px; 
+      box-shadow: 0 0 5px rgba(0,0,0,0.1); 
+  }
+  
+  table { 
+      border-collapse: collapse; 
+      width: 100%; 
+      margin: 20px 0; 
+  }
+  
+  th, td { 
+      border: 1px solid #ddd; 
+      padding: 8px; 
+      text-align: left; 
+  }
+  
+  th { 
+      background-color: #f2f2f2; 
+      font-weight: bold; 
+  }
+  
+  tr:nth-child(even) { 
+      background-color: #f9f9f9; 
+  }
+  
+  /* Estilos para la portada */
+  .portada {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 90vh;
+      text-align: center;
+      margin-bottom: 30px;
+      background: linear-gradient(to bottom, #f8f9fa 0%, white 100%);
+      border-radius: 15px;
+      padding: 40px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+  
+  .app-icon {
+      width: 180px;
+      height: 180px;
+      background: linear-gradient(135deg, #246BFD 0%, #1e40af 100%);
+      border-radius: 50%;
+      padding: 25px;
+      margin-bottom: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 12px rgba(36,107,253,0.2);
+      transition: transform 0.3s ease;
+  }
+  
+  .app-icon:hover {
+      transform: scale(1.05);
+  }
+  
+  .app-icon svg {
+      width: 140px;
+      height: 140px;
+  }
+  
+  .app-name {
+      font-size: 4em;
+      font-weight: bold;
+      background: linear-gradient(135deg, #246BFD 0%, #1e40af 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 25px 0;
+      font-family: 'Montserrat', sans-serif;
+      letter-spacing: 2px;
+  }
+  
+  .app-subtitle {
+      font-size: 1.8em;
+      color: #555;
+      margin-bottom: 50px;
+      max-width: 600px;
+      line-height: 1.4;
+  }
+  
+  .authors {
+      margin-top: 50px;
+      padding: 30px;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+  
+  .authors p {
+      margin: 8px 0;
+      font-size: 1.2em;
+      text-align: center;
+  }
+  
+  .authors p:first-child {
+      color: #246BFD;
+      font-size: 1.4em;
+      margin-bottom: 15px;
+  }
+  
+  /* Estilos específicos del índice */
+  .toc h2 {
+      position: sticky;
+      top: 0;
+      background-color: #f9f9f9;
+      padding: 10px 0;
+      margin-top: 0;
+      border-bottom: 2px solid #246BFD;
+  }
+  
+  .toc ul {
+      list-style-type: none;
+      padding-left: 15px;
+      margin: 0;
+  }
+  
+  .toc ul ul {
+      padding-left: 20px;
+  }
+  
+  .toc a {
+      color: #495057;
+      text-decoration: none;
+      font-size: 0.95em;
+      display: block;
+      padding: 4px 0;
+      transition: all 0.2s ease;
+  }
+  
+  .toc a:hover {
+      color: #246BFD;
+      padding-left: 5px;
+  }
+  
+  @media (max-width: 768px) {
+      .toc {
+          display: none;
+      }
+      .main-content {
+          margin-left: 0;
+      }
+  }
+</style>
+ 
+
+</head>
+<body>
+
+<h1>Documentación Funcional - PawTracker</h1>
+
+
+<!-- 2. Índice -->
+<div class="toc" id="indice">
+    <h2>Índice de Contenidos</h2>
+    <ul>
+        <li><a href="#portada">1. Portada</a></li>
+        <li><a href="#indice">2. Índice</a></li>
+        <li><a href="#introduccion">3. Introducción</a>
+            <ul>
+                <li><a href="#proposito">3.1. Propósito del documento</a></li>
+                <li><a href="#alcance">3.2. Alcance del proyecto</a></li>
+                <li><a href="#info-pruebas">3.3. Información importante para pruebas</a></li>
+            </ul>
+</li>
+        <li><a href="#descripcion-general">4. Descripción General</a>
+            <ul>
+                <li><a href="#vision-general">4.1. Visión general de la aplicación</a></li>
+                <li><a href="#objetivos-principales">4.2. Objetivos principales</a></li>
+                <li><a href="#publico-objetivo">4.3. Público objetivo</a></li>
+</ul>
+</li>
+        <li><a href="#requisitos-funcionales">5. Requisitos Funcionales</a></li>
+        <li><a href="#requisitos-no-funcionales">6. Requisitos No Funcionales</a>
+            <ul>
+                <li><a href="#rendimiento">6.1. Rendimiento</a></li>
+                <li><a href="#usabilidad">6.2. Usabilidad</a></li>
+                <li><a href="#accesibilidad">6.3. Accesibilidad</a></li>
+                <li><a href="#seguridad">6.4. Seguridad</a></li>
+            </ul>
+</li>
+        <li><a href="#arquitectura">7. Arquitectura de la Aplicación</a>
+            <ul>
+                <li><a href="#estructura-general">7.1. Estructura general</a></li>
+                <li><a href="#diagrama-componentes">7.2. Diagrama de componentes</a></li>
+            </ul>
+</li>
+        <li><a href="#casos-uso">8. Casos de Uso</a>
+            <ul>
+                <li><a href="#descripcion-casos">8.1. Descripción de los casos principales</a></li>
+                <li><a href="#diagramas-casos">8.2. Diagramas de casos de uso</a></li>
+            </ul>
+</li>
+        <li><a href="#interfaz">9. Interfaz de Usuario</a>
+            <ul>
+                <li><a href="#bocetos">9.1. Bocetos o wireframes de las pantallas</a></li>
+                <li><a href="#navegacion">9.2. Navegación entre pantallas</a></li>
+            </ul>
+</li>
+        <li><a href="#integraciones">10. Integraciones Externas</a>
+            <ul>
+                <li><a href="#apis">10.1. APIs o servicios externos utilizados</a></li>
+                <li><a href="#conexion">10.2. Detalles de conexión y autenticación</a></li>
+</ul>
+</li>
+        <li><a href="#gestion-datos">11. Gestión de Datos</a>
+            <ul>
+                <li><a href="#modelo-datos">11.1. Modelo de datos</a></li>
+                <li><a href="#diagrama-er">11.2. Diagrama entidad-relación</a></li>
+                <li><a href="#flujo-datos">11.3. Flujo de datos</a></li>
+            </ul>
+</li>
+        <li><a href="#plan-pruebas">12. Plan de Pruebas</a>
+            <ul>
+                <li><a href="#estrategia">12.1. Estrategia de pruebas funcionales</a></li>
+                <li><a href="#escenarios">12.2. Escenarios de prueba</a></li>
+            </ul>
+</li>
+        <li><a href="#cronograma">13. Cronograma de Desarrollo</a>
+            <ul>
+                <li><a href="#fases">13.1. Fases del proyecto</a></li>
+                <li><a href="#plazos">13.2. Plazos y responsables</a></li>
+</ul>
+</li>
+        <li><a href="#conclusion">14. Conclusión</a>
+            <ul>
+                <li><a href="#decisiones">14.1. Resumen de las decisiones clave</a></li>
+                <li><a href="#mejoras">14.2. Propuestas de mejora futura</a></li>
+            </ul>
+</li>
+        <li><a href="#anexos">15. Anexos</a>
+            <ul>
+                <li><a href="#documentos">15.1. Documentos adicionales</a></li>
+</ul>
+</li>
+    </ul>
+</div>
+<div class="main-content">
+    <div class="main-inner">
+
+<!-- 1. Portada -->
+<div class="portada">
+    <div class="app-icon">
+        <!-- Icono de la aplicación (SVG extraído de app_icon_paw.xml) -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+            <path fill="white" d="M8.35,3C9.53,2.83 10.78,4.12 11.14,5.9C11.5,7.67 10.85,9.25 9.67,9.43C8.5,9.61 7.24,8.32 6.87,6.54C6.5,4.77 7.17,3.19 8.35,3M15.5,3C16.69,3.19 17.35,4.77 17,6.54C16.62,8.32 15.37,9.61 14.19,9.43C13,9.25 12.35,7.67 12.72,5.9C13.08,4.12 14.33,2.83 15.5,3M3,7.6C4.14,7.11 5.69,8 6.5,9.55C7.26,11.13 7,12.8 5.87,13.29C4.74,13.78 3.2,12.89 2.41,11.32C1.62,9.75 1.9,8.08 3,7.6M21,7.6C22.1,8.08 22.38,9.75 21.59,11.32C20.8,12.89 19.26,13.78 18.13,13.29C17,12.8 16.74,11.13 17.5,9.55C18.31,8 19.86,7.11 21,7.6M19.33,18.38C19.37,19.85 18.2,21.1 16.46,21.1C15.69,21.1 13.46,21.05 12.78,18.66C12.67,18.26 12.42,17 11.79,17C11.16,17 10.9,18.26 10.8,18.66C10.2,20.76 8.23,21.1 7.25,21.1C5.75,21.1 4.53,20.23 4.5,18.38C4.45,15.88 7.35,12.94 10.66,11.76C10.76,11.73 11.93,11.31 12,11.3C12.07,11.29 13.24,11.73 13.34,11.76C16.65,12.96 19.55,15.89 19.33,18.38Z" />
+        </svg>
+    </div>
+    <div class="app-name">PawTracker</div>
+    <div class="app-subtitle">Sistema Avanzado de Monitorización y Seguimiento de Mascotas</div>
+    <div class="authors">
+        <p><strong>Desarrollado por</strong></p>
+        <p>Aritz Mendive</p>
+        <p>Juan Borrás</p>
+        <p>Martín Peñalva</p>
+    </div>
+</div>
+
+
+<h1 id="introduccion">3. Introducción</h1>
+<h2 id="proposito">3.1. Propósito del documento</h2>
+<p>Este documento de documentación funcional ha sido desarrollado como parte de nuestro proyecto de fin de asignatura de programación móvil, con el objetivo de proporcionar una visión clara y detallada de todos los aspectos funcionales de nuestra aplicación PawTracker. Como estudiantes de programación, hemos querido plasmar aquí todo el proceso de análisis, diseño e implementación que hemos seguido para crear esta solución de seguimiento de mascotas.</p>
+
+<p>La finalidad principal de este documento es servir como guía tanto para nosotros durante el desarrollo como para futuros desarrolladores que puedan continuar o mantener el proyecto. También servirá para que los evaluadores puedan entender el alcance y la complejidad de nuestra aplicación, así como las decisiones técnicas que hemos tomado durante su implementación.</p>
+
+<p>Esta documentación funcional incluye todos los aspectos necesarios para comprender completamente la aplicación: desde los requisitos funcionales que definen lo que la aplicación debe hacer, hasta los diagramas de arquitectura que muestran cómo están organizados sus componentes, pasando por detalles de la interfaz de usuario, gestión de datos y plan de pruebas.</p>
+
+<h2 id="alcance">3.2. Alcance del proyecto</h2>
+<p>PawTracker es una aplicación móvil nativa para Android desarrollada desde cero por nuestro equipo, que permite a los dueños de mascotas realizar un seguimiento en tiempo real de la ubicación de sus perros. El alcance del proyecto abarca:</p>
+
+<ul>
+    <li><strong>Monitorización GPS en tiempo real:</strong> La aplicación permite visualizar la posición exacta de cada mascota en un mapa interactivo, actualizando la información constantemente para proporcionar datos precisos.</li>
+    
+    <li><strong>Sistema de zonas seguras (geofencing):</strong> Los usuarios pueden definir áreas geográficas consideradas seguras para sus mascotas. La aplicación detecta automáticamente cuando la mascota sale de estas zonas y envía notificaciones de alerta.</li>
+    
+    <li><strong>Gestión de múltiples mascotas:</strong> La aplicación permite registrar y gestionar varias mascotas desde una misma cuenta, cada una con su propio perfil personalizado.</li>
+    
+    <li><strong>Sistema de autenticación:</strong> Implementación completa de un sistema de registro e inicio de sesión seguro utilizando Firebase Authentication.</li>
+    
+    <li><strong>Base de datos en tiempo real:</strong> Uso de Firebase Realtime Database para sincronizar y almacenar la información de usuarios, mascotas y ubicaciones, garantizando que los datos estén siempre actualizados.</li>
+    
+    <li><strong>Interfaz moderna e intuitiva:</strong> Diseño de una interfaz de usuario siguiendo los principios de Material Design 3, con soporte para temas claros y oscuros, y adaptabilidad a diferentes tamaños de pantalla.</li>
+    
+    <li><strong>Notificaciones push:</strong> Sistema de alertas que informa a los usuarios cuando sus mascotas salen de las zonas seguras establecidas.</li>
+</ul>
+
+<p>Fuera del alcance de esta versión inicial quedan funcionalidades como la integración con dispositivos GPS específicos para mascotas, la versión para iOS, y funcionalidades sociales como compartir la ubicación con otros usuarios o generar informes estadísticos de actividad. Estas características podrían considerarse para futuras versiones si el proyecto continúa su desarrollo.</p>
+
+<h2 id="info-pruebas">3.3. Información importante para pruebas</h2>
+
+<h1 style="text-align: center; color: #246BFD;">⚠️ INFORMACIÓN IMPORTANTE PARA PRUEBAS ⚠️</h1>
+
+<div class="credenciales-prueba" style="background-color: #f8f9fa; border: 2px solid #246BFD; border-radius: 8px; padding: 20px; margin: 20px 0;">
+    <div class="cuenta" style="background-color: white; border: 1px solid #ddd; border-radius: 4px; padding: 15px; margin: 10px 0;">
+        <h3>Cuenta Principal de Prueba</h3>
+        <p>Esta cuenta está preparada con diferentes perros ya insertados y configurada para probar todas las funcionalidades de la aplicación:</p>
+        <p><strong>Usuario:</strong> <span class="credencial" style="font-family: monospace; background-color: #f1f1f1; padding: 5px 10px; border-radius: 4px;">sadaborras63@gmail.com</span></p>
+        <p><strong>Contraseña:</strong> <span class="credencial" style="font-family: monospace; background-color: #f1f1f1; padding: 5px 10px; border-radius: 4px;">perros123</span></p>
+    </div>
+
+    <div class="cuenta" style="background-color: white; border: 1px solid #ddd; border-radius: 4px; padding: 15px; margin: 10px 0;">
+        <h3>Cuenta para Simulación de Perro</h3>
+        <p>Esta cuenta permite simular y controlar la ubicación del perro Ron, que pertenece al usuario Juan Borrás:</p>
+        <p><strong>Usuario:</strong> <span class="credencial" style="font-family: monospace; background-color: #f1f1f1; padding: 5px 10px; border-radius: 4px;">perro1@gmail.com</span></p>
+        <p><strong>Contraseña:</strong> <span class="credencial" style="font-family: monospace; background-color: #f1f1f1; padding: 5px 10px; border-radius: 4px;">perro111</span></p>
+    </div>
+</div>
+
+<h1 id="descripcion-general">4. Descripción General</h1>
+<h2 id="vision-general">4.1. Visión general de la aplicación</h2>
+<p>PawTracker es una aplicación móvil que hemos desarrollado como parte de nuestro proyecto académico, pensada para resolver un problema común entre los dueños de mascotas: cómo mantener localizados a sus perros en todo momento. La aplicación ofrece un sistema de seguimiento GPS en tiempo real, permitiendo visualizar la ubicación exacta de las mascotas en un mapa interactivo.</p>
+
+<p>En nuestro desarrollo, nos hemos centrado en crear una herramienta que sea realmente útil y práctica. El usuario puede definir "zonas seguras" (como el hogar o el parque habitual) y recibir una notificación inmediata si su mascota sale de estos perímetros. Esto es especialmente útil para perros escapistas o para momentos en que la mascota está bajo el cuidado de otras personas.</p>
+
+<p>Hemos implementado la aplicación utilizando una arquitectura MVVM (Model-View-ViewModel) para separar claramente la lógica de negocio de la interfaz de usuario. Para el backend, utilizamos Firebase, lo que nos permitió incorporar fácilmente autenticación de usuarios, almacenamiento en la nube y notificaciones push. Para la parte de geolocalización, integramos Google Maps y los servicios de ubicación de Google Play, aprovechando su precisión y eficiencia energética.</p>
+
+<p>La interfaz de usuario ha sido diseñada siguiendo los principios de Material Design 3, lo que proporciona una experiencia moderna, intuitiva y agradable visualmente, con soporte tanto para tema claro como oscuro.</p>
+
+<h2 id="objetivos-principales">4.2. Objetivos principales</h2>
+<p>Durante el desarrollo de PawTracker, nos planteamos los siguientes objetivos clave:</p>
+
+<ul>
+    <li><strong>Crear un sistema de seguimiento en tiempo real:</strong> Implementar una solución que muestre con precisión la ubicación de las mascotas y actualice esta información de forma continua con un equilibrio óptimo entre exactitud y consumo de batería.</li>
+    
+    <li><strong>Desarrollar un sistema de alertas eficiente:</strong> Diseñar un mecanismo de geofencing (zonas seguras) que detecte de manera fiable cuando una mascota abandona un área predefinida y envíe notificaciones inmediatas al propietario.</li>
+    
+    <li><strong>Facilitar la gestión de múltiples mascotas:</strong> Permitir que los usuarios puedan registrar varios perros en la aplicación y cambiar fácilmente entre ellos para ver su ubicación y configurar sus zonas seguras individualmente.</li>
+    
+    <li><strong>Implementar una experiencia de usuario fluida:</strong> Diseñar una interfaz intuitiva y agradable que permita a usuarios con diferentes niveles de conocimiento tecnológico utilizar todas las funcionalidades sin dificultad.</li>
+    
+    <li><strong>Garantizar el funcionamiento en segundo plano:</strong> Asegurar que los servicios de seguimiento y notificaciones sigan funcionando incluso cuando la aplicación no está abierta o tras el reinicio del dispositivo.</li>
+    
+    <li><strong>Optimizar el consumo de recursos:</strong> Minimizar el impacto en la batería y los datos móviles del dispositivo, implementando estrategias de actualización adaptativas según el contexto de uso.</li>
+</ul>
+
+<h2 id="publico-objetivo">4.3. Público objetivo</h2>
+<p>Al diseñar PawTracker, hemos pensado en diferentes perfiles de usuario que podrían beneficiarse de nuestra aplicación:</p>
+
+<ul>
+    <li><strong>Dueños preocupados por sus mascotas:</strong> Personas que quieren tener la tranquilidad de saber dónde está su perro en todo momento, especialmente con mascotas que tienen tendencia a escaparse o perderse.</li>
+    
+    <li><strong>Familias con jardines amplios o fincas:</strong> Usuarios que tienen espacios grandes donde sus perros pueden moverse libremente, pero quieren asegurarse de que no se alejen demasiado.</li>
+    
+    <li><strong>Propietarios de múltiples perros:</strong> Personas que tienen varios perros y necesitan una herramienta centralizada para gestionar y monitorizar a todos ellos de forma sencilla.</li>
+    
+    <li><strong>Personas activas:</strong> Usuarios que salen a correr o hacer senderismo con sus perros y quieren poder soltarlos sin perderlos de vista.</li>
+    
+    <li><strong>Cuidadores de perros:</strong> Profesionales o personas que cuidan temporalmente de las mascotas de otros y quieren ofrecer un extra de seguridad.</li>
+</ul>
+
+<p>La aplicación ha sido diseñada para ser accesible a usuarios con diferentes niveles de habilidad tecnológica, priorizando una interfaz clara e intuitiva que no requiera conocimientos técnicos avanzados para su uso cotidiano.</p>
+
+<h1 id="requisitos-funcionales">5. Requisitos Funcionales</h1>
+<p>A continuación se detallan los requisitos funcionales que se han implementado en la aplicación PawTracker, basados en las clases y funcionalidades reales del código:</p>
+
+<h3>Autenticación y Gestión de Usuarios</h3>
+<ul>
+    <li><strong>RF-1: Registro de usuarios</strong>
+        <p>La aplicación permite a los nuevos usuarios crear una cuenta mediante:</p>
+        <ul>
+            <li>Formulario de registro con email y contraseña (RegisterActivity)</li>
+            <li>Validación de formato de email y seguridad de contraseña</li>
+            <li>Aceptación de términos y condiciones</li>
+            <li>Almacenamiento de credenciales en Firebase Authentication</li>
+            <li>Creación de perfil básico en la base de datos</li>
+        </ul>
+</li>
+    
+    <li><strong>RF-2: Inicio de sesión multimodal</strong>
+        <p>Ofrece múltiples métodos de autenticación implementados en MainActivity y SplashLoginActivity:</p>
+        <ul>
+            <li>Email y contraseña con validación en Firebase</li>
+            <li>Inicio de sesión con Google mediante OAuth</li>
+            <li>Opción "Recordarme" para almacenar credenciales</li>
+            <li>Detección de sesiones activas y timeout automático (5 minutos)</li>
+</ul>
+</li>
+    
+    <li><strong>RF-3: Gestión de perfil de usuario</strong>
+        <p>Implementado en PerfilUsuario y EditarUsuario, permite:</p>
+        <ul>
+            <li>Visualización de información personal (nombre, apellidos, email)</li>
+            <li>Edición de datos del perfil incluyendo imagen de usuario</li>
+            <li>Almacenamiento y visualización de la fecha de nacimiento</li>
+            <li>Cálculo automático de edad basada en la fecha de nacimiento</li>
+            <li>Procesamiento y optimización de imágenes de perfil</li>
+        </ul>
+</li>
+    
+    <li><strong>RF-4: Cierre de sesión seguro</strong>
+        <p>La aplicación implementa un sistema seguro para finalizar sesiones que:</p>
+        <ul>
+            <li>Elimina credenciales temporales y tokens de autenticación</li>
+            <li>Limpia la caché de datos sensibles (DatosPrecargados)</li>
+            <li>Redirige al usuario a la pantalla de inicio de sesión</li>
+            <li>Detiene los servicios de monitorización activos</li>
+</ul>
+</li>
+</ul>
+
+<h3>Gestión de Perros</h3>
+<ul>
+    <li><strong>RF-5: Registro y administración de perros</strong>
+        <p>Mediante las clases PerfilPerro y EditarPerro, el sistema permite:</p>
+        <ul>
+            <li>Crear perfiles para múltiples perros asociados a un usuario</li>
+            <li>Configurar datos específicos: nombre, raza, peso</li>
+            <li>Registrar fechas importantes (nacimiento, adopción)</li>
+            <li>Cálculo automático de la edad del perro</li>
+            <li>Subir y procesar imágenes del perro (recorte, optimización)</li>
+        </ul>
+</li>
+    
+    <li><strong>RF-6: Relación entre usuarios y perros</strong>
+        <p>Implementado en la estructura de base de datos y en DogsClusterManager:</p>
+        <ul>
+            <li>Asociación de perros a usuarios mediante campo "dueñoId"</li>
+            <li>Verificación de propiedad para operaciones sensibles</li>
+            <li>Sistema bidireccional de referencia (usuario → perros, perro → usuario)</li>
+            <li>Estructura de datos optimizada para consultas frecuentes</li>
+        </ul>
+</li>
+    
+    <li><strong>RF-7: Selector visual de perros</strong>
+        <p>Mediante DogSpinnerAdapter, la aplicación ofrece:</p>
+        <ul>
+            <li>Spinner personalizado con imágenes y nombres de los perros</li>
+            <li>Cambio rápido entre perros en la pantalla principal</li>
+            <li>Visualización de imagen de perfil en formato circular</li>
+            <li>Actualización automática al añadir o modificar perros</li>
+        </ul>
+</li>
+</ul>
+
+<h3>Sistema de Geolocalización</h3>
+<ul>
+    <li><strong>RF-9: Seguimiento en tiempo real</strong>
+        <p>La aplicación debe permitir el seguimiento en tiempo real de la ubicación de las mascotas, actualizando la información de ubicación constantemente.</p>
+</li>
+    
+    <li><strong>RF-10: Visualización en mapa interactivo</strong>
+        <p>La aplicación debe permitir visualizar la ubicación de las mascotas en un mapa interactivo de Google Maps.</p>
+</li>
+    
+    <li><strong>RF-11: Marcadores personalizados</strong>
+        <p>La aplicación debe permitir marcar las ubicaciones de las mascotas en el mapa con imágenes personalizadas.</p>
+    </li>
+    
+    <li><strong>RF-12: Sistema de clustering</strong>
+        <p>La aplicación debe implementar un sistema de clustering para gestionar eficientemente múltiples marcadores en el mapa.</p>
+</li>
+</ul>
+
+<h3>Sistema de Zonas Seguras</h3>
+<ul>
+    <li><strong>RF-13: Creación de zonas seguras</strong>
+        <p>La aplicación debe permitir a los usuarios definir zonas seguras para sus mascotas, incluyendo la configuración de perímetros y radios.</p>
+    </li>
+    
+    <li><strong>RF-14: Visualización gráfica de zonas</strong>
+        <p>La aplicación debe permitir visualizar gráficamente las zonas seguras definidas en el mapa.</p>
+    </li>
+    
+    <li><strong>RF-15: Sistema de geofencing</strong>
+        <p>La aplicación debe implementar un sistema de geofencing para detectar automáticamente cuando una mascota abandona una zona segura.</p>
+    </li>
+</ul>
+
+<h3>Sistema de Notificaciones</h3>
+<ul>
+    <li><strong>RF-16: Alertas de zona segura</strong>
+        <p>La aplicación debe enviar notificaciones inmediatas cuando una mascota abandona una zona segura.</p>
+    </li>
+    
+    <li><strong>RF-17: Recordatorios periódicos</strong>
+        <p>La aplicación debe enviar recordatorios periódicos cuando una mascota permanece fuera de una zona segura.</p>
+    </li>
+    
+    <li><strong>RF-18: Notificaciones personalizadas</strong>
+        <p>La aplicación debe enviar notificaciones personalizadas para cada mascota registrada.</p>
+    </li>
+</ul>
+
+<h3>Gestión de Datos</h3>
+<ul>
+    <li><strong>RF-19: Sincronización en tiempo real</strong>
+        <p>La aplicación debe sincronizar datos en tiempo real entre el dispositivo y la nube.</p>
+    </li>
+    
+    <li><strong>RF-20: Persistencia offline</strong>
+        <p>La aplicación debe mantener datos disponibles cuando no hay conexión a internet.</p>
+    </li>
+    
+    <li><strong>RF-21: Gestión de imágenes</strong>
+        <p>La aplicación debe gestionar imágenes de mascotas, incluyendo su procesamiento y almacenamiento.</p>
+    </li>
+</ul>
+
+<h1 id="requisitos-no-funcionales">6. Requisitos No Funcionales</h1>
+<p>Además de las funcionalidades específicas, nuestra aplicación PawTracker debe cumplir con una serie de requisitos no funcionales que aseguren su calidad, rendimiento y usabilidad. Estos requisitos definen cómo debe comportarse el sistema y establecen las bases para una experiencia de usuario satisfactoria.</p>
+
+<h2 id="rendimiento">6.1. Rendimiento</h2>
+<p>El rendimiento es crucial en una aplicación de seguimiento en tiempo real. Hemos establecido los siguientes requisitos para garantizar una experiencia fluida:</p>
+
+<ul>
+    <li><strong>RNF-1: Tiempo de respuesta</strong>
+        <p>La aplicación debe responder a las interacciones del usuario de manera ágil:</p>
+        <ul>
+            <li>El tiempo de inicio de sesión no debe superar los 2 segundos en condiciones normales de red.</li>
+            <li>La carga inicial del mapa debe completarse en menos de 3 segundos.</li>
+            <li>El cambio entre perfiles de mascotas debe ser prácticamente instantáneo (menos de 500ms).</li>
+            <li>La actualización de la ubicación en el mapa debe producirse cada 5-10 segundos, dependiendo del modo de uso.</li>
+        </ul>
+    </li>
+    
+    <li><strong>RNF-2: Uso de recursos</strong>
+        <p>La aplicación debe hacer un uso eficiente de los recursos del dispositivo:</p>
+        <ul>
+            <li>El consumo de batería no debe superar el 5% por hora cuando la aplicación funciona en segundo plano.</li>
+            <li>El consumo de datos móviles debe ser inferior a 10MB por hora de uso activo.</li>
+            <li>El espacio de almacenamiento requerido para la instalación debe ser inferior a 50MB (excluyendo datos de usuario).</li>
+            <li>La memoria RAM utilizada no debe superar los 100MB en uso normal.</li>
+        </ul>
+    </li>
+    
+    <li><strong>RNF-3: Escalabilidad</strong>
+        <p>La aplicación debe ser capaz de manejar el crecimiento sin degradación del rendimiento:</p>
+        <ul>
+            <li>Soporte para hasta 10 mascotas por cuenta de usuario sin pérdida de rendimiento.</li>
+            <li>Capacidad de gestionar múltiples zonas seguras por mascota (hasta 5).</li>
+            <li>Almacenamiento de historial de ubicaciones durante al menos 7 días.</li>
+        </ul>
+    </li>
+</ul>
+
+<h2 id="usabilidad">6.2. Usabilidad</h2>
+<p>La facilidad de uso es fundamental para que nuestra aplicación sea accesible para usuarios de diferentes niveles de experiencia tecnológica:</p>
+
+<ul>
+    <li><strong>RNF-4: Facilidad de aprendizaje</strong>
+        <p>Los usuarios nuevos deben poder aprender a usar las funciones principales de la aplicación sin necesidad de tutoriales extensos:</p>
+        <ul>
+            <li>Un usuario nuevo debe ser capaz de completar el registro e iniciar el seguimiento de una mascota en menos de 5 minutos.</li>
+            <li>Todas las funcionalidades principales deben ser accesibles con máximo 3 toques desde la pantalla principal.</li>
+            <li>Los elementos de la interfaz deben ser autoexplicativos, con iconos universalmente reconocibles.</li>
+        </ul>
+    </li>
+    
+    <li><strong>RNF-5: Coherencia y estándares</strong>
+        <p>La aplicación debe seguir patrones de diseño coherentes y familiares para los usuarios de Android:</p>
+        <ul>
+            <li>Adherencia a las guías de Material Design 3.</li>
+            <li>Comportamiento consistente de los elementos de navegación en toda la aplicación.</li>
+            <li>Terminología uniforme en toda la interfaz.</li>
+        </ul>
+    </li>
+    
+    <li><strong>RNF-6: Prevención de errores</strong>
+        <p>La aplicación debe minimizar la posibilidad de errores del usuario:</p>
+        <ul>
+            <li>Validación en tiempo real de los campos de formulario.</li>
+            <li>Mensajes de confirmación para acciones irreversibles (eliminar mascota, cerrar sesión, etc.).</li>
+            <li>Feedback visual claro para todas las acciones realizadas.</li>
+        </ul>
+    </li>
+</ul>
+
+<h2 id="accesibilidad">6.3. Accesibilidad</h2>
+<p>Hemos diseñado la aplicación considerando usuarios con diferentes capacidades y preferencias:</p>
+
+<ul>
+    <li><strong>RNF-7: Adaptabilidad visual</strong>
+        <p>La aplicación debe ser visualmente adaptable a diferentes necesidades:</p>
+        <ul>
+            <li>Soporte completo para modo oscuro/claro, sincronizado con las preferencias del sistema.</li>
+            <li>Contraste suficiente entre texto y fondo (ratio mínimo de 4.5:1 para texto normal).</li>
+            <li>Tamaño de fuente ajustable según la configuración del sistema.</li>
+        </ul>
+    </li>
+    
+    <li><strong>RNF-8: Compatibilidad con herramientas de accesibilidad</strong>
+        <p>La aplicación debe funcionar correctamente con las herramientas de accesibilidad de Android:</p>
+        <ul>
+            <li>Compatibilidad con TalkBack para usuarios con discapacidad visual.</li>
+            <li>Descripción textual para todos los elementos visuales importantes.</li>
+            <li>Navegación posible usando solo teclado o dispositivos de entrada alternativos.</li>
+        </ul>
+    </li>
+</ul>
+
+<h2 id="seguridad">6.4. Seguridad</h2>
+<p>La seguridad es esencial, especialmente al tratarse de datos de ubicación y información personal:</p>
+
+<ul>
+    <li><strong>RNF-9: Autenticación y autorización</strong>
+        <p>El sistema debe garantizar que solo usuarios autorizados puedan acceder a la información:</p>
+        <ul>
+            <li>Uso de Firebase Authentication con estándares actuales de seguridad.</li>
+            <li>Sesiones que expiran automáticamente tras 30 días de inactividad.</li>
+            <li>Bloqueo temporal tras 5 intentos fallidos de inicio de sesión.</li>
+        </ul>
+    </li>
+    
+    <li><strong>RNF-10: Protección de datos</strong>
+        <p>Los datos sensibles deben estar protegidos tanto en tránsito como en reposo:</p>
+        <ul>
+            <li>Todas las comunicaciones con servidores deben usar HTTPS.</li>
+            <li>Datos sensibles almacenados localmente deben estar cifrados.</li>
+            <li>Las contraseñas nunca se almacenan en texto plano, solo hashes seguros.</li>
+            <li>Las claves API y credenciales no se incluyen directamente en el código fuente.</li>
+        </ul>
+    </li>
+    
+    <li><strong>RNF-11: Privacidad</strong>
+        <p>La aplicación debe respetar la privacidad de los usuarios:</p>
+        <ul>
+            <li>Clara política de privacidad accesible desde la aplicación.</li>
+            <li>Recopilación solo de datos necesarios para el funcionamiento.</li>
+            <li>Opción para que los usuarios eliminen completamente su cuenta y todos los datos asociados.</li>
+            <li>Separación y aislamiento de datos entre diferentes usuarios.</li>
+        </ul>
+    </li>
+</ul>
+
+<h1 id="arquitectura">7. Arquitectura de la Aplicación</h1>
+
+<h2 id="estructura-general">7.1. Estructura general</h2>
+<p>La arquitectura de PawTracker sigue un enfoque pragmático basado en <strong>Activities y Services</strong> con interacción directa a Firebase, priorizando la funcionalidad sobre patrones arquitectónicos complejos.</p>
+
+<h3>Componentes principales</h3>
+<p>La aplicación está organizada en los siguientes componentes interconectados:</p>
+
+<ol>
+    <li><strong>Activities:</strong> Constituyen el núcleo de la interfaz de usuario y manejan la lógica de negocio:
+        <ul>
+            <li><code>MapsActivity</code>: Pantalla principal que integra el mapa, gestión de perros y zonas seguras</li>
+            <li><code>SplashLoginActivity</code>: Maneja la autenticación y precarga de datos</li>
+            <li><code>PerfilPerro</code> y <code>PerfilUsuario</code>: Visualización y acceso a edición de perfiles</li>
+            <li><code>EditarPerro</code> y <code>EditarUsuario</code>: Edición de datos con persistencia en Firebase</li>
+            <li><code>AjustesActivity</code>: Configuración de la aplicación y preferencias de usuario</li>
+        </ul>
+    </li>
+
+    <li><strong>Services y BroadcastReceivers:</strong> Gestionan la funcionalidad en segundo plano:
+        <ul>
+            <li><code>GeofencingService</code>: Servicio en primer plano para monitoreo continuo de ubicaciones</li>
+            <li><code>GeofenceBroadcastReciver</code>: Maneja las notificaciones y eventos de geolocalización</li>
+            <li><code>BootCompletedReceiver</code>: Restaura servicios tras el reinicio del dispositivo</li>
+        </ul>
+    </li>
+
+    <li><strong>Clases de utilidad especializada:</strong>
+        <ul>
+            <li><code>DogLocationManager</code>: Centraliza la lógica de geolocalización y zonas seguras</li>
+            <li><code>DogsClusterManager</code>: Optimiza la visualización de múltiples marcadores en el mapa</li>
+            <li><code>DatosPrecargados</code>: Singleton que implementa un sistema de caché centralizada</li>
+            <li><code>LoadingSpinner</code>: Componente visual para indicadores de carga dinámicos</li>
+        </ul>
+    </li>
+</ol>
+
+<h3>Gestión de datos</h3>
+<p>La aplicación implementa una estrategia de datos en dos niveles:</p>
+
+<ol>
+    <li><strong>Persistencia remota:</strong> Firebase Realtime Database almacena todos los datos de usuarios, perros, ubicaciones y estados de geofencing, permitiendo sincronización en tiempo real entre dispositivos.</li>
+    
+    <li><strong>Caché local:</strong> <code>DatosPrecargados</code> mantiene una copia en memoria de los datos más utilizados, reduciendo consultas a Firebase y permitiendo un funcionamiento más fluido.</li>
+</ol>
+
+<h3>Patrones de diseño aplicados</h3>
+<p>El proyecto utiliza varios patrones de diseño efectivos:</p>
+
+<ul>
+    <li><strong>Singleton:</strong> En <code>DatosPrecargados</code> para gestión centralizada de datos en caché</li>
+    <li><strong>Observer:</strong> Mediante ValueEventListener de Firebase para actualizaciones reactivas</li>
+    <li><strong>Adapter:</strong> En implementaciones como <code>DogSpinnerAdapter</code> para visualización personalizada</li>
+    <li><strong>Foreground Service:</strong> Para garantizar la monitorización continua de ubicaciones</li>
+    <li><strong>Broadcast Receiver:</strong> Para captura de eventos del sistema como reinicio del dispositivo</li>
+</ul>
+
+<p>Esta estructura arquitectónica directa facilita el flujo de datos en tiempo real necesario para la funcionalidad principal de monitoreo GPS, a la vez que mantiene un rendimiento óptimo en dispositivos móviles.</p>
+
+<h2 id="diagrama-componentes">7.2. Diagrama de componentes</h2>
+<p>A continuación detallamos los componentes específicos y cómo interactúan entre sí:</p>
+
+<h3>Componentes de UI (Activities)</h3>
+<ul>
+    <li><strong>SplashLoginActivity:</strong> Punto de entrada a la aplicación, maneja la autenticación inicial y precarga de datos.</li>
+    <li><strong>MapsActivity:</strong> Actividad principal que muestra el mapa interactivo y permite visualizar y seguir la ubicación de las mascotas.</li>
+    <li><strong>PerfilPerro:</strong> Actividad para mostrar y acceder a la edición de información de mascotas.</li>
+    <li><strong>PerfilUsuario:</strong> Actividad para mostrar y acceder a la edición del perfil de usuario.</li>
+    <li><strong>EditarPerro:</strong> Actividad para la edición completa de datos de perros.</li>
+    <li><strong>EditarUsuario:</strong> Actividad para la edición del perfil del usuario.</li>
+    <li><strong>AjustesActivity:</strong> Actividad para configurar preferencias y ver información del desarrollador.</li>
+</ul>
+
+<h3>Servicios y Receptores</h3>
+<ul>
+    <li><strong>GeofencingService:</strong> Servicio en primer plano que monitoriza continuamente si las mascotas entran o salen de las zonas seguras definidas.</li>
+    <li><strong>GeofenceBroadcastReciver:</strong> Recibe y procesa eventos de geofencing, enviando notificaciones cuando un perro sale de su zona segura.</li>
+    <li><strong>BootCompletedReceiver:</strong> Receptor de broadcast que reinicia los servicios necesarios cuando el dispositivo se enciende.</li>
+</ul>
+
+<h3>Gestores y utilidades</h3>
+<ul>
+    <li><strong>DogLocationManager:</strong> Clase central que gestiona todas las operaciones relacionadas con la ubicación de las mascotas, incluyendo la configuración del cliente de ubicación y la gestión de zonas seguras.</li>
+    <li><strong>DogsClusterManager:</strong> Optimiza la visualización de múltiples perros en el mapa mediante agrupación de marcadores.</li>
+    <li><strong>DatosPrecargados:</strong> Implementa un sistema de caché centralizado para minimizar consultas a Firebase.</li>
+    <li><strong>LoadingSpinner:</strong> Componente visual reutilizable para mostrar indicadores de carga.</li>
+</ul>
+
+<h3>Flujo de interacción para crear una zona segura</h3>
+<p>Como ejemplo concreto de esta arquitectura, cuando un usuario define una zona segura, el flujo es el siguiente:</p>
+
+<ol>
+    <li>El usuario selecciona un perro en el spinner de <code>MapsActivity</code> y pulsa el botón de edición de zona.</li>
+    <li>La actividad llama al método <code>activarModoEdicionZonaSegura()</code>, que a su vez invoca <code>locationManager.activarModoEdicionZona(perroSeleccionadoId!!)</code>.</li>
+    <li>Cuando el usuario toca el mapa, se llama a <code>locationManager.definirZonaSegura(latLng)</code> que dibuja un círculo en esa posición.</li>
+    <li>Al pulsar guardar, se invoca <code>locationManager.guardarZonaSegura(perroSeleccionadoId!!)</code>, que almacena las coordenadas y el radio en Firebase.</li>
+    <li>El servicio <code>GeofencingService</code> comienza a monitorizar esta zona y enviará notificaciones cuando el perro salga de ella.</li>
+</ol>
+
+<p>Esta arquitectura ha demostrado ser efectiva para nuestra aplicación, proporcionando un equilibrio adecuado entre simplicidad de implementación y rendimiento en situaciones de uso real.</p>
+
+<h1 id="casos-uso">8. Casos de Uso</h1>
+
+<h2 id="descripcion-casos">8.1. Descripción de los casos principales</h2>
+<p>A continuación se presentan los casos de uso principales de PawTracker, implementados realmente en el código de la aplicación y verificados contra las clases proporcionadas.</p>
+
+<h3 id="cu-autenticacion">8.1.1. Casos de uso de autenticación</h3>
+
+<h4>CU-01: Registro de nuevos usuarios</h4>
+<p><strong>Actor principal:</strong> Usuario no registrado</p>
+<p><strong>Precondiciones:</strong> El usuario tiene la aplicación instalada y acceso a internet</p>
+<p><strong>Flujo básico:</strong></p>
+<ol>
+    <li>El usuario inicia la aplicación y selecciona "Registrarse"</li>
+    <li>El sistema muestra el formulario de registro con campos para email, contraseña y confirmación</li>
+    <li>El usuario completa los campos requeridos</li>
+    <li>El sistema valida los datos en tiempo real, verificando:
+        <ul>
+            <li>Formato de email válido con Patterns.EMAIL_ADDRESS</li>
+            <li>Contraseña segura con al menos una mayúscula, una minúscula y un número</li>
+            <li>Coincidencia entre contraseña y confirmación</li>
+            <li>Aceptación de términos y condiciones</li>
+        </ul>
+    </li>
+    <li>El usuario envía el formulario</li>
+    <li>El sistema crea la cuenta usando FirebaseAuth.createUserWithEmailAndPassword</li>
+    <li>El sistema almacena datos básicos en Firebase Database (email, createdAt)</li>
+    <li>El sistema muestra un mensaje de éxito y redirige a MainActivity</li>
+</ol>
+<p><strong>Flujos alternativos:</strong></p>
+<ul>
+    <li><strong>Email ya registrado:</strong> Se muestra un diálogo de error específico</li>
+    <li><strong>Validación fallida:</strong> Se muestra el error junto al campo correspondiente utilizando un MaterialAlertDialog</li>
+    <li><strong>Error de red:</strong> Se muestra mensaje de error de conexión</li>
+</ul>
+<p><strong>Implementación:</strong> Este caso de uso está implementado en la clase RegisterActivity utilizando Firebase Authentication.</p>
+
+<h4>CU-02: Inicio de sesión</h4>
+<p><strong>Actor principal:</strong> Usuario registrado</p>
+<p><strong>Precondiciones:</strong> El usuario tiene una cuenta válida en el sistema</p>
+<p><strong>Flujo básico:</strong></p>
+<ol>
+    <li>El usuario inicia la aplicación y visualiza la pantalla de login (MainActivity)</li>
+    <li>El usuario introduce su email y contraseña</li>
+    <li>El usuario puede marcar la opción "Recordarme" para mantener sus credenciales</li>
+    <li>El usuario pulsa el botón de inicio de sesión</li>
+    <li>El sistema inicia SplashLoginActivity que:
+        <ul>
+            <li>Muestra una pantalla de carga con logo pulsante y barra de progreso</li>
+            <li>Autentica al usuario mediante FirebaseAuth.signInWithEmailAndPassword</li>
+            <li>Almacena el tiempo de login en SharedPreferences para control de sesión</li>
+            <li>Precarga datos iniciales usando DatosPrecargados</li>
+        </ul>
+    </li>
+    <li>Tras la autenticación exitosa, el sistema redirige a MapsActivity</li>
+</ol>
+<p><strong>Flujos alternativos:</strong></p>
+<ul>
+    <li><strong>Inicio de sesión con Google:</strong> El usuario puede elegir iniciar sesión con su cuenta de Google</li>
+    <li><strong>Credenciales incorrectas:</strong> SplashLoginActivity retorna a MainActivity con mensaje de error</li>
+    <li><strong>Sesión activa:</strong> Si existe una sesión no expirada (menos de 5 minutos desde último login), se omite la autenticación y se carga directamente MapsActivity</li>
+</ul>
+<p><strong>Implementación:</strong> Este caso de uso está implementado en las clases MainActivity y SplashLoginActivity.</p>
+
+<h3 id="cu-mascotas">8.1.2. Casos de uso de gestión de mascotas</h3>
+
+<h4>CU-03: Visualización de perfil de perro</h4>
+<p><strong>Actor principal:</strong> Usuario autenticado</p>
+<p><strong>Precondiciones:</strong> Usuario con sesión activa y al menos un perro registrado</p>
+<p><strong>Flujo básico:</strong></p>
+<ol>
+    <li>El usuario selecciona un perro en MapsActivity y pulsa el botón de perfil</li>
+    <li>El sistema abre PerfilPerro pasando el ID del perro seleccionado</li>
+    <li>El sistema carga los datos del perro desde Firebase:
+        <ul>
+            <li>Información básica: nombre, raza, peso</li>
+            <li>Imagen de perfil codificada en Base64</li>
+            <li>Fechas de nacimiento y adopción</li>
+            <li>Edad calculada automáticamente</li>
+            <li>Datos del dueño</li>
+        </ul>
+    </li>
+    <li>El sistema muestra la información junto con opciones de edición</li>
+</ol>
+<p><strong>Flujos alternativos:</strong></p>
+<ul>
+    <li><strong>Error al cargar datos:</strong> Se muestra toast de error</li>
+    <li><strong>Imagen no disponible:</strong> Se muestra imagen por defecto</li>
+</ul>
+<p><strong>Implementación:</strong> Este caso de uso está implementado en la clase PerfilPerro.</p>
+
+<h4>CU-04: Edición de perfil de perro</h4>
+<p><strong>Actor principal:</strong> Usuario autenticado</p>
+<p><strong>Precondiciones:</strong> Usuario visualizando perfil de un perro (CU-03)</p>
+<p><strong>Flujo básico:</strong></p>
+<ol>
+    <li>El usuario pulsa el botón "Editar" en PerfilPerro</li>
+    <li>El sistema inicia EditarPerro con transición animada (slide_up)</li>
+    <li>EditarPerro carga los datos actuales del perro desde Firebase</li>
+    <li>El usuario puede modificar:
+        <ul>
+            <li>Nombre y raza del perro</li>
+            <li>Peso (valor numérico)</li>
+            <li>Fechas de nacimiento y adopción mediante selectores personalizados</li>
+            <li>Imagen de perfil (cámara o galería con recorte mediante UCrop)</li>
+            <li>Dueño asignado mediante spinner</li>
+        </ul>
+    </li>
+    <li>El usuario confirma los cambios con el botón "Guardar"</li>
+    <li>El sistema valida que los campos obligatorios estén completos</li>
+    <li>El sistema guarda los cambios en Firebase mediante updateChildren</li>
+    <li>El sistema muestra mensaje de confirmación y vuelve a PerfilPerro con animación</li>
+</ol>
+<p><strong>Flujos alternativos:</strong></p>
+<ul>
+    <li><strong>Campos vacíos:</strong> Se muestra mensaje indicando que hay campos obligatorios sin completar</li>
+    <li><strong>Formato incorrecto:</strong> Se verifica que el peso sea un número válido</li>
+    <li><strong>Error al guardar imagen:</strong> Se muestra mensaje específico de error</li>
+    <li><strong>Cancelar edición:</strong> El usuario puede volver sin guardar mediante botón "Atrás"</li>
+</ul>
+<p><strong>Implementación:</strong> Este caso de uso está implementado en la clase EditarPerro.</p>
+
+<h3 id="cu-geolocation">8.1.3. Casos de uso de geolocalización</h3>
+
+<h4>CU-05: Visualización de ubicación de perros</h4>
+<p><strong>Actor principal:</strong> Usuario autenticado</p>
+<p><strong>Precondiciones:</strong> Usuario con sesión activa y permisos de ubicación concedidos</p>
+<p><strong>Flujo básico:</strong></p>
+<ol>
+    <li>El usuario accede a MapsActivity (pantalla principal)</li>
+    <li>El sistema:
+        <ul>
+            <li>Inicializa Google Maps con mapsFragment.getMapAsync</li>
+            <li>Crea DogsClusterManager para gestionar marcadores</li>
+            <li>Configura DogLocationManager para seguimiento de ubicaciones</li>
+            <li>Carga la lista de perros desde DatosPrecargados o Firebase</li>
+            <li>Muestra los perros en el selector (spinner) con DogSpinnerAdapter</li>
+        </ul>
+    </li>
+    <li>El usuario selecciona un perro del spinner</li>
+    <li>El sistema:
+        <ul>
+            <li>Llama a locationManager.mostrarUbicacionPerro(perroId)</li>
+            <li>Muestra un marcador personalizado con la imagen del perro en su ubicación</li>
+            <li>Visualiza su zona segura si está definida</li>
+            <li>Actualiza periódicamente la posición mediante Firebase listener</li>
+        </ul>
+    </li>
+    <li>El usuario puede hacer zoom, moverse por el mapa y cambiar entre perros</li>
+</ol>
+<p><strong>Implementación:</strong> Este caso de uso está implementado en MapsActivity junto con DogLocationManager y DogsClusterManager.</p>
+
+<h4>CU-06: Creación y edición de zona segura</h4>
+<p><strong>Actor principal:</strong> Usuario autenticado</p>
+<p><strong>Precondiciones:</strong> Usuario con sesión activa y un perro seleccionado en el mapa</p>
+<p><strong>Flujo básico:</strong></p>
+<ol>
+    <li>El usuario selecciona un perro en el spinner de MapsActivity</li>
+    <li>El usuario pulsa el botón de edición de zona segura</li>
+    <li>El sistema:
+        <ul>
+            <li>Invoca activarModoEdicionZonaSegura() en MapsActivity</li>
+            <li>Llama a locationManager.activarModoEdicionZona(perroId)</li>
+            <li>Muestra banner "EDITANDO ZONA SEGURA" y botones de guardar/cancelar</li>
+            <li>Si existe una zona previa, centra el mapa en esa ubicación</li>
+        </ul>
+    </li>
+    <li>El usuario toca un punto en el mapa para definir el centro de la zona</li>
+    <li>El sistema dibuja un círculo verde con radio fijo de 100 metros</li>
+    <li>El usuario pulsa el botón de guardar (FloatingActionButton verde)</li>
+    <li>El sistema:
+        <ul>
+            <li>Ejecuta locationManager.guardarZonaSegura(perroId)</li>
+            <li>Almacena las coordenadas y radio en Firebase</li>
+            <li>Actualiza la caché en DatosPrecargados</li>
+            <li>Muestra mensaje de confirmación</li>
+            <li>Desactiva el modo de edición</li>
+        </ul>
+    </li>
+</ol>
+<p><strong>Flujos alternativos:</strong></p>
+<ul>
+    <li><strong>Cancelar edición:</strong> El usuario pulsa botón cancelar y se restaura la zona original</li>
+    <li><strong>Error al guardar:</strong> Se muestra mensaje de error si hay problemas de conectividad</li>
+    <li><strong>No definir zona:</strong> Si el usuario intenta guardar sin tocar el mapa, se muestra mensaje "Definir zona segura"</li>
+</ul>
+<p><strong>Implementación:</strong> Este caso de uso está implementado en MapsActivity y DogLocationManager.</p>
+
+<h3 id="cu-notificaciones">8.1.4. Casos de uso de monitoreo y notificaciones</h3>
+
+<h4>CU-07: Notificación de salida de zona segura</h4>
+<p><strong>Actor principal:</strong> Sistema (GeofencingService)</p>
+<p><strong>Actores secundarios:</strong> Usuario con perros monitorizados</p>
+<p><strong>Precondiciones:</strong> 
+    <ul>
+        <li>Servicio GeofencingService iniciado para un perro específico</li>
+        <li>Zona segura definida para el perro</li>
+        <li>Notificaciones habilitadas en ajustes</li>
+    </ul>
+</p>
+<p><strong>Flujo básico:</strong></p>
+<ol>
+    <li>GeofencingService monitoriza periódicamente la posición del perro (cada 30 segundos)</li>
+    <li>El sistema detecta que el perro ha salido de su zona segura mediante:
+        <ul>
+            <li>Cálculo de distancia entre posición actual y centro de zona segura</li>
+            <li>Comparación con el radio de la zona (100 metros)</li>
+        </ul>
+    </li>
+    <li>El sistema en DogLocationManager:
+        <ul>
+            <li>Actualiza el color de la zona segura a rojo</li>
+            <li>Actualiza el estado en Firebase a "OUT" en geofencing_status/{perroId}</li>
+            <li>Activa el GeofenceBroadcastReciver para gestionar notificaciones</li>
+        </ul>
+    </li>
+    <li>GeofenceBroadcastReciver:
+        <ul>
+            <li>Crea canal de notificación con prioridad alta</li>
+            <li>Envía notificación push inmediata</li>
+            <li>Programa notificaciones periódicas cada 30 segundos mientras el perro siga fuera</li>
+        </ul>
+    </li>
+    <li>Cuando el perro regresa a la zona segura, el sistema:
+        <ul>
+            <li>Actualiza el color de la zona a verde</li>
+            <li>Cambia el estado en Firebase a "IN"</li>
+            <li>Cancela las notificaciones periódicas</li>
+        </ul>
+    </li>
+</ol>
+<p><strong>Implementación:</strong> Este caso de uso está implementado por las clases GeofencingService, DogLocationManager y GeofenceBroadcastReciver.</p>
+
+<h4>CU-08: Configuración de notificaciones</h4>
+<p><strong>Actor principal:</strong> Usuario autenticado</p>
+<p><strong>Precondiciones:</strong> Usuario con sesión activa</p>
+<p><strong>Flujo básico:</strong></p>
+<ol>
+    <li>El usuario accede a AjustesActivity desde el botón de configuración en MapsActivity</li>
+    <li>El sistema muestra opciones de ajustes incluyendo un switch para activar/desactivar notificaciones</li>
+    <li>El usuario activa el switch de notificaciones</li>
+    <li>El sistema:
+        <ul>
+            <li>En Android 13+, solicita el permiso POST_NOTIFICATIONS si es necesario</li>
+            <li>Guarda la preferencia en SharedPreferences ("notifications_enabled", true)</li>
+            <li>Crea canales de notificación necesarios</li>
+        </ul>
+    </li>
+    <li>El sistema confirma la activación y las notificaciones quedan habilitadas</li>
+</ol>
+<p><strong>Flujos alternativos:</strong></p>
+<ul>
+    <li><strong>Desactivación de notificaciones:</strong> El usuario desactiva el switch y el sistema guarda la preferencia (false)</li>
+    <li><strong>Permiso denegado:</strong> Si el usuario rechaza el permiso en Android 13+, las notificaciones no podrán mostrarse aunque estén activadas en la app</li>
+    <li><strong>Reinicio del dispositivo:</strong> BootCompletedReceiver restaura el estado de notificaciones tras el reinicio</li>
+</ul>
+<p><strong>Implementación:</strong> Este caso de uso está implementado en la clase AjustesActivity, con apoyo de BootCompletedReceiver para persistencia tras reinicios.</p>
+
+<h4>CU-A04: Cambiar contraseña de usuario</h4>
+
+<p><strong>Actores:</strong> Usuario autenticado</p>
+
+<p><strong>Precondiciones:</strong></p>
+<ul>
+    <li>El usuario debe estar autenticado en la aplicación</li>
+    <li>El usuario debe conocer su contraseña actual</li>
+</ul>
+
+<p><strong>Flujo básico:</strong></p>
+<ol>
+    <li>El usuario accede a la opción de cambio de contraseña desde el menú de ajustes</li>
+    <li>El sistema muestra un formulario con:
+        <ul>
+            <li>Email del usuario (no editable)</li>
+            <li>Campo para la contraseña actual</li>
+            <li>Campo para la nueva contraseña</li>
+            <li>Campo para confirmar la nueva contraseña</li>
+        </ul>
+    </li>
+    <li>El usuario introduce su contraseña actual</li>
+    <li>El usuario introduce y confirma su nueva contraseña</li>
+    <li>El sistema valida los datos introducidos</li>
+    <li>El sistema actualiza la contraseña en Firebase Authentication</li>
+    <li>El sistema muestra un mensaje de éxito y retorna a la pantalla anterior</li>
+</ol>
+
+<p><strong>Flujos alternativos:</strong></p>
+<ol>
+    <li>Contraseña actual incorrecta:
+        <ul>
+            <li>El sistema muestra un mensaje de error indicando que la contraseña actual es incorrecta</li>
+            <li>El usuario debe volver a introducir la contraseña actual correcta</li>
+        </ul>
+    </li>
+    <li>Las nuevas contraseñas no coinciden:
+        <ul>
+            <li>El sistema muestra un mensaje de error indicando que las contraseñas no coinciden</li>
+            <li>El usuario debe volver a introducir y confirmar la nueva contraseña</li>
+        </ul>
+    </li>
+    <li>La nueva contraseña no cumple los requisitos mínimos:
+        <ul>
+            <li>El sistema muestra un mensaje indicando que la contraseña debe tener al menos 6 caracteres</li>
+            <li>El usuario debe introducir una contraseña que cumpla los requisitos</li>
+        </ul>
+    </li>
+</ol>
+
+<p><strong>Postcondiciones:</strong></p>
+<ul>
+    <li>La contraseña del usuario ha sido actualizada en Firebase Authentication</li>
+    <li>El usuario puede iniciar sesión con su nueva contraseña</li>
+</ul>
+
+<p><strong>Implementación:</strong></p>
+<ul>
+    <li>Clase principal: <code>ChangePasswordActivity.kt</code></li>
+    <li>Layout: <code>activity_change_password.xml</code></li>
+    <li>Servicios utilizados: Firebase Authentication</li>
+</ul>
+
+<h2 id="diagramas-casos">8.2. Diagramas de casos de uso</h2>
+
+<p>Los siguientes diagramas representan visualmente los casos de uso descritos anteriormente y sus relaciones con los actores del sistema.</p>
+
+<h3>8.2.1. Diagrama general de casos de uso</h3>
+
+<div style="margin: 30px auto; max-width: 800px;">
+    <div style="position: relative; background-color: #f8f9fa; border-radius: 8px; padding: 20px; margin-bottom: 20px; height: 520px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <!-- Actores -->
+        <div style="position: absolute; left: 100px; top: 80px; width: 120px; height: 50px; background-color: #e3f2fd; border: 1px solid #2196f3; border-radius: 5px; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: bold;">
+            Usuario no registrado
+        </div>
+        
+        <div style="position: absolute; left: 100px; top: 240px; width: 120px; height: 50px; background-color: #e3f2fd; border: 1px solid #2196f3; border-radius: 5px; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: bold;">
+            Usuario registrado
+        </div>
+        
+        <div style="position: absolute; left: 100px; top: 400px; width: 120px; height: 50px; background-color: #e3f2fd; border: 1px solid #2196f3; border-radius: 5px; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: bold;">
+            Sistema
+        </div>
+        
+        <!-- Casos de uso -->
+        <div style="position: absolute; left: 420px; top: 80px; width: 150px; height: 50px; background-color: #e8f5e9; border: 1px solid #4caf50; border-radius: 25px; display: flex; align-items: center; justify-content: center; text-align: center;">
+            CU-01: Registro
+        </div>
+        
+        <div style="position: absolute; left: 420px; top: 160px; width: 150px; height: 50px; background-color: #e8f5e9; border: 1px solid #4caf50; border-radius: 25px; display: flex; align-items: center; justify-content: center; text-align: center;">
+            CU-02: Inicio de sesión
+        </div>
+        
+        <div style="position: absolute; left: 300px; top: 240px; width: 150px; height: 50px; background-color: #e8f5e9; border: 1px solid #4caf50; border-radius: 25px; display: flex; align-items: center; justify-content: center; text-align: center;">
+            CU-03: Visualización perfil
+        </div>
+        
+        <div style="position: absolute; left: 300px; top: 320px; width: 150px; height: 50px; background-color: #e8f5e9; border: 1px solid #4caf50; border-radius: 25px; display: flex; align-items: center; justify-content: center; text-align: center;">
+            CU-04: Edición de perro
+        </div>
+        
+        <div style="position: absolute; left: 580px; top: 240px; width: 150px; height: 50px; background-color: #e8f5e9; border: 1px solid #4caf50; border-radius: 25px; display: flex; align-items: center; justify-content: center; text-align: center;">
+            CU-05: Ubicación en mapa
+        </div>
+        
+        <div style="position: absolute; left: 580px; top: 320px; width: 150px; height: 50px; background-color: #e8f5e9; border: 1px solid #4caf50; border-radius: 25px; display: flex; align-items: center; justify-content: center; text-align: center;">
+            CU-06: Zona segura
+        </div>
+        
+        <div style="position: absolute; left: 420px; top: 400px; width: 150px; height: 50px; background-color: #e8f5e9; border: 1px solid #4caf50; border-radius: 25px; display: flex; align-items: center; justify-content: center; text-align: center;">
+            CU-07: Notificaciones
+        </div>
+        
+        <div style="position: absolute; left: 420px; top: 480px; width: 150px; height: 50px; background-color: #e8f5e9; border: 1px solid #4caf50; border-radius: 25px; display: flex; align-items: center; justify-content: center; text-align: center;">
+            CU-08: Config. notificaciones
+        </div>
+        
+        <!-- Líneas -->
+        <!-- Usuario no registrado a CU-01 -->
+        <div style="position: absolute; left: 220px; top: 105px; width: 200px; height: 1px; background-color: #333;"></div>
+        
+        <!-- Usuario registrado a CU-02 -->
+        <div style="position: absolute; left: 170px; top: 165px; width: 50px; height: 1px; background-color: #333;"></div>
+        <div style="position: absolute; left: 170px; top: 165px; width: 1px; height: 75px; background-color: #333;"></div>
+        <div style="position: absolute; left: 170px; top: 240px; width: 50px; height: 1px; background-color: #333;"></div>
+        <div style="position: absolute; left: 220px; top: 165px; width: 200px; height: 1px; background-color: #333;"></div>
+        
+        <!-- Usuario registrado a CU-03 -->
+        <div style="position: absolute; left: 220px; top: 240px; width: 80px; height: 1px; background-color: #333;"></div>
+        
+        <!-- Usuario registrado a CU-04 -->
+        <div style="position: absolute; left: 170px; top: 320px; width: 50px; height: 1px; background-color: #333;"></div>
+        <div style="position: absolute; left: 170px; top: 240px; width: 1px; height: 80px; background-color: #333;"></div>
+        <div style="position: absolute; left: 220px; top: 320px; width: 80px; height: 1px; background-color: #333;"></div>
+        
+        <!-- Usuario registrado a CU-08 -->
+        <div style="position: absolute; left: 170px; top: 400px; width: 50px; height: 1px; background-color: #333;"></div>
+        <div style="position: absolute; left: 170px; top: 320px; width: 1px; height: 160px; background-color: #333;"></div>
+        <div style="position: absolute; left: 220px; top: 480px; width: 200px; height: 1px; background-color: #333;"></div>
+        
+        <!-- Sistema a CU-07 -->
+        <div style="position: absolute; left: 220px; top: 425px; width: 200px; height: 1px; background-color: #333;"></div>
+        
+        <!-- CU-03 a CU-05 -->
+        <div style="position: absolute; left: 450px; top: 265px; width: 130px; height: 1px; background-color: #333;"></div>
+        
+        <!-- CU-04 a CU-06 -->
+        <div style="position: absolute; left: 450px; top: 345px; width: 130px; height: 1px; background-color: #333;"></div>
+        
+        <!-- Textos explicativos -->
+        <div style="position: absolute; right: 80px; top: 80px; font-size: 12px; color: #666; font-style: italic;">Usuario sin cuenta en el sistema</div>
+        <div style="position: absolute; right: 80px; top: 240px; font-size: 12px; color: #666; font-style: italic;">Credenciales válidas</div>
+        <div style="position: absolute; right: 80px; top: 400px; font-size: 12px; color: #666; font-style: italic;">Procesos automáticos</div>
+    </div>
+    <p style="text-align: center; font-style: italic;">Figura 8.1: Diagrama de casos de uso del sistema PawTracker</p>
+</div>
+
+<p><em>Este diagrama muestra la relación entre los diferentes actores del sistema (usuarios registrados, no registrados y procesos automáticos) y los casos de uso que pueden ejecutar.</em></p>
+
+<h3>8.2.2. Matriz de trazabilidad: Clases implementadoras vs. Casos de uso</h3>
+
+<p>La siguiente matriz muestra la relación entre los casos de uso y las clases que implementan su funcionalidad:</p>
+
+<div style="margin: 20px -5%; width: 110%;">
+<table border="1" style="margin: 0 auto; width: 100%; border-collapse: collapse; text-align: center; font-size: 0.9em;">
+<thead>
+    <tr style="background-color: #f2f2f2;">
+        <th style="padding: 6px 4px; border: 1px solid #ddd; font-size: 0.85em; min-width: 80px;">Caso de Uso</th>
+        <th style="padding: 6px 2px; border: 1px solid #ddd; font-size: 0.85em;">Register Activity</th>
+        <th style="padding: 6px 2px; border: 1px solid #ddd; font-size: 0.85em;">Main / Splash</th>
+        <th style="padding: 6px 2px; border: 1px solid #ddd; font-size: 0.85em;">Perfil Perro</th>
+        <th style="padding: 6px 2px; border: 1px solid #ddd; font-size: 0.85em;">Editar Perro</th>
+        <th style="padding: 6px 2px; border: 1px solid #ddd; font-size: 0.85em;">Maps Activity</th>
+        <th style="padding: 6px 2px; border: 1px solid #ddd; font-size: 0.85em;">Dog Location Manager</th>
+        <th style="padding: 6px 2px; border: 1px solid #ddd; font-size: 0.85em;">Geofencing Service</th>
+        <th style="padding: 6px 2px; border: 1px solid #ddd; font-size: 0.85em;">Geofence Broadcast</th>
+        <th style="padding: 6px 2px; border: 1px solid #ddd; font-size: 0.85em;">Ajustes Activity</th>
+        <th style="padding: 6px 2px; border: 1px solid #ddd; font-size: 0.85em;">Boot Completed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+        <td style="padding: 6px 4px; border: 1px solid #ddd; text-align: left; font-size: 0.9em;"><strong>CU-01:</strong> Registro</td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;">✓</td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+</tr>
+    <tr style="background-color: #f9f9f9;">
+        <td style="padding: 6px 4px; border: 1px solid #ddd; text-align: left; font-size: 0.9em;"><strong>CU-02:</strong> Inicio de sesión</td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;">✓</td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+</tr>
+<tr>
+        <td style="padding: 6px 4px; border: 1px solid #ddd; text-align: left; font-size: 0.9em;"><strong>CU-03:</strong> Perfil de perro</td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;">✓</td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+</tr>
+    <tr style="background-color: #f9f9f9;">
+        <td style="padding: 6px 4px; border: 1px solid #ddd; text-align: left; font-size: 0.9em;"><strong>CU-04:</strong> Edición de perro</td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;">✓</td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+</tr>
+<tr>
+        <td style="padding: 6px 4px; border: 1px solid #ddd; text-align: left; font-size: 0.9em;"><strong>CU-05:</strong> Ubicación en mapa</td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;">✓</td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;">✓</td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+    </tr>
+    <tr style="background-color: #f9f9f9;">
+        <td style="padding: 6px 4px; border: 1px solid #ddd; text-align: left; font-size: 0.9em;"><strong>CU-06:</strong> Zona segura</td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;">✓</td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;">✓</td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+</tr>
+<tr>
+        <td style="padding: 6px 4px; border: 1px solid #ddd; text-align: left; font-size: 0.9em;"><strong>CU-07:</strong> Notificaciones</td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;">✓</td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;">✓</td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;">✓</td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+    </tr>
+    <tr style="background-color: #f9f9f9;">
+        <td style="padding: 6px 4px; border: 1px solid #ddd; text-align: left; font-size: 0.9em;"><strong>CU-08:</strong> Config. notificaciones</td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;">✓</td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;">✓</td>
+</tr>
+<tr>
+        <td style="padding: 6px 4px; border: 1px solid #ddd; text-align: left; font-size: 0.9em;"><strong>CU-A03:</strong> Cerrar sesión</td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;">✓</td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;">✓</td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+</tr>
+<tr style="background-color: #f9f9f9;">
+        <td style="padding: 6px 4px; border: 1px solid #ddd; text-align: left; font-size: 0.9em;"><strong>CU-A04:</strong> Cambiar contraseña</td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;">✓</td>
+        <td style="padding: 6px 4px; border: 1px solid #ddd;"></td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<p>Esta matriz demuestra la distribución clara de responsabilidades entre los componentes de la aplicación, donde cada caso de uso está respaldado por clases específicas que implementan su funcionalidad.</p>
+
+<h1 id="interfaz">9. Interfaz de Usuario</h1>
+
+<p>La interfaz de usuario de PawTracker ha sido desarrollada siguiendo los principios de Material Design con un enfoque personalizado, priorizando la facilidad de uso y una experiencia intuitiva. A continuación, se detallan los elementos de diseño y las consideraciones de experiencia de usuario realmente implementados en la aplicación.</p>
+
+<h2 id="sistema-visual">9.1. Sistema visual y elementos de diseño</h2>
+
+<h3>9.1.1. Paleta de colores</h3>
+<p>La aplicación implementa un sistema de colores dual (claro/oscuro) definido en los archivos colors.xml, colors_v2.xml y sus contrapartes para el modo oscuro:</p>
+
+<ul>
+    <li><strong>Color primario:</strong> #246BFD (Azul brillante) - El color distintivo de la aplicación utilizado en botones principales, acentos y elementos interactivos.</li>
+    <li><strong>Color primario variante:</strong> #3A75E6 (Azul medio) - Utilizado para variaciones del color primario.</li>
+    <li><strong>Color primario oscuro:</strong> #1D54CC (Azul oscuro) - Aplicado a la barra de estado y elementos que requieren mayor contraste.</li>
+    <li><strong>Color secundario:</strong> #FF8A3C (Naranja) - Utilizado como complemento para acciones secundarias.</li>
+    <li><strong>Colores de estado:</strong> 
+        <ul>
+            <li>Success: #4ADE80 (Verde) - Para acciones exitosas y zonas seguras</li>
+            <li>Warning: #FBA73F (Ámbar) - Para alertas y advertencias</li>
+            <li>Error: #F75555 (Rojo) - Para errores y notificaciones importantes</li>
+        </ul>
+    </li>
+    <li><strong>Escala de grises:</strong> Una escala completa desde #F5F5F5 hasta #212529 para fondos, textos y elementos de interfaz.</li>
+</ul>
+
+<p>En el modo oscuro, la aplicación utiliza una paleta adaptada con colores optimizados para bajo brillo:</p>
+<ul>
+    <li><strong>Color primario (oscuro):</strong> #4285FF</li>
+    <li><strong>Background (oscuro):</strong> #121212</li>
+    <li><strong>Surface (oscuro):</strong> #1E1E1E</li>
+</ul>
+
+<h3>9.1.2. Tipografía</h3>
+<p>Contrario a lo que se podría esperar, la aplicación no utiliza Roboto como fuente principal, sino una combinación de dos familias tipográficas:</p>
+
+<ul>
+    <li><strong>Noto Sans:</strong> La fuente principal de la aplicación, definida en font.xml con sus variantes:
+        <ul>
+            <li>Noto Sans Regular: Para texto general</li>
+            <li>Noto Sans Medium: Para énfasis y subtítulos</li>
+            <li>Noto Sans SemiBold: Para subtítulos y elementos destacados</li>
+            <li>Noto Sans Bold: Para títulos y encabezados</li>
+        </ul>
+    </li>
+    <li><strong>Montserrat:</strong> Utilizada como respaldo y en ciertos elementos, especialmente en modo oscuro:
+        <ul>
+            <li>Montserrat Regular: Mapea a Noto Sans Regular</li>
+            <li>Montserrat Medium: Mapea a Noto Sans Medium</li>
+            <li>Montserrat Bold: Mapea a Noto Sans Bold</li>
+        </ul>
+    </li>
+</ul>
+
+<p>Los tamaños de texto están sistematizados en una jerarquía clara:</p>
+<ul>
+    <li>H1: 28sp (notosans_bold)</li>
+    <li>H2: 24sp (notosans_bold)</li>
+    <li>H3: 20sp (notosans_semibold)</li>
+    <li>Body1: 16sp (notosans_regular)</li>
+    <li>Body2: 14sp (notosans_regular)</li>
+    <li>Caption: 12sp (notosans_regular)</li>
+</ul>
+
+<h3>9.1.3. Dimensiones y espaciados</h3>
+<p>La aplicación implementa un sistema de dimensiones coherente definido en dimens.xml:</p>
+<ul>
+    <li>spacing_small: 4dp</li>
+    <li>spacing_medium: 8dp</li>
+    <li>spacing_large: 16dp</li>
+    <li>spacing_xlarge: 24dp</li>
+    <li>spacing_xxlarge: 32dp</li>
+    <li>corner_radius: 8dp (para elementos con esquinas redondeadas)</li>
+    <li>elevation_card: 2dp (para sombras de tarjetas)</li>
+    <li>border_width: 1dp (para bordes de elementos)</li>
+</ul>
+
+<h3>9.1.4. Componentes de Material Design</h3>
+<p>La aplicación implementa versiones personalizadas de los componentes estándar de Material Design:</p>
+<ul>
+    <li><strong>Botones personalizados:</strong> Definidos en <code>Widget.App.Button</code> con esquinas redondeadas de 8dp</li>
+    <li><strong>Botones de Google:</strong> Implementación personalizada para inicio de sesión con Google</li>
+    <li><strong>Cards:</strong> Con un estilo consistente que incluye bordes suaves y elevación de 1-2dp</li>
+    <li><strong>Floating Action Buttons (FAB):</strong> Para acciones principales como guardar zonas seguras</li>
+    <li><strong>TextInputLayout:</strong> Campos de texto con bordes y estilo personalizado</li>
+    <li><strong>Switches:</strong> Con estilos personalizados para temas claro y oscuro</li>
+    <li><strong>Bottom navigation:</strong> Implementada como un CardView personalizado en la parte inferior</li>
+    <li><strong>Custom markers:</strong> Marcadores personalizados para el mapa con foto del perro</li>
+</ul>
+
+<h2 id="pantallas-implementadas">9.2. Pantallas implementadas</h2>
+
+<h3>9.2.1. Pantalla de inicio/login (MainActivity)</h3>
+<p>Esta pantalla, definida en activity_main.xml, presenta un diseño distintivo con las siguientes características:</p>
+
+<div style="text-align: center; margin: 40px 0;">
+    <img src="img/Login.jpg" alt="Pantalla de inicio de sesión" style="max-width: 350px; border: 1px solid #000; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin: 0 auto;">
+    <p style="margin-top: 10px; font-style: italic; color: #666; text-align: center;">Figura 9.1: Pantalla de inicio de sesión mostrando el formulario de autenticación</p>
+</div>
+
+<div style="text-align: center; margin: 40px 0;">
+    <img src="img/Login2.jpg" alt="Pantalla de inicio de sesión con teclado" style="max-width: 350px; border: 1px solid #000; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin: 0 auto;">
+    <p style="margin-top: 10px; font-style: italic; color: #666; text-align: center;">Figura 9.2: Vista de la pantalla de login durante la introducción de credenciales</p>
+</div>
+
+<ul>
+    <li>Fondo azul primario (#246BFD) en la parte superior</li>
+    <li>Logo circular de la aplicación centrado en la parte superior</li>
+    <li>CardView blanco (#FAFAFA) para contener el formulario de login</li>
+    <li>Campos de email y contraseña con bordes sutiles (#D9DFE6)</li>
+    <li>Opción "Recordar usuario" mediante checkbox</li>
+    <li>Botón de inicio de sesión principal con color primario</li>
+    <li>Separador visual con texto "O"</li>
+    <li>Botón de inicio de sesión con Google</li>
+    <li>Enlace para crear cuenta nueva en la parte inferior</li>
+</ul>
+
+<h3>9.2.2. Pantalla de registro (RegisterActivity)</h3>
+<p>Similar a la pantalla de login pero adaptada para el registro de nuevos usuarios:</p>
+<ul>
+    <li>Mantiene el mismo estilo visual con fondo azul y card blanco</li>
+    <li>Campo adicional para repetir contraseña</li>
+    <li>Checkbox para aceptar términos y condiciones con enlace</li>
+    <li>Botón "Crear cuenta" como acción principal</li>
+    <li>Enlace para volver a inicio de sesión</li>
+</ul>
+
+<h3>9.2.3. Pantalla de carga (SplashLoginActivity)</h3>
+<p>Una pantalla minimalista que muestra:</p>
+
+<div style="text-align: center; margin: 40px 0;">
+    <img src="img/SplashScreen.jpg" alt="Pantalla de carga" style="max-width: 350px; border: 1px solid #000; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin: 0 auto;">
+    <p style="margin-top: 10px; font-style: italic; color: #666; text-align: center;">Figura 9.3: Pantalla de carga (splash screen) con logo y barra de progreso</p>
+</div>
+
+<ul>
+    <li>Logo grande de PawTracker (160dp x 160dp)</li>
+    <li>Barra de progreso horizontal animada</li>
+    <li>Texto "Iniciando aplicación..."</li>
+    <li>Nombre de la aplicación en la parte inferior</li>
+    <li>Fondo completo en color primario</li>
+</ul>
+
+<h3>9.2.4. Pantalla principal del mapa (MapsActivity)</h3>
+<p>El centro de operaciones de la aplicación con múltiples elementos interactivos:</p>
+
+<div style="text-align: center; margin: 40px 0;">
+    <img src="img/Mapsactivity.jpg" alt="Pantalla principal del mapa" style="max-width: 350px; border: 1px solid #000; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin: 0 auto;">
+    <p style="margin-top: 10px; font-style: italic; color: #666; text-align: center;">Figura 9.4: Pantalla principal con mapa y ubicación de mascota</p>
+</div>
+
+<div style="text-align: center; margin: 40px 0;">
+    <img src="img/Mapsact_editandozonasegura.jpg" alt="Edición de zona segura" style="max-width: 350px; border: 1px solid #000; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin: 0 auto;">
+    <p style="margin-top: 10px; font-style: italic; color: #666; text-align: center;">Figura 9.5: Pantalla de mapa en modo de edición de zona segura</p>
+</div>
+
+<ul>
+    <li><strong>Toolbar superior:</strong>
+        <ul>
+            <li>Spinner personalizado para selección de perros con imágenes circulares</li>
+            <li>Foto de perfil del usuario en formato circular</li>
+        </ul>
+    </li>
+    <li><strong>Mapa central:</strong>
+        <ul>
+            <li>Implementación de Google Maps a pantalla completa</li>
+            <li>Marcadores personalizados con fotos de perros</li>
+            <li>Visualización de zonas seguras como círculos</li>
+        </ul>
+    </li>
+    <li><strong>Floating Action Button:</strong> Para editar zonas seguras</li>
+    <li><strong>Banner de edición:</strong> Aparece con texto de advertencia cuando se está editando una zona</li>
+    <li><strong>Barra de navegación inferior:</strong> CardView con cuatro opciones principales:
+        <ul>
+            <li>Zona segura</li>
+            <li>Perfil</li>
+            <li>Ajustes</li>
+            <li>Próx. (placeholder para futuras funcionalidades)</li>
+        </ul>
+    </li>
+</ul>
+
+<h3>9.2.5. Pantalla de ajustes (AjustesActivity)</h3>
+<p>Una interfaz de configuración organizada en tarjetas:</p>
+
+<div style="text-align: center; margin: 40px 0;">
+    <img src="img/Ajustes.jpg" alt="Pantalla de ajustes" style="max-width: 350px; border: 1px solid #000; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin: 0 auto;">
+    <p style="margin-top: 10px; font-style: italic; color: #666; text-align: center;">Figura 9.6: Pantalla de ajustes con opciones de configuración</p>
+</div>
+
+<ul>
+    <li><strong>Toolbar con título "Ajustes" y botón atrás</strong></li>
+    <li><strong>Tarjeta principal de configuraciones:</strong>
+        <ul>
+            <li>Switch para cambiar entre modo claro/oscuro</li>
+            <li>Switch para activar/desactivar notificaciones</li>
+            <li>Switch para desactivar optimización de batería</li>
+            <li>Botón para probar notificaciones</li>
+            <li>Botón para cerrar sesión</li>
+        </ul>
+    </li>
+    <li><strong>Tarjeta de desarrolladores:</strong>
+        <ul>
+            <li>RecyclerView con elementos item_developer.xml</li>
+            <li>Muestra fotos y nombres de los desarrolladores</li>
+        </ul>
+    </li>
+</ul>
+
+<h3>9.2.6. Pantalla de perfil de perro (PerfilPerro)</h3>
+<p>Una interfaz detallada para visualizar la información de las mascotas:</p>
+
+<div style="text-align: center; margin: 40px 0;">
+    <img src="img/PerfilPerro.jpg" alt="Perfil de perro" style="max-width: 350px; border: 1px solid #000; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin: 0 auto;">
+    <p style="margin-top: 10px; font-style: italic; color: #666; text-align: center;">Figura 9.7: Pantalla de perfil de mascota con información detallada</p>
+</div>
+
+<ul>
+    <li><strong>Imagen circular grande del perro en la parte superior</strong></li>
+    <li><strong>Nombre y raza destacados debajo de la imagen</strong></li>
+    <li><strong>Tarjeta de características:</strong> Muestra nombre, raza, peso y edad</li>
+    <li><strong>Tarjeta de fechas:</strong> Visualización de fechas de nacimiento y adopción</li>
+    <li><strong>Tarjeta de información del dueño:</strong> Muestra foto e información del propietario</li>
+    <li><strong>Botón "Editar perfil":</strong> En la parte inferior para acceder a la edición</li>
+</ul>
+
+<h3>9.2.7. Pantalla de edición de perro (EditarPerro)</h3>
+<p>Permite modificar todos los datos del perfil de mascota:</p>
+
+<div style="text-align: center; margin: 40px 0;">
+    <img src="img/EditarPerfilPerro.jpg" alt="Edición de perfil de perro" style="max-width: 350px; border: 1px solid #000; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin: 0 auto;">
+    <p style="margin-top: 10px; font-style: italic; color: #666; text-align: center;">Figura 9.8: Pantalla de edición de perfil de mascota</p>
+</div>
+
+<ul>
+    <li><strong>Imagen con botón de edición superpuesto</strong></li>
+    <li><strong>Tarjeta de datos básicos:</strong> Campos editables para nombre, raza, peso</li>
+    <li><strong>Tarjeta de fechas:</strong> Selectores personalizados para fechas de nacimiento y adopción</li>
+    <li><strong>Tarjeta de dueño:</strong> Spinner para seleccionar propietario</li>
+    <li><strong>Botón "Guardar cambios":</strong> En la parte inferior</li>
+</ul>
+
+<h3>9.2.8. Pantallas de perfil y edición de usuario</h3>
+<p>Equivalentes a las de perro pero adaptadas para gestionar perfiles de usuarios:</p>
+
+<div style="text-align: center; margin: 40px 0;">
+    <img src="img/PerfilUsuario.jpg" alt="Perfil de usuario" style="max-width: 350px; border: 1px solid #000; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin: 0 auto;">
+    <p style="margin-top: 10px; font-style: italic; color: #666; text-align: center;">Figura 9.9: Pantalla de perfil de usuario</p>
+</div>
+
+<div style="text-align: center; margin: 40px 0;">
+    <img src="img/EditarPerfilUsuario.jpg" alt="Edición de perfil de usuario" style="max-width: 350px; border: 1px solid #000; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin: 0 auto;">
+    <p style="margin-top: 10px; font-style: italic; color: #666; text-align: center;">Figura 9.10: Pantalla de edición de perfil de usuario</p>
+</div>
+
+<ul>
+    <li>Muestran información personal: nombre, apellidos, email, edad</li>
+    <li>Incluyen fecha de nacimiento</li>
+    <li>Opción para simular ser un perro (característica para pruebas)</li>
+</ul>
+
+<h3>9.2.9. Cambio de Contraseña</h3>
+<p>La pantalla de cambio de contraseña, definida en <code>activity_change_password.xml</code>, proporciona una interfaz segura y amigable para que los usuarios actualicen sus credenciales de acceso. Esta pantalla implementa las siguientes características:</p>
+
+<ul>
+    <li>Interfaz minimalista y segura con campos protegidos</li>
+    <li>Validación en tiempo real de la contraseña actual</li>
+    <li>Verificación de coincidencia entre la nueva contraseña y su confirmación</li>
+    <li>Retroalimentación visual inmediata sobre el estado del proceso</li>
+</ul>
+
+<p>Los componentes principales de la interfaz incluyen:</p>
+
+<ul>
+    <li>Campo de email no editable que muestra la cuenta actual</li>
+    <li>Campo seguro para la contraseña actual</li>
+    <li>Campos para la nueva contraseña y su confirmación</li>
+    <li>Botón de acción principal para confirmar el cambio</li>
+    <li>Botón de retroceso para cancelar la operación</li>
+</ul>
+
+<div style="text-align: center; margin: 40px 0;">
+    <img src="img/cambiarpassword.png" alt="Pantalla de cambio de contraseña" style="max-width: 350px; border: 1px solid #000; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin: 0 auto;">
+    <p style="margin-top: 10px; font-style: italic; color: #666; text-align: center;">Figura 9.11: Pantalla de cambio de contraseña con campos seguros y validación</p>
+</div>
+
+<p>La implementación en <code>ChangePasswordActivity.kt</code> gestiona:</p>
+
+<ul>
+    <li>Validación de seguridad:
+        <ul>
+            <li>Verificación de la contraseña actual mediante reautenticación</li>
+            <li>Comprobación de longitud mínima de 6 caracteres</li>
+            <li>Validación de coincidencia entre campos de nueva contraseña</li>
+        </ul>
+    </li>
+    <li>Gestión de errores:
+        <ul>
+            <li>Mensajes claros sobre problemas de validación</li>
+            <li>Retroalimentación sobre el éxito o fracaso del proceso</li>
+            <li>Manejo de errores de autenticación de Firebase</li>
+        </ul>
+    </li>
+    <li>Experiencia de usuario:
+        <ul>
+            <li>Campos de contraseña con visibilidad toggleable</li>
+            <li>Animaciones suaves en transiciones</li>
+            <li>Prevención de múltiples envíos simultáneos</li>
+        </ul>
+    </li>
+</ul>
+
+<h2 id="patrones-interaccion">9.3. Patrones de interacción y navegación</h2>
+
+<h3>9.3.1. Estrategia de navegación</h3>
+<p>La aplicación implementa un modelo de navegación basado en actividades independientes con transiciones entre ellas:</p>
+<ul>
+    <li><strong>Navegación jerárquica:</strong> La mayoría de las pantallas incluyen un botón de retroceso explícito en la toolbar</li>
+    <li><strong>Navegación tabular simplificada:</strong> La barra inferior permite acceso directo a secciones principales</li>
+    <li><strong>Transiciones directas:</strong> Las actividades se lanzan mediante intents explícitos</li>
+</ul>
+
+<h3>9.3.2. Patrones de interacción comunes</h3>
+<p>Se identifican varios patrones consistentes en toda la aplicación:</p>
+<ul>
+    <li><strong>Selección de imágenes:</strong> Tanto para perfil de usuario como de mascotas</li>
+    <li><strong>Selección de fechas:</strong> Mediante un diálogo personalizado con NumberPicker (date_spinner_dialog.xml)</li>
+    <li><strong>Edición en dos fases:</strong> Primero visualización (Perfil) y luego edición (Editar)</li>
+    <li><strong>Confirmación de acciones:</strong> Mediante diálogos o mensajes toast</li>
+    <li><strong>Selección de perros:</strong> A través de spinner personalizado con imágenes</li>
+</ul>
+
+<h3>9.3.3. Uso de feedback visual</h3>
+<p>La aplicación proporciona retroalimentación al usuario mediante:</p>
+<ul>
+    <li><strong>Loading spinners:</strong> Indicadores de carga para operaciones asíncronas</li>
+    <li><strong>Banner de advertencia:</strong> Durante la edición de zonas seguras</li>
+    <li><strong>Cambios de color:</strong> Para zonas seguras (verde cuando el perro está dentro, rojo cuando está fuera)</li>
+    <li><strong>Toast messages:</strong> Para confirmaciones y errores</li>
+</ul>
+
+<h2 id="temas-accesibilidad">9.4. Temas y accesibilidad</h2>
+
+<h3>9.4.1. Sistema de temas claro/oscuro</h3>
+<p>La aplicación implementa un sistema completo de temas claro y oscuro:</p>
+<ul>
+    <li><strong>Tema claro (por defecto):</strong> Fondos claros (#FFFFFF, #F8F9FA) con texto oscuro</li>
+    <li><strong>Tema oscuro:</strong> Fondos oscuros (#121212, #1E1E1E) con texto claro</li>
+    <li><strong>Switch en ajustes:</strong> Permite al usuario cambiar entre temas</li>
+    <li><strong>Atributos adaptables:</strong> Uso de ?attr/colorSurface y ?attr/colorOnSurface para adaptarse automáticamente</li>
+</ul>
+
+<h3>9.4.2. Consideraciones de accesibilidad</h3>
+<p>La aplicación tiene en cuenta varios aspectos de accesibilidad:</p>
+<ul>
+    <li><strong>Tamaños de toque:</strong> Elementos interactivos con tamaño mínimo de 48dp</li>
+    <li><strong>Contraste:</strong> Combinaciones de color que proporcionan contraste adecuado</li>
+    <li><strong>ContentDescription:</strong> En elementos visuales importantes para compatibilidad con lectores de pantalla</li>
+    <li><strong>Dimensiones adaptables:</strong> Sistema que facilita la adaptación a diferentes tamaños de pantalla</li>
+</ul>
+
+<h3>9.4.3. Estado visual de elementos interactivos</h3>
+<p>Los elementos interactivos tienen estados visuales claros:</p>
+<ul>
+    <li><strong>Botones:</strong> Con estado normal, presionado y deshabilitado</li>
+    <li><strong>Campos de texto:</strong> Con indicación clara de foco y error</li>
+    <li><strong>Switches:</strong> Con colores distintivos para estados activado/desactivado</li>
+    <li><strong>Elementos seleccionables:</strong> Con efecto ripple para feedback táctil</li>
+</ul>
+
+<p>En resumen, la interfaz de PawTracker combina principios de Material Design con una implementación personalizada para crear una experiencia coherente, intuitiva y adaptable a diferentes necesidades y preferencias de los usuarios. El sistema visual cuidadosamente definido y los patrones de interacción consistentes facilitan el uso de las funcionalidades principales de seguimiento y gestión de mascotas.</p>
+
+<h2 id="layouts-implementados">9.5. Layouts implementados</h2>
+
+<p>PawTracker utiliza una variedad de layouts XML para construir su interfaz de usuario. A continuación se detallan los principales layouts implementados y los componentes clave utilizados en cada uno:</p>
+
+<h3>9.5.1. Layouts de pantallas principales</h3>
+
+<ul>
+    <li><strong>activity_main.xml:</strong> Layout de la pantalla de inicio de sesión
+        <ul>
+            <li>ConstraintLayout como contenedor principal</li>
+            <li>FrameLayout para el icono circular de la aplicación</li>
+            <li>CardView contenedor del formulario de login</li>
+            <li>TextInputLayout para campos de email y contraseña</li>
+            <li>CheckBox para la opción "Recordar usuario"</li>
+            <li>MaterialButton para el botón de inicio de sesión</li>
+            <li>SignInButton de Google para autenticación alternativa</li>
+        </ul>
+    </li>
+    
+    <br>
+    <li><strong>activity_register.xml:</strong> Layout para el registro de nuevos usuarios
+        <ul>
+            <li>ConstraintLayout como contenedor principal</li>
+            <li>Tres TextInputLayout para email, contraseña y confirmación</li>
+            <li>LinearLayout para el contenedor de términos y condiciones</li>
+            <li>CheckBox y TextView para aceptación de términos</li>
+            <li>MaterialButton para el botón de registro</li>
+        </ul>
+    </li>
+    
+    <br>
+    <li><strong>activity_maps.xml:</strong> Layout principal con mapa y navegación
+        <ul>
+            <li>CoordinatorLayout como contenedor principal para gestionar comportamientos complejos</li>
+            <li>AppBarLayout y Toolbar personalizados con Spinner para selección de perros</li>
+            <li>Fragment de SupportMapFragment para el mapa interactivo</li>
+            <li>FloatingActionButton para edición de zonas seguras</li>
+            <li>MaterialCardView para la barra de navegación inferior</li>
+            <li>TextView para banner de edición de zona</li>
+            <li>LinearLayout para botones de aceptar/cancelar zona segura</li>
+        </ul>
+    </li>
+    
+    <br>
+    <li><strong>activity_splash_login.xml:</strong> Pantalla de carga inicial
+        <ul>
+            <li>ConstraintLayout con fondo de color primario</li>
+            <li>ImageView para logo grande centrado</li>
+            <li>ProgressBar horizontal estilizado</li>
+            <li>TextView para mostrar estado de carga y nombre de la aplicación</li>
+        </ul>
+    </li>
+    
+    <br>
+    <li><strong>activity_ajustes.xml:</strong> Pantalla de configuraciones
+        <ul>
+            <li>CoordinatorLayout como contenedor principal</li>
+            <li>NestedScrollView para permitir desplazamiento</li>
+            <li>MaterialCardView para agrupar opciones de configuración</li>
+            <li>SwitchMaterial para opciones de tema, notificaciones y batería</li>
+            <li>RecyclerView para mostrar lista de desarrolladores</li>
+            <li>ImageButton para cerrar sesión</li>
+        </ul>
+    </li>
+</ul>
+
+<h3>9.5.2. Layouts de perfil y edición</h3>
+
+<ul>
+    <li><strong>perfil_perro.xml:</strong> Visualización de datos de mascota
+        <ul>
+            <li>CoordinatorLayout como contenedor principal</li>
+            <li>NestedScrollView para permitir desplazamiento</li>
+            <li>ShapeableImageView circular para foto de perfil</li>
+            <li>Tres MaterialCardView para agrupar información por categorías</li>
+            <li>Múltiples LinearLayout para estructurar datos en pares clave-valor</li>
+            <li>MaterialButton para acceder a edición</li>
+        </ul>
+    </li>
+    
+    <br>
+    <li><strong>editar_perro.xml:</strong> Formulario de edición de mascota
+        <ul>
+            <li>CoordinatorLayout como contenedor principal</li>
+            <li>ShapeableImageView con FloatingActionButton superpuesto para cambiar foto</li>
+            <li>Tres MaterialCardView para campos editables agrupados por categoría</li>
+            <li>EditText para nombre, raza y peso</li>
+            <li>Campos de fecha con selector personalizado</li>
+            <li>Spinner para selección de dueño</li>
+            <li>MaterialButton para guardar cambios</li>
+        </ul>
+    </li>
+    
+    <br>
+    <li><strong>perfil_usuario.xml:</strong> Visualización de perfil de usuario
+        <ul>
+            <li>Estructura similar a perfil_perro.xml</li>
+            <li>Sección adicional para mostrar estado de simulación de perro</li>
+            <li>ImageButton para cierre de sesión en la toolbar</li>
+        </ul>
+    </li>
+    
+    <br>
+    <li><strong>editar_usuario.xml:</strong> Formulario de edición de usuario
+        <ul>
+            <li>Estructura similar a editar_perro.xml</li>
+            <li>Campo email deshabilitado (no editable)</li>
+            <li>SwitchMaterial para opción "Simular perro"</li>
+            <li>Sección condicional para seleccionar dueño cuando es un perro</li>
+        </ul>
+    </li>
+</ul>
+
+<h3>9.5.3. Layouts auxiliares y componentes reutilizables</h3>
+
+<ul>
+    <li><strong>custom_marker_layout.xml:</strong> Diseño personalizado para marcadores en el mapa
+        <ul>
+            <li>FrameLayout contenedor</li>
+            <li>LinearLayout con fondo de marcador personalizado</li>
+            <li>ImageView circular para mostrar foto del perro dentro del marcador</li>
+        </ul>
+    </li>
+    
+    <br>
+    <li><strong>date_spinner_dialog.xml:</strong> Selector de fecha personalizado
+        <ul>
+            <li>LinearLayout como contenedor principal</li>
+            <li>Tres NumberPicker para día, mes y año</li>
+            <li>Botones de aceptar y cancelar en la parte inferior</li>
+        </ul>
+    </li>
+    
+    <br>
+    <li><strong>item_developer.xml:</strong> Elemento para lista de desarrolladores
+        <ul>
+            <li>MaterialCardView como contenedor principal</li>
+            <li>ConstraintLayout para posicionamiento preciso</li>
+            <li>ShapeableImageView circular para foto del desarrollador</li>
+            <li>TextView para nombre del desarrollador</li>
+        </ul>
+    </li>
+    
+    <br>
+    <li><strong>spinner_item_with_image.xml:</strong> Elemento personalizado para selector de perros
+        <ul>
+            <li>LinearLayout horizontal</li>
+            <li>ShapeableImageView circular para foto del perro</li>
+            <li>TextView para nombre del perro</li>
+        </ul>
+    </li>
+    
+    <br>
+    <li><strong>loading_image.xml:</strong> Indicador de carga para imágenes
+        <ul>
+            <li>ProgressBar simple centrado e indeterminado</li>
+        </ul>
+    </li>
+    
+    <br>
+    <li><strong>loading_spinner.xml:</strong> Indicador de carga personalizado
+        <ul>
+            <li>ImageView con animación de rotación aplicada</li>
+        </ul>
+    </li>
+</ul>
+
+<p>La aplicación utiliza consistentemente los siguientes patrones en la implementación de layouts:</p>
+
+<ul>
+    <li>CoordinatorLayout para pantallas complejas con múltiples elementos interactivos</li>
+    <li>Organización de información en MaterialCardView para agrupamiento visual</li>
+    <li>NestedScrollView para permitir desplazamiento en pantallas con mucho contenido</li>
+    <li>ShapeableImageView para imágenes de perfil circulares con estilos consistentes</li>
+    <li>Toolbars personalizadas con navegación hacia atrás y títulos centrados</li>
+    <li>Botones primarios con estilo consistente al final de los formularios</li>
+    <li>Organización de elementos en LinearLayout horizontal para etiquetas y valores</li>
+</ul>
+
+<p>Esta estructura de layouts proporciona una experiencia de usuario coherente a través de toda la aplicación, con patrones de diseño reconocibles que facilitan el aprendizaje y uso de las diferentes funcionalidades.</p>
+
+<h1 id="integraciones">10. Integraciones Externas</h1>
+
+<h2 id="apis">10.1. APIs o servicios externos utilizados</h2>
+
+<h3 id="google-maps">10.1.1. Google Maps API</h3>
+<p>Esta API proporciona la funcionalidad de mapas interactivos y geolocalización:</p>
+<ul>
+<li><strong>Funcionalidades implementadas:</strong>
+    <ul>
+    <li>Visualización de mapas en la aplicación</li>
+    <li>Seguimiento de ubicación en tiempo real</li>
+    <li>Creación y visualización de zonas geográficas (geofences)</li>
+    <li>Marcadores personalizados para mascotas</li>
+    <li>Clustering para gestión eficiente de múltiples marcadores</li>
+    </ul>
+</li>
+<li><strong>Implementación:</strong> La integración se realiza mediante la biblioteca de Maps SDK para Android, configurada en el archivo build.gradle y con una API key en el AndroidManifest.xml.</li>
+</ul>
+
+<h3 id="firebase-auth">10.1.2. Firebase Authentication</h3>
+<p>Este servicio gestiona la autenticación de usuarios de forma segura:</p>
+<ul>
+<li><strong>Funcionalidades implementadas:</strong>
+    <ul>
+    <li>Registro de usuarios con email y contraseña</li>
+    <li>Inicio de sesión seguro</li>
+    <li>Gestión de sesiones</li>
+    <li>Validación de credenciales</li>
+    </ul>
+</li>
+<li><strong>Implementación:</strong> Configurado mediante el archivo google-services.json y las dependencias correspondientes en build.gradle. Se utiliza la clase FirebaseAuth para manejar las operaciones de autenticación.</li>
+</ul>
+
+<h3 id="firebase-db">10.1.3. Firebase Realtime Database</h3>
+<p>Base de datos en tiempo real para sincronización de datos:</p>
+<ul>
+<li><strong>Funcionalidades implementadas:</strong>
+    <ul>
+    <li>Almacenamiento de perfiles de usuario y mascotas</li>
+    <li>Sincronización de ubicaciones en tiempo real</li>
+    <li>Persistencia de zonas seguras</li>
+    <li>Historial de ubicaciones</li>
+    </ul>
+</li>
+<li><strong>Estructura de datos:</strong> Organización jerárquica con nodos para usuarios, mascotas, ubicaciones y zonas seguras, optimizada para consultas frecuentes y actualizaciones en tiempo real.</li>
+</ul>
+
+<h3 id="location-provider">10.1.4. FusedLocationProviderClient (Google Play Services)</h3>
+<p>Proporciona acceso optimizado a los servicios de ubicación del dispositivo:</p>
+<ul>
+<li><strong>Funcionalidades implementadas:</strong>
+    <ul>
+    <li>Obtención eficiente de la ubicación precisa</li>
+    <li>Actualización periódica de ubicación</li>
+    <li>Optimización del consumo de batería</li>
+    <li>Combinación de múltiples fuentes (GPS, WiFi, red móvil)</li>
+    </ul>
+</li>
+<li><strong>Implementación:</strong> Utilizado en la clase DogLocationManager para gestionar las actualizaciones de ubicación con diferentes intervalos según las necesidades de la aplicación.</li>
+</ul>
+
+<h3 id="fcm">10.1.5. Firebase Cloud Messaging (FCM)</h3>
+<p>Sistema de notificaciones push:</p>
+<ul>
+<li><strong>Funcionalidades implementadas:</strong>
+    <ul>
+    <li>Notificaciones instantáneas cuando un perro sale de su zona segura</li>
+    <li>Notificaciones periódicas mientras el perro permanece fuera</li>
+    <li>Alertas personalizadas por mascota</li>
+    </ul>
+</li>
+<li><strong>Implementación:</strong> Gestionado por GeofenceBroadcastReceiver y configurado en AndroidManifest.xml con los permisos correspondientes.</li>
+</ul>
+
+<h2 id="conexion">10.2. Detalles de conexión y autenticación</h2>
+<p>La aplicación gestiona las credenciales y configuraciones de los servicios externos de la siguiente manera:</p>
+<ul>
+<li><strong>Google Maps API Key:</strong> Almacenada de forma segura en el AndroidManifest.xml, con restricciones de uso por aplicación y dominio.</li>
+<li><strong>Firebase:</strong> Configurado mediante el archivo google-services.json que contiene información de conexión al proyecto Firebase.</li>
+<li><strong>Tokens FCM:</strong> Gestionados automáticamente por la biblioteca FCM y almacenados de forma segura.</li>
+</ul>
+
+<h1 id="gestion-datos">11. Gestión de Datos</h1>
+
+<p>El manejo eficiente de los datos es un componente crítico de PawTracker debido a la naturaleza de la aplicación, que requiere sincronización en tiempo real de ubicaciones, persistencia para funcionamiento offline, y gestión óptima de recursos. Como equipo de estudiantes, investigamos diferentes alternativas antes de decidir la arquitectura de datos que mejor se adaptara a nuestros requisitos funcionales y no funcionales.</p>
+
+<p>En esta sección, detallamos las decisiones que tomamos respecto al modelado, almacenamiento y flujo de datos en nuestra aplicación.</p>
+
+<h2 id="modelo-datos">11.1. Modelo de datos</h2>
+
+<p>Hemos diseñado un modelo de datos optimizado para consultas frecuentes de ubicación y actualización en tiempo real, sacrificando cierta normalización en favor del rendimiento y la simplicidad de implementación. Después de analizar diferentes sistemas de gestión de datos, seleccionamos Firebase Realtime Database como nuestro principal sistema de almacenamiento por su excelente soporte para actualizaciones en tiempo real y su facilidad de integración con otras herramientas de Google.</p>
+
+<h3>11.1.1. Entidades principales</h3>
+
+<p>Nuestro modelo de datos se compone de las siguientes entidades principales:</p>
+
+<ul>
+    <li><strong>Usuario:</strong> Representa a un dueño de mascotas registrado en la aplicación. Contiene información personal básica y referencia a sus mascotas.</li>
+    <li><strong>Perro:</strong> Representa cada mascota registrada por un usuario. Contiene datos como nombre, raza, edad, y una ubicación actual.</li>
+    <li><strong>Ubicación:</strong> Representa la posición geográfica de una mascota en un momento determinado, incluyendo coordenadas y metadatos como precisión y velocidad.</li>
+    <li><strong>ZonaSegura:</strong> Define un perímetro geográfico considerado seguro para una mascota específica.</li>
+    <li><strong>HistorialUbicaciones:</strong> Registro temporal de las posiciones anteriores de cada mascota.</li>
+    <li><strong>Notificación:</strong> Registro de alertas enviadas al usuario cuando una mascota sale de una zona segura.</li>
+</ul>
+
+<h3>11.1.2. Esquema de datos en Firebase</h3>
+
+<p>Utilizamos una estructura jerárquica en Firebase Realtime Database, optimizada para nuestros patrones de acceso más frecuentes. A continuación, se muestra el esquema real implementado en nuestro proyecto:</p>
+
+<pre style="background-color: #1e1e1e; color: #f0f0f0; padding: 15px; border-radius: 6px; font-family: 'Consolas', 'Monaco', monospace; overflow-x: auto; margin: 20px 0;">
+{
+  "geofencing_status": {
+    "3TNBo6Ox0Dbzfc7clTc9hQr78vo1": "IN",
+    "HwWNNqxtWQOR9FWhG1MToOXfqkH3": "IN",
+    "mascota1": "OUT"
+  },
+  "locations": {
+    "3TNBo6Ox0Dbzfc7clTc9hQr78vo1": {
+      "latitude": 42.8331235,
+      "longitude": -1.567736
+    },
+    "9L10iVFht4fjujsEpDPbjpV5WSg2": {
+      "latitude": 42.8063202,
+      "longitude": -1.6283644
+    },
+    "oO4YEvacmudmJcDVDUsthvuJ1LK2": {
+      "latitude": 37.4219983,
+      "longitude": -122.084,
+      "timestamp": 1740971147354
+    }
+  },
+  "users": {
+    "3TNBo6Ox0Dbzfc7clTc9hQr78vo1": {
+      "apellidos": "",
+      "dueñoId": "oO4YEvacmudmJcDVDUsthvuJ1LK2",
+      "fechaAdopcion": 0,
+      "fechaNacimiento": -123552000000,
+      "imagenBase64": "iVBORw0KGgoAAAANSUhEUgAAA...",
+      "isPerro": true,
+      "nombre": "Nina",
+      "peso": 9,
+      "raza": "Westie",
+      "zonaSegura": {
+        "latitud": 42.83302049020985,
+        "longitud": -1.56803447753191,
+        "radio": 100
+      }
+    }
+  }
+}
+</pre>
+
+<p>Esta estructura fue diseñada específicamente para soportar las necesidades de nuestra aplicación de geolocalización con las siguientes características principales:</p>
+
+<ul>
+    <li><strong>geofencing_status:</strong> Almacena el estado de cada perro en relación a sus zonas seguras. Los valores posibles incluyen "IN" (dentro de la zona) y "OUT" (fuera de la zona). La estructura utiliza IDs de perros como clave para permitir un monitoreo eficiente.</li>
+    
+    <li><strong>locations:</strong> Contiene las coordenadas actuales de cada perro, con propiedades de latitud, longitud y timestamp. Utilizamos el ID del perro como clave para permitir consultas eficientes por mascota.</li>
+    
+    <li><strong>users:</strong> Este nodo almacena información tanto de usuarios humanos como de perros. Utilizamos el campo "isPerro" para distinguir entre ambos tipos de entidades:
+        <ul>
+            <li><strong>Usuarios humanos (isPerro=false):</strong> Contienen información como nombre, apellidos, email, fecha de nacimiento y una imagen de perfil codificada en Base64.</li>
+            <li><strong>Perros (isPerro=true):</strong> Almacenan datos específicos como nombre, raza, peso, fechas de nacimiento y adopción, imagen codificada en Base64, y una referencia al ID de su dueño.</li>
+            <li><strong>Zona segura:</strong> Para los perros, se almacena un subnodo "zonaSegura" que contiene la latitud, longitud y radio que definen el perímetro de seguridad para el monitoreo.</li>
+        </ul>
+    </li>
+</ul>
+
+<p>Este diseño nos permite implementar eficientemente las principales funcionalidades de la aplicación:</p>
+
+<ul>
+    <li>Seguimiento en tiempo real de la ubicación de cada perro</li>
+    <li>Detección eficiente cuando un perro sale de su zona segura configurada</li>
+    <li>Visualización de múltiples perros en el mapa con sus respectivas zonas seguras</li>
+    <li>Manejo de relaciones entre dueños y perros para un acceso rápido a los datos relevantes</li>
+</ul>
+
+    </div>
+</div>
+
+
+<div class="main-content">
+    <div class="main-inner">
+
+    
+        <h1 id="plan-pruebas">12. Plan de Pruebas</h1>
+        <p>La naturaleza crítica de PawTracker como aplicación de geolocalización y monitoreo en tiempo real requiere un enfoque riguroso de pruebas. Hemos implementado una estrategia estructurada que contempla tanto los aspectos funcionales como no funcionales, priorizando la fiabilidad y precisión de las características principales.</p>
+    
+        <h2 id="estrategia">12.1. Estrategia de pruebas funcionales</h2>
+        <p>Nuestra estrategia de pruebas se ha centrado en verificar que cada componente funciona correctamente de forma individual y en conjunto con el resto del sistema. Hemos implementado los siguientes tipos de pruebas:</p>
+    
+        <h3>12.1.1. Pruebas unitarias</h3>
+        <p>Enfocadas en validar componentes individuales, principalmente:</p>
+        <ul>
+            <li><strong>Utilidades de geolocalización:</strong> Validación de cálculos de distancia, verificación de coordenadas y conversiones.</li>
+            <li><strong>Manipulación de imágenes:</strong> Verificación de las funciones en <code>ImageUtils.kt</code> para procesamiento, compresión y conversión de imágenes.</li>
+            <li><strong>Lógica de validación:</strong> Verificación de las validaciones de formularios en clases como <code>RegisterActivity</code> y <code>EditarPerro</code>.</li>
+            <li><strong>Gestión de alertas:</strong> Pruebas de generación y formato de notificaciones en <code>GeofenceBroadcastReciver</code>.</li>
+        </ul>
+    
+        <h3>12.1.2. Pruebas de integración</h3>
+        <p>Verificación de la interacción entre componentes:</p>
+        <ul>
+            <li><strong>Flujo de autenticación:</strong> Pruebas del ciclo completo desde <code>MainActivity</code> hasta <code>SplashLoginActivity</code>.</li>
+            <li><strong>Geofencing completo:</strong> Integración entre <code>DogLocationManager</code>, <code>GeofencingService</code> y <code>GeofenceBroadcastReciver</code>.</li>
+            <li><strong>Persistencia de datos:</strong> Verificación de la correcta sincronización entre caché local (<code>DatosPrecargados</code>) y Firebase.</li>
+            <li><strong>Ciclo de vida de Activities:</strong> Pruebas de navegación entre pantallas y persistencia de estado.</li>
+        </ul>
+    
+        <h3>12.1.3. Pruebas en dispositivos reales</h3>
+        <p>Enfoque clave dado el componente de geolocalización:</p>
+        <ul>
+            <li>Pruebas en al menos 3 dispositivos físicos diferentes con distintas versiones de Android (9, 10 y 13).</li>
+            <li>Verificación en terreno del funcionamiento de geofencing con desplazamiento real.</li>
+            <li>Comprobación del funcionamiento en segundo plano durante periodos extendidos.</li>
+            <li>Medición de consumo real de batería y rendimiento en diferentes condiciones.</li>
+        </ul>
+    
+        <h3>12.1.4. Pruebas de regresión</h3>
+        <p>Para cada iteración de desarrollo:</p>
+        <ul>
+            <li>Batería de pruebas manuales para verificar que las nuevas funcionalidades no afectan a las existentes.</li>
+            <li>Verificación de compatibilidad con diferentes versiones de Android.</li>
+            <li>Re-testing de escenarios críticos como la notificación de salida de zona segura.</li>
+        </ul>
+    
+        <h2 id="escenarios">12.2. Escenarios de prueba</h2>
+        <p>Hemos definido escenarios específicos que representan situaciones reales de uso para validar el funcionamiento de la aplicación:</p>
+    
+        <h3>12.2.1. Escenarios de autenticación</h3>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Escenario</th>
+                    <th>Pasos</th>
+                    <th>Resultado esperado</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>A-01</td>
+                    <td>Registro nuevo usuario</td>
+                    <td>
+                        1. Abrir aplicación<br>
+                        2. Pulsar "Crear cuenta"<br>
+                        3. Completar formulario con datos válidos<br>
+                        4. Aceptar términos<br>
+                        5. Pulsar "Registrarse"
+                    </td>
+                    <td>Usuario creado en Firebase y redirección a pantalla principal</td>
+                </tr>
+                <tr>
+                    <td>A-02</td>
+                    <td>Login con credenciales incorrectas</td>
+                    <td>
+                        1. Abrir aplicación<br>
+                        2. Introducir email válido y contraseña incorrecta<br>
+                        3. Pulsar "Iniciar sesión"
+                    </td>
+                    <td>Mensaje de error indicando credenciales inválidas</td>
+                </tr>
+                <tr>
+                    <td>A-03</td>
+                    <td>Cambio de contraseña</td>
+                    <td>
+                        1. Login con cuenta existente<br>
+                        2. Ir a Ajustes > Cambiar contraseña<br>
+                        3. Introducir contraseña actual correcta<br>
+                        4. Introducir y confirmar nueva contraseña<br>
+                        5. Guardar cambios
+                    </td>
+                    <td>Contraseña actualizada y confirmación visual</td>
+                </tr>
+            </tbody>
+        </table>
+    
+        <h3>12.2.2. Escenarios de geolocalización</h3>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Escenario</th>
+                    <th>Pasos</th>
+                    <th>Resultado esperado</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>G-01</td>
+                    <td>Definición de zona segura</td>
+                    <td>
+                        1. Seleccionar perro en spinner<br>
+                        2. Pulsar botón editar zona<br>
+                        3. Tocar ubicación en mapa<br>
+                        4. Guardar zona
+                    </td>
+                    <td>Zona visualizada en mapa y almacenada en Firebase</td>
+                </tr>
+                <tr>
+                    <td>G-02</td>
+                    <td>Salida de zona segura</td>
+                    <td>
+                        1. Configurar cuenta simulación de perro<br>
+                        2. Actualizar ubicación fuera de zona segura<br>
+                        3. Esperar proceso de monitorización
+                    </td>
+                    <td>Notificación push recibida, zona cambia a color rojo</td>
+                </tr>
+                <tr>
+                    <td>G-03</td>
+                    <td>Reentrada en zona segura</td>
+                    <td>
+                        1. Con perro fuera de zona<br>
+                        2. Actualizar ubicación dentro de zona segura<br>
+                        3. Esperar proceso de monitorización
+                    </td>
+                    <td>Notificación cancelada, zona cambia a color verde</td>
+                </tr>
+            </tbody>
+        </table>
+    
+        <h3>12.2.3. Escenarios de gestión de perfiles</h3>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Escenario</th>
+                    <th>Pasos</th>
+                    <th>Resultado esperado</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>P-01</td>
+                    <td>Creación de perfil de perro</td>
+                    <td>
+                        1. Acceder a sección de perfil<br>
+                        2. Pulsar "Añadir perro"<br>
+                        3. Completar todos los campos<br>
+                        4. Seleccionar imagen<br>
+                        5. Guardar cambios
+                    </td>
+                    <td>Perro creado en base de datos y visible en spinner</td>
+                </tr>
+                <tr>
+                    <td>P-02</td>
+                    <td>Edición de datos de perro</td>
+                    <td>
+                        1. Seleccionar perro en spinner<br>
+                        2. Acceder a perfil<br>
+                        3. Pulsar "Editar"<br>
+                        4. Modificar campos<br>
+                        5. Guardar cambios
+                    </td>
+                    <td>Datos actualizados correctamente en UI y base de datos</td>
+                </tr>
+            </tbody>
+        </table>
+    
+        <h3>12.2.4. Escenarios de rendimiento</h3>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Escenario</th>
+                    <th>Condiciones</th>
+                    <th>Criterios de aceptación</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>R-01</td>
+                    <td>Consumo de batería monitorización</td>
+                    <td>
+                        Aplicación en segundo plano, servicio activo por 1 hora
+                    </td>
+                    <td>Consumo inferior al 5% de batería</td>
+                </tr>
+                <tr>
+                    <td>R-02</td>
+                    <td>Tiempo de carga inicial</td>
+                    <td>
+                        Primera carga con autenticación y precarga de datos
+                    </td>
+                    <td>Tiempo total inferior a 5 segundos en conexión WiFi</td>
+                </tr>
+                <tr>
+                    <td>R-03</td>
+                    <td>Reinicio de dispositivo</td>
+                    <td>
+                        Apagar y encender dispositivo con app instalada
+                    </td>
+                    <td>Servicios se reinician automáticamente mediante BootCompletedReceiver</td>
+                </tr>
+            </tbody>
+        </table>
+    
+        <h1 id="cronograma">13. Cronograma de Desarrollo</h1>
+        <p>El desarrollo de PawTracker se planificó inicialmente para un total de 35 horas, sin embargo, la realidad del proyecto sobrepasó con creces esta estimación inicial. En total, invertimos más de <strong>120 horas efectivas</strong> entre los tres miembros del equipo para conseguir un producto funcional y de calidad. Esta discrepancia entre lo planificado y lo ejecutado nos ha permitido aprender valiosas lecciones sobre estimación de proyectos y gestión del tiempo.</p>
+    
+        <h2 id="fases">13.1. Fases del proyecto</h2>
+        <p>Dividimos el desarrollo en cinco fases principales, cuya duración real fue significativamente mayor a la prevista:</p>
+    
+        <h3>13.1.1. Fase 1: Planificación y Diseño (18 horas)</h3>
+        <ul>
+            <li><strong>Análisis de requisitos:</strong> La definición de funcionalidades requirió múltiples reuniones para consensuar el alcance.</li>
+            <li><strong>Diseño de arquitectura:</strong> Experimentamos con diferentes enfoques arquitectónicos antes de decidir el definitivo.</li>
+            <li><strong>Diseño de UI/UX:</strong> Creamos múltiples iteraciones de wireframes hasta lograr una experiencia de usuario satisfactoria.</li>
+            <li><strong>Planificación técnica:</strong> La investigación de servicios como Firebase y Google Maps consumió más tiempo del previsto para comprender sus limitaciones gratuitas.</li>
+        </ul>
+    
+        <h3>13.1.2. Fase 2: Implementación Base (25 horas)</h3>
+        <ul>
+            <li><strong>Configuración del proyecto:</strong> Enfrentamos problemas de compatibilidad con dependencias y configuraciones específicas de seguridad para APIs.</li>
+            <li><strong>Implementación de autenticación:</strong> La integración con Firebase Authentication presentó desafíos con la gestión de sesiones persistentes.</li>
+            <li><strong>Estructura de datos:</strong> Realizamos múltiples refactorizaciones de la estructura en Firebase para optimizar consultas.</li>
+            <li><strong>Implementación de UI básica:</strong> El diseño responsive y soporte para modo oscuro requirió mucho más tiempo del anticipado.</li>
+        </ul>
+    
+        <h3>13.1.3. Fase 3: Funcionalidades Core (42 horas)</h3>
+        <ul>
+            <li><strong>Implementación de mapas:</strong> Los problemas con permisos de ubicación en Android 11+ y la configuración de marcadores personalizados fueron especialmente complejos.</li>
+            <li><strong>Sistema de geolocalización:</strong> Optimizar el balance entre precisión y consumo de batería requirió numerosas pruebas y ajustes.</li>
+            <li><strong>Geofencing:</strong> Implementar una solución fiable para detectar entrada/salida de zonas seguras resultó mucho más difícil de lo previsto.</li>
+            <li><strong>Sistema de notificaciones:</strong> Las restricciones de Android para notificaciones en segundo plano nos obligaron a reescribir esta funcionalidad varias veces.</li>
+        </ul>
+    
+        <h3>13.1.4. Fase 4: Funcionalidades Complementarias (22 horas)</h3>
+        <ul>
+            <li><strong>Gestión de perfiles:</strong> El manejo de imágenes y su optimización para almacenamiento eficiente fue particularmente complejo.</li>
+            <li><strong>Ajustes de aplicación:</strong> Garantizar la persistencia de preferencias y su aplicación correcta llevó más implementación de la prevista.</li>
+            <li><strong>Optimizaciones de UI:</strong> Pulir animaciones y transiciones para una experiencia fluida requirió muchas iteraciones.</li>
+            <li><strong>Gestión de imágenes:</strong> Solucionar problemas de memoria con carga de imágenes grandes fue especialmente desafiante.</li>
+        </ul>
+    
+        <h3>13.1.5. Fase 5: Testing y Refinamiento (13 horas)</h3>
+        <ul>
+            <li><strong>Pruebas funcionales:</strong> Detectamos numerosos edge cases que requirieron soluciones específicas.</li>
+            <li><strong>Corrección de bugs:</strong> Los problemas con la sincronización en tiempo real en diferentes condiciones de red fueron los más difíciles de resolver.</li>
+            <li><strong>Optimización de rendimiento:</strong> Reducir el consumo de batería mientras se mantiene la precisión del seguimiento requirió múltiples ajustes.</li>
+            <li><strong>Documentación:</strong> La creación de documentación completa y útil llevó más tiempo del originalmente asignado.</li>
+        </ul>
+    
+        <h2 id="plazos">13.2. Plazos y responsables</h2>
+        <p>La distribución de tareas y horas reales invertidas entre los miembros del equipo fue la siguiente:</p>
+    
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Fase</th>
+                    <th>Tarea</th>
+                    <th>Responsable</th>
+                    <th>Tiempo real (h)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td rowspan="4">Planificación y Diseño</td>
+                    <td>Análisis de requisitos</td>
+                    <td>Equipo completo</td>
+                    <td>6</td>
+                </tr>
+                <tr>
+                    <td>Diseño de arquitectura</td>
+                    <td>Juan Borrás</td>
+                    <td>5</td>
+                </tr>
+                <tr>
+                    <td>Diseño de UI/UX</td>
+                    <td>Martín Peñalva</td>
+                    <td>4</td>
+                </tr>
+                <tr>
+                    <td>Planificación técnica</td>
+                    <td>Aritz Mendive</td>
+                    <td>3</td>
+                </tr>
+                <tr>
+                    <td rowspan="4">Implementación Base</td>
+                    <td>Configuración del proyecto</td>
+                    <td>Juan Borrás</td>
+                    <td>4</td>
+                </tr>
+                <tr>
+                    <td>Implementación de autenticación</td>
+                    <td>Aritz Mendive</td>
+                    <td>9</td>
+                </tr>
+                <tr>
+                    <td>Estructura de datos</td>
+                    <td>Juan Borrás</td>
+                    <td>7</td>
+                </tr>
+                <tr>
+                    <td>Implementación de UI básica</td>
+                    <td>Martín Peñalva</td>
+                    <td>5</td>
+                </tr>
+                <tr>
+                    <td rowspan="4">Funcionalidades Core</td>
+                    <td>Implementación de mapas</td>
+                    <td>Juan Borrás</td>
+                    <td>12</td>
+                </tr>
+                <tr>
+                    <td>Sistema de geolocalización</td>
+                    <td>Aritz Mendive</td>
+                    <td>11</td>
+                </tr>
+                <tr>
+                    <td>Geofencing</td>
+                    <td>Juan Borrás</td>
+                    <td>10</td>
+                </tr>
+                <tr>
+                    <td>Sistema de notificaciones</td>
+                    <td>Martín Peñalva</td>
+                    <td>9</td>
+                </tr>
+                <tr>
+                    <td rowspan="4">Funcionalidades Complementarias</td>
+                    <td>Gestión de perfiles</td>
+                    <td>Martín Peñalva</td>
+                    <td>6</td>
+                </tr>
+                <tr>
+                    <td>Ajustes de aplicación</td>
+                    <td>Aritz Mendive</td>
+                    <td>5</td>
+                </tr>
+                <tr>
+                    <td>Optimizaciones de UI</td>
+                    <td>Martín Peñalva</td>
+                    <td>4</td>
+                </tr>
+                <tr>
+                    <td>Gestión de imágenes</td>
+                    <td>Aritz Mendive</td>
+                    <td>7</td>
+                </tr>
+                <tr>
+                    <td rowspan="4">Testing y Refinamiento</td>
+                    <td>Pruebas funcionales</td>
+                    <td>Equipo completo</td>
+                    <td>5</td>
+                </tr>
+                <tr>
+                    <td>Corrección de bugs</td>
+                    <td>Equipo completo</td>
+                    <td>4</td>
+                </tr>
+                <tr>
+                    <td>Optimización de rendimiento</td>
+                    <td>Juan Borrás</td>
+                    <td>2</td>
+                </tr>
+                <tr>
+                    <td>Documentación</td>
+                    <td>Equipo completo</td>
+                    <td>2</td>
+                </tr>
+            </tbody>
+        </table>
+    
+        <h3>13.2.1. Distribución de horas por desarrollador</h3>
+        <p>El tiempo real invertido se distribuyó de la siguiente manera entre los miembros del equipo:</p>
+    
+        <ul>
+            <li><strong>Juan Borrás:</strong> 45 horas - Dedicó especial atención a los sistemas de geolocalización, la configuración técnica de Google Maps API y la implementación del sistema de geofencing, que resultó ser mucho más complejo de lo previsto inicialmente.</li>
+            <li><strong>Aritz Mendive:</strong> 40 horas - Centrado en la autenticación con Firebase, gestión de imágenes y la optimización del rendimiento para dispositivos con recursos limitados.</li>
+            <li><strong>Martín Peñalva:</strong> 35 horas - Especializado en la interfaz de usuario, implementación del sistema de notificaciones y pruebas exhaustivas en diferentes dispositivos.</li>
+        </ul>
+    
+        <h1 id="conclusion">14. Conclusión</h1>
+    
+        <h2 id="decisiones">14.1. Resumen de las decisiones clave</h2>
+        <p>Durante el desarrollo de PawTracker, enfrentamos varios desafíos técnicos específicos que nos obligaron a tomar decisiones importantes para nuestro proyecto:</p>
+    
+        <h3>14.1.1. Decisiones arquitectónicas</h3>
+        <ul>
+            <li><strong>Estructura basada en Activities:</strong> Inicialmente intentamos implementar una estructura basada en fragments con un único MainActivity contenedor, pero experimentamos problemas de rendimiento y complejidad en la gestión del ciclo de vida, especialmente con el mapa de Google. Después de dedicar casi 8 horas a este enfoque, decidimos volver a una arquitectura más directa basada en Activities separadas, lo que nos permitió avanzar más rápidamente.</li>
+            
+            <li><strong>DatosPrecargados como solución de caché:</strong> Las frecuentes consultas a Firebase provocaban retrasos perceptibles en la interfaz y un excesivo consumo de datos. Creamos la clase <code>DatosPrecargados</code> como un singleton que actúa de caché centralizada, reduciendo las consultas a la base de datos en un 70%. Esta decisión resultó crítica para el rendimiento en dispositivos con conexiones lentas.</li>
+            
+            <li><strong>Sistema de geofencing propio:</strong> El API Geofencing de Google presentaba limitaciones importantes para nuestro caso de uso, principalmente: (1) la imposibilidad de definir zonas desde la interfaz de usuario dibujando en el mapa, (2) restricciones en el número máximo de geofences simultáneos, y (3) problemas de fiabilidad en algunos dispositivos. Desarrollamos nuestro sistema basado en la clase <code>DogLocationManager</code> que calcula manualmente la distancia entre la ubicación actual y el centro de la zona segura.</li>
+            
+            <li><strong>Monitorización con servicio en primer plano:</strong> Uno de los mayores desafíos fue mantener la monitorización activa en segundo plano con las restricciones modernas de Android. Tras experimentar con WorkManager y JobScheduler (dedicando más de 6 horas a estas pruebas), optamos finalmente por implementar un servicio en primer plano con notificación persistente (<code>GeofencingService</code>) como única solución fiable para Android 8+.</li>
+        </ul>
+    
+        <h3>14.1.2. Decisiones de implementación</h3>
+        <ul>
+            <li><strong>Almacenamiento de imágenes en Base64:</strong> Inicialmente planificamos usar Firebase Storage para las imágenes de perfil, pero encontramos que para nuestra escala (imágenes pequeñas, máximo 5-10 por usuario), la complejidad adicional y la latencia de las operaciones separadas no compensaban. Implementamos una solución de compresión y codificación en Base64 en la clase <code>ImageUtils.kt</code> que reduce las imágenes a menos de 100KB antes de almacenarlas directamente en la base de datos.</li>
+            
+            <li><strong>Intervalos adaptativos de actualización:</strong> El mayor consumo de batería venía de las actualizaciones frecuentes de ubicación. Implementamos en <code>DogLocationManager</code> una estrategia de intervalos adaptativos que ajusta la frecuencia según: (1) si la app está en primer o segundo plano, (2) la velocidad detectada del perro, y (3) la proximidad a los límites de zonas seguras, logrando reducir el consumo de batería en un 40%.</li>
+            
+            <li><strong>Límite de 3 perros por cuenta gratuita:</strong> Durante las pruebas con múltiples perros, identificamos degradaciones de rendimiento significativas. Para garantizar una experiencia fluida, implementamos una limitación de 3 perros por cuenta en la versión gratuita, reflejado en <code>MapsActivity</code> donde monitorizamos esta restricción.</li>
+            
+            <li><strong>Spinner personalizado para selección de perros:</strong> Los componentes estándar de Android no permitían mostrar imágenes junto a texto en un spinner de manera eficiente. Implementamos un adapter personalizado (<code>DogSpinnerAdapter</code>) que renderiza correctamente imágenes circulares y nombres, permitiendo cambiar rápidamente entre diferentes mascotas.</li>
+        </ul>
+    
+        <h3>14.1.3. Lecciones técnicas aprendidas</h3>
+        <ul>
+            <li><strong>Problemas de memoria con imágenes:</strong> Descubrimos un grave problema de memoria (<code>OutOfMemoryError</code>) cuando los usuarios subían imágenes de alta resolución directamente desde sus cámaras. Lo solucionamos implementando un sistema de procesamiento en dos fases: primero reducimos las dimensiones y luego aplicamos compresión JPEG con calidad ajustable.</li>
+            
+            <li><strong>Falsos positivos en geofencing:</strong> Durante las pruebas en terreno, detectamos numerosos falsos positivos de salida de zona segura debido a la imprecisión temporal del GPS. Implementamos un filtro de "histéresis" que requiere 3 lecturas consecutivas fuera de zona antes de generar una notificación, reduciendo los falsos positivos en un 90%.</li>
+            
+            <li><strong>Compatibilidad con diferentes versiones de Android:</strong> Las diferencias en la gestión de permisos y servicios en segundo plano entre Android 8, 10 y 13 nos obligaron a implementar tres rutas de código diferentes en <code>GeofencingService</code> y <code>MainActivity</code> para garantizar el funcionamiento correcto en todas las versiones.</li>
+            
+            <li><strong>Optimización para dispositivos de gama baja:</strong> Las pruebas en dispositivos con menos de 3GB de RAM mostraron problemas de rendimiento significativos con Google Maps. Implementamos estrategias de carga diferida de marcadores y limitamos el historial visible para mejorar el rendimiento en estos dispositivos.</li>
+        </ul>
+    
+        <h2 id="mejoras">14.2. Propuestas de mejora futura</h2>
+        <p>A pesar de haber logrado implementar todas las funcionalidades principales dentro del tiempo disponible, identificamos varias áreas de mejora que podrían considerarse para versiones futuras:</p>
+    
+        <h3>14.2.1. Mejoras técnicas</h3>
+        <ul>
+            <li><strong>Migración a Jetpack Compose:</strong> Rediseñar la interfaz de usuario utilizando Jetpack Compose permitiría un código más mantenible y una UI más flexible.</li>
+            <li><strong>Implementación MVVM completa:</strong> Refactorizar la aplicación para seguir estrictamente el patrón MVVM con ViewModels y LiveData/Flow para todas las funcionalidades.</li>
+            <li><strong>Inyección de dependencias:</strong> Incorporar Hilt o Koin para gestionar dependencias y facilitar las pruebas unitarias.</li>
+            <li><strong>Migración a Kotlin Coroutines:</strong> Reemplazar callbacks por coroutines para un manejo más limpio de operaciones asíncronas.</li>
+            <li><strong>Uso de Firebase Storage:</strong> Migrar el almacenamiento de imágenes a Firebase Storage para mejorar el rendimiento y reducir el tamaño de la base de datos.</li>
+            <li><strong>Caché offline estructurada:</strong> Implementar Room para una persistencia local más robusta y consultas SQL.</li>
+        </ul>
+    
+        <h3>14.2.2. Nuevas funcionalidades</h3>
+        <ul>
+            <li><strong>Historial de ubicaciones:</strong> Implementar almacenamiento y visualización del historial de rutas de las mascotas.</li>
+            <li><strong>Compartir ubicación:</strong> Permitir compartir temporalmente la ubicación de mascotas con otros usuarios.</li>
+            <li><strong>Sistema de amigos:</strong> Implementar funcionalidad social para conectar con otros dueños de mascotas.</li>
+            <li><strong>Estadísticas de actividad:</strong> Análisis de patrones de movimiento, distancia recorrida y tiempo fuera de casa.</li>
+            <li><strong>Zonas seguras múltiples:</strong> Posibilidad de definir varias zonas seguras por mascota (casa, parque favorito, casa de familiares).</li>
+            <li><strong>Integración con dispositivos GPS:</strong> Soporte para collares inteligentes y otros dispositivos de seguimiento específicos para mascotas.</li>
+        </ul>
+    
+        <h3>14.2.3. Experiencia de usuario mejorada</h3>
+        <ul>
+            <li><strong>Tutoriales interactivos:</strong> Implementar guías paso a paso para nuevos usuarios.</li>
+            <li><strong>Personalización avanzada:</strong> Permitir mayor personalización de la interfaz y notificaciones.</li>
+            <li><strong>Accesibilidad mejorada:</strong> Aumentar el soporte para herramientas de accesibilidad como TalkBack.</li>
+            <li><strong>Modo de ahorro de batería:</strong> Implementar un modo que reduzca la frecuencia de actualizaciones para conservar batería en situaciones críticas.</li>
+            <li><strong>Versión para Wear OS:</strong> Desarrollo de una versión complementaria para relojes inteligentes.</li>
+        </ul>
+    
+        <p>En conclusión, PawTracker ha logrado implementar exitosamente todas las funcionalidades críticas para un sistema de seguimiento de mascotas en tiempo real, proporcionando una herramienta útil y accesible para los dueños de perros. Con las mejoras propuestas, la aplicación podría evolucionar hacia una plataforma más completa e integral para el cuidado y monitoreo de mascotas.</p>
+    
+        </div>
+    </div>
+
+</body>
+</html>
