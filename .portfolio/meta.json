@@ -1,0 +1,7 @@
+{
+  "title": "PawTracker",
+  "description": "Sistema de monitorización GPS en tiempo real para mascotas. Permite rastrear la ubicación de perros mediante GPS, definir zonas seguras con geofencing, y recibir notificaciones push instantáneas cuando salen de las zonas designadas. Incluye gestión de perfiles de múltiples mascotas, sincronización en tiempo real con Firebase, autenticación segura, y modo de simulación para pruebas.",
+  "website": "https://github.com/JBorrsad/PMDM_DEIN_FINAL",
+  "coverImage": "cover.png",
+  "tags": ["ANDROID", "KOTLIN", "FIREBASE", "MAPS"]
+}

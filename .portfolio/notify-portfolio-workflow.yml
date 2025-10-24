@@ -1,0 +1,19 @@
+name: Notify Portfolio on Update
+
+on:
+	push:
+		branches: ["main"]
+	workflow_dispatch:
+
+jobs:
+	notify:
+		runs-on: ubuntu-latest
+		steps:
+			- name: Trigger portfolio rebuild
+				run: |
+					curl -X POST \
+						-H "Accept: application/vnd.github.v3+json" \
+						-H "Authorization: token ${{ secrets.PORTFOLIO_DISPATCH_TOKEN }}" \
+						https://api.github.com/repos/JBorrsad/portfolio/dispatches \
+						-d '{"event_type":"project-updated"}'
+
